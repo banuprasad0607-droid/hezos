@@ -1,0 +1,159 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* HEZO SCHOOL — Linear academic premium design system */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-fg: var(--sidebar-fg);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-soft: var(--brand-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Inter", "Segoe UI", sans-serif;
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* Surfaces */
+  --background: #f8f8f8;
+  --foreground: #161616;
+  --card: #ffffff;
+  --card-foreground: #161616;
+  --popover: #ffffff;
+  --popover-foreground: #161616;
+
+  /* Brand — indigo accent */
+  --brand: #3c68d9; /* #6366F1 approx */
+  --brand-foreground: #ffffff;
+  --brand-soft: #e8f2ff;
+
+  /* Primary = indigo */
+  --primary: #3c68d9;
+  --primary-foreground: #ffffff;
+
+  --secondary: #eef2f9;
+  --secondary-foreground: #161616;
+  --muted: #eef2f9;
+  --muted-foreground: #606369;
+  --accent: #eef2f9;
+  --accent-foreground: #161616;
+
+  --destructive: #e62b34;
+  --destructive-foreground: #ffffff;
+
+  --border: #e1e5eb;
+  --input: #e1e5eb;
+  --ring: #3c68d9;
+
+  /* Sidebar */
+  --sidebar-bg: #0e1624; /* Deep slate #1c2434 */
+  --sidebar-fg: #ebeff5;
+  --sidebar-muted: #79818d;
+
+  /* Status */
+  --success: #00a166;
+  --success-soft: #d3f9e3;
+  --warning: #e89d00;
+  --warning-soft: #ffedc6;
+  --danger: #e62b34;
+  --danger-soft: #ffe6e1;
+}
+
+.dark {
+  --background: #090d16;
+  --foreground: #f3f4f6;
+  --card: #111827;
+  --card-foreground: #f3f4f6;
+  --popover: #111827;
+  --popover-foreground: #f3f4f6;
+  --secondary: #1f2937;
+  --secondary-foreground: #e5e7eb;
+  --muted: #1f2937;
+  --muted-foreground: #9ca3af;
+  --accent: #1f2937;
+  --accent-foreground: #e5e7eb;
+  --border: #374151;
+  --input: #374151;
+  --ring: #3c68d9;
+  --sidebar-bg: #05080e;
+  --sidebar-fg: #f3f4f6;
+  --sidebar-muted: #6b7280;
+  --success-soft: rgba(0, 161, 102, 0.15);
+  --warning-soft: rgba(232, 157, 0, 0.15);
+  --danger-soft: rgba(230, 43, 52, 0.15);
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html, body { height: 100%; }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Global Print Styles for White-Label Receipts, Invoices, and Report Cards */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  aside, header, nav, button, input, select, .print\:hidden, [role="tablist"], .no-print {
+    display: none !important;
+  }
+  main, .flex-1, div {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+  }
+  .bg-card, .bg-white {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
+

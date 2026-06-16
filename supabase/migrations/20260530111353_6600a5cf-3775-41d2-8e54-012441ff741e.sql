@@ -1,0 +1,1 @@
+ALTER TABLE public.teacher_invitations ADD COLUMN IF NOT EXISTS temp_password text;
