@@ -3,6 +3,9 @@
   publish = "dist/client"
   functions = "dist/server"
 
+[functions]
+  node_bundler = "none"
+
 [[headers]]
   for = "/*"
   [headers.values]
