@@ -1,16 +1,13 @@
-import pg from "pg";
+import { getDbClient } from "./db_helper.mjs";
 import fs from "fs";
 
-const { Client } = pg;
-
-const client = new Client({
-  host: "db.crypicuosxqquudpgosi.supabase.co",
-  port: 5432,
-  database: "postgres",
-  user: "postgres",
-  password: "bANU@NIRO3009",
-  ssl: { rejectUnauthorized: false },
-});
+let client;
+try {
+  client = getDbClient();
+} catch (e) {
+  console.error("❌ Database initialization failed:", e.message);
+  process.exit(1);
+}
 
 async function run() {
   const sqlFile = process.argv[2];
