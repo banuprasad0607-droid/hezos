@@ -1,14 +1,14 @@
-import pg from 'pg';
+import pg from "pg";
 
 const { Client } = pg;
 
 const client = new Client({
-  host: 'db.crypicuosxqquudpgosi.supabase.co',
+  host: "db.crypicuosxqquudpgosi.supabase.co",
   port: 5432,
-  database: 'postgres',
-  user: 'postgres',
-  password: 'bANU@NIRO3009',
-  ssl: { rejectUnauthorized: false }
+  database: "postgres",
+  user: "postgres",
+  password: "bANU@NIRO3009",
+  ssl: { rejectUnauthorized: false },
 });
 
 async function run() {
@@ -20,10 +20,11 @@ async function run() {
     console.log("\n--- SCHOOLS ---");
     console.dir(schoolsRes.rows);
 
-    const studentsRes = await client.query("SELECT id, school_id, full_name, admission_number, roll_number FROM public.students LIMIT 20;");
+    const studentsRes = await client.query(
+      "SELECT id, school_id, full_name, admission_number, roll_number FROM public.students LIMIT 20;",
+    );
     console.log("\n--- STUDENTS ---");
     console.dir(studentsRes.rows);
-
   } catch (err) {
     console.error("Error running query:", err);
   } finally {

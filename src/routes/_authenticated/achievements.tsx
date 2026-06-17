@@ -60,7 +60,10 @@ import { safeHtml2Canvas } from "@/lib/pdf-helper";
 import { jsPDF } from "jspdf";
 
 // Reusable clean inline styling helper for HTML2Canvas exports
-export const getPosterStyle = (sizeName: "portrait" | "landscape" | "square", themeName: string) => {
+export const getPosterStyle = (
+  sizeName: "portrait" | "landscape" | "square",
+  themeName: string,
+) => {
   let width = "360px";
   let height = "450px"; // Default portrait size (aspect 4/5)
 
@@ -146,11 +149,11 @@ function CanvasConfetti({ active }: { active: boolean }) {
 
     let animationId: number;
     const colors = ["#fbbf24", "#f59e0b", "#fb7185", "#3b82f6", "#10b981", "#8b5cf6", "#f43f5e"];
-    
+
     // Resize canvas
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    
+
     const particles = Array.from({ length: 150 }).map(() => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height - canvas.height,
@@ -211,22 +214,29 @@ function CanvasConfetti({ active }: { active: boolean }) {
   }, [active]);
 
   return active ? (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-[9999] w-full h-full"
-    />
+    <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[9999] w-full h-full" />
   ) : null;
 }
 
 // Interfaces
-interface ClassRow { id: string; name: string; grade: string | null; section: string | null; class_teacher_id?: string | null }
-interface SubjectRow { id: string; name: string; code: string | null }
-interface StudentRow { 
-  id: string; 
-  full_name: string; 
-  roll_number: string | null; 
-  class_id: string | null; 
-  parent_user_id: string | null; 
+interface ClassRow {
+  id: string;
+  name: string;
+  grade: string | null;
+  section: string | null;
+  class_teacher_id?: string | null;
+}
+interface SubjectRow {
+  id: string;
+  name: string;
+  code: string | null;
+}
+interface StudentRow {
+  id: string;
+  full_name: string;
+  roll_number: string | null;
+  class_id: string | null;
+  parent_user_id: string | null;
   parent_email: string | null;
   photo_url: string | null;
   classes?: { name: string; section?: string } | null;
@@ -234,39 +244,63 @@ interface StudentRow {
   parent_phone?: string | null;
   admission_number?: string | null;
 }
-interface ExamRow { id: string; school_id?: string; class_id: string; name: string; type: string; max_marks: number; subject_id: string | null; date: string }
-interface MarkRow { id: string; student_id: string; exam_id: string; marks_obtained: number }
-interface RankingRow { 
-  id: string; 
-  student_id: string; 
-  academic_year: string; 
-  exam_id: string | null; 
-  total_marks: number; 
-  percentage: number; 
-  gpa: number; 
-  rank_position: number; 
-  rank_type: string; 
+interface ExamRow {
+  id: string;
+  school_id?: string;
+  class_id: string;
+  name: string;
+  type: string;
+  max_marks: number;
+  subject_id: string | null;
+  date: string;
+}
+interface MarkRow {
+  id: string;
+  student_id: string;
+  exam_id: string;
+  marks_obtained: number;
+}
+interface RankingRow {
+  id: string;
+  student_id: string;
+  academic_year: string;
+  exam_id: string | null;
+  total_marks: number;
+  percentage: number;
+  gpa: number;
+  rank_position: number;
+  rank_type: string;
   subject_id: string | null;
   is_published?: boolean;
-  student?: { full_name: string; roll_number: string; photo_url?: string | null; classes?: { name: string } } | null;
+  student?: {
+    full_name: string;
+    roll_number: string;
+    photo_url?: string | null;
+    classes?: { name: string };
+  } | null;
 }
-interface AwardRow { 
-  id: string; 
-  student_id: string; 
-  academic_year: string; 
-  category: string; 
-  title: string; 
-  description: string; 
+interface AwardRow {
+  id: string;
+  student_id: string;
+  academic_year: string;
+  category: string;
+  title: string;
+  description: string;
   issued_at: string;
   is_published?: boolean;
-  student?: { full_name: string; roll_number: string; photo_url?: string | null; classes?: { name: string } } | null;
+  student?: {
+    full_name: string;
+    roll_number: string;
+    photo_url?: string | null;
+    classes?: { name: string };
+  } | null;
 }
-interface CertificateRow { 
-  id: string; 
-  student_id: string; 
-  award_id: string; 
-  certificate_type: string; 
-  certificate_number: string; 
+interface CertificateRow {
+  id: string;
+  student_id: string;
+  award_id: string;
+  certificate_type: string;
+  certificate_number: string;
   issued_date: string;
   student?: { full_name: string; photo_url?: string | null } | null;
   award?: { title: string; category: string } | null;
@@ -306,14 +340,19 @@ interface SchoolDetails {
 
 export function AchievementsPage() {
   const navigate = useNavigate();
-  const { currentSchoolId: schoolId, user, roles: actualRoles, loading: tenantLoading } = useTenant();
+  const {
+    currentSchoolId: schoolId,
+    user,
+    roles: actualRoles,
+    loading: tenantLoading,
+  } = useTenant();
   const schoolDisplayName = useSchoolName();
   usePageTitle("Report Cards");
-  
+
   // Simulated Roles Support: Super Admin, School Admin, Principal, Teacher, Parent, Student
   const [simulatedRole, setSimulatedRole] = useState<string>("admin");
   const [simulatedTeacherSubject, setSimulatedTeacherSubject] = useState<string>("All");
-  
+
   const simulatedUserId = useMemo(() => {
     if (simulatedRole === "teacher") {
       if (simulatedTeacherSubject === "Mathematics") return "11111111-1111-1111-1111-111111111111"; // Ramesh
@@ -337,12 +376,12 @@ export function AchievementsPage() {
   const [uploadDocType, setUploadDocType] = useState<string>("Birth Certificate");
   const [gradeThresholds, setGradeThresholds] = useState<Record<string, number>>({
     "A+": 90,
-    "A": 80,
+    A: 80,
     "B+": 75,
-    "B": 70,
+    B: 70,
     "C+": 60,
-    "C": 50,
-    "D": 35,
+    C: 50,
+    D: 35,
   });
 
   const getGradeFromPercentage = (pct: number) => {
@@ -358,7 +397,8 @@ export function AchievementsPage() {
 
   useEffect(() => {
     if (user?.id) {
-      supabase.from("profiles")
+      supabase
+        .from("profiles")
         .select("id, designation, department")
         .eq("user_id", user.id)
         .maybeSingle()
@@ -367,12 +407,19 @@ export function AchievementsPage() {
         });
     }
   }, [user]);
-  
+
   // School Details & Report Card states
   const [school, setSchool] = useState<SchoolDetails | null>(null);
   const [reportCardStudent, setReportCardStudent] = useState<StudentRow | null>(null);
   const [reportCardData, setReportCardData] = useState<{
-    subjectsMarks: Array<{ subjectName: string; obtained: number; max: number; percentage: number; grade: string; remarks?: string }>;
+    subjectsMarks: Array<{
+      subjectName: string;
+      obtained: number;
+      max: number;
+      percentage: number;
+      grade: string;
+      remarks?: string;
+    }>;
     totalObtained: number;
     totalMax: number;
     overallPercentage: number;
@@ -387,7 +434,7 @@ export function AchievementsPage() {
     latestRemark: string;
   } | null>(null);
   const [loadingReportCard, setLoadingReportCard] = useState(false);
-  
+
   // Navigation Tabs
   const [activeTab, setActiveTab] = useState<string>("dashboard");
 
@@ -432,13 +479,24 @@ export function AchievementsPage() {
 
   // Rule Setup
   const [rankingCriteria, setRankingCriteria] = useState<string>("percentage");
-  const [attendanceWeightage, setAttendanceWeightage] = useState<number>(0.10);
+  const [attendanceWeightage, setAttendanceWeightage] = useState<number>(0.1);
   const [attendanceThreshold, setAttendanceThreshold] = useState<number>(75.0);
   const [enabledCategories, setEnabledCategories] = useState<string[]>([
-    'rank_1', 'rank_2', 'rank_3', 'top_10', 'subject_topper', 
-    'class_topper', 'section_topper', 'school_topper', 
-    'attendance_topper', 'most_improved', 'discipline_award', 
-    'olympiad', 'sports', 'cultural', 'scholarship'
+    "rank_1",
+    "rank_2",
+    "rank_3",
+    "top_10",
+    "subject_topper",
+    "class_topper",
+    "section_topper",
+    "school_topper",
+    "attendance_topper",
+    "most_improved",
+    "discipline_award",
+    "olympiad",
+    "sports",
+    "cultural",
+    "scholarship",
   ]);
   const [autoRecalculate, setAutoRecalculate] = useState<boolean>(true);
 
@@ -450,7 +508,9 @@ export function AchievementsPage() {
   const [selectedCertProfile, setSelectedCertProfile] = useState<string>("rank1");
 
   // Dynamic Class name for certificate
-  const certStudentClass = classes.find(c => c.id === (selectedStudentForCert?.class_id || selectedClass));
+  const certStudentClass = classes.find(
+    (c) => c.id === (selectedStudentForCert?.class_id || selectedClass),
+  );
   const certClassName = certStudentClass ? `${certStudentClass.name}` : "Class 1A";
 
   // Dynamic Certificate specifications
@@ -463,7 +523,7 @@ export function AchievementsPage() {
           desc: `For securing the First Rank (1st Rank) in Class ${certClassName} for the academic session ${academicYear}. Their dedication, academic performance, and outstanding achievement have placed them atop the leaderboards.`,
           borderColor: "#78350f",
           innerColor: "#fbbf24",
-          textColor: "#78350f"
+          textColor: "#78350f",
         };
       case "rank2":
         return {
@@ -472,7 +532,7 @@ export function AchievementsPage() {
           desc: `For securing the Second Rank (2nd Rank) in Class ${certClassName} for the academic session ${academicYear}. Their consistent efforts, academic dedication, and high achievements have earned them this distinction.`,
           borderColor: "#64748b",
           innerColor: "#cbd5e1",
-          textColor: "#334155"
+          textColor: "#334155",
         };
       case "rank3":
         return {
@@ -481,7 +541,7 @@ export function AchievementsPage() {
           desc: `For securing the Third Rank (3rd Rank) in Class ${certClassName} for the academic session ${academicYear}. Their persistent dedication, commitment to learning, and academic merits are highly commendable.`,
           borderColor: "#b45309",
           innerColor: "#f59e0b",
-          textColor: "#78350f"
+          textColor: "#78350f",
         };
       case "attendance":
         return {
@@ -490,7 +550,7 @@ export function AchievementsPage() {
           desc: `For maintaining an exceptional presence and dedication to learning in Class ${certClassName} for the academic session ${academicYear}. Their commitment to consistency, reliability, and active participation in school life is exemplary.`,
           borderColor: "#065f46",
           innerColor: "#34d399",
-          textColor: "#065f46"
+          textColor: "#065f46",
         };
       case "discipline":
         return {
@@ -499,7 +559,7 @@ export function AchievementsPage() {
           desc: `For demonstrating exemplary behavior, integrity, respect, and adherence to school codes in Class ${certClassName} for the academic session ${academicYear}. They have set a true benchmark in character and student leadership.`,
           borderColor: "#312e81",
           innerColor: "#818cf8",
-          textColor: "#312e81"
+          textColor: "#312e81",
         };
       case "excellence":
       default:
@@ -509,21 +569,27 @@ export function AchievementsPage() {
           desc: `For demonstrating superb scholastic performance, intellectual curiosity, and outstanding marks in Class ${certClassName} for the academic session ${academicYear}. Awarded in recognition of top academic achievements.`,
           borderColor: "#78350f",
           innerColor: "#fbbf24",
-          textColor: "#78350f"
+          textColor: "#78350f",
         };
     }
   }, [selectedCertProfile, certClassName, academicYear]);
 
   // Dynamic Poster recipient details
-  const posterStudentClass = classes.find(c => c.id === (selectedStudentForPoster?.class_id || selectedClass));
+  const posterStudentClass = classes.find(
+    (c) => c.id === (selectedStudentForPoster?.class_id || selectedClass),
+  );
   const posterClassName = posterStudentClass ? `${posterStudentClass.name}` : "Class 1A";
 
   const posterRanking = useMemo(() => {
-    return rankings.find(r => r.student_id === selectedStudentForPoster?.id && r.academic_year === academicYear);
+    return rankings.find(
+      (r) => r.student_id === selectedStudentForPoster?.id && r.academic_year === academicYear,
+    );
   }, [rankings, selectedStudentForPoster, academicYear]);
 
   const posterAward = useMemo(() => {
-    return awards.find(a => a.student_id === selectedStudentForPoster?.id && a.academic_year === academicYear);
+    return awards.find(
+      (a) => a.student_id === selectedStudentForPoster?.id && a.academic_year === academicYear,
+    );
   }, [awards, selectedStudentForPoster, academicYear]);
 
   const posterDetails = useMemo(() => {
@@ -538,23 +604,23 @@ export function AchievementsPage() {
       return {
         rankText: `Rank #${rankPos}`,
         label: label,
-        stats: `GPA ${posterRanking.gpa} / Score ${posterRanking.percentage}%`
+        stats: `GPA ${posterRanking.gpa} / Score ${posterRanking.percentage}%`,
       };
     } else if (posterAward) {
       return {
         rankText: badgeLabel(posterAward.category),
         label: posterAward.title,
-        stats: "Special Recognition"
+        stats: "Special Recognition",
       };
     } else {
       return {
         rankText: "Academic Star",
         label: "Honor Roll",
-        stats: "Excellent Performance"
+        stats: "Excellent Performance",
       };
     }
   }, [posterRanking, posterAward]);
-  
+
   // UI Helpers
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
@@ -591,7 +657,7 @@ export function AchievementsPage() {
   // Synchronize top selectedExam (ID) with selectedReportCardExam (type)
   useEffect(() => {
     if (selectedExam) {
-      const activeExamObj = exams.find(e => e.id === selectedExam);
+      const activeExamObj = exams.find((e) => e.id === selectedExam);
       if (activeExamObj && activeExamObj.type !== selectedReportCardExam) {
         setSelectedReportCardExam(activeExamObj.type);
       }
@@ -604,14 +670,15 @@ export function AchievementsPage() {
       setReportCardData(null);
       return;
     }
-    
+
     const fetchReportCardDetails = async () => {
       setLoadingReportCard(true);
       try {
         const classId = reportCardStudent.class_id!;
 
         // 0. Fetch existing report card for this student, term and academic year
-        const { data: existingRc } = await (supabase as any).from("report_cards")
+        const { data: existingRc } = await (supabase as any)
+          .from("report_cards")
           .select("*")
           .eq("student_id", reportCardStudent.id)
           .eq("exam_type", selectedReportCardExam)
@@ -619,14 +686,23 @@ export function AchievementsPage() {
           .maybeSingle();
 
         if (existingRc) {
-          const subjectsMarks = Array.isArray(existingRc.subject_marks) 
+          const subjectsMarks = Array.isArray(existingRc.subject_marks)
             ? existingRc.subject_marks.map((sm: any) => ({
                 subjectName: sm.subject_name || sm.subjectName || "Subject",
                 obtained: sm.obtained_marks ?? sm.obtained ?? 0,
                 max: sm.max_marks ?? sm.max ?? 100,
-                percentage: sm.max_marks > 0 ? Number((((sm.obtained_marks ?? sm.obtained ?? 0) / (sm.max_marks ?? sm.max ?? 100)) * 100).toFixed(1)) : 0,
+                percentage:
+                  sm.max_marks > 0
+                    ? Number(
+                        (
+                          ((sm.obtained_marks ?? sm.obtained ?? 0) /
+                            (sm.max_marks ?? sm.max ?? 100)) *
+                          100
+                        ).toFixed(1),
+                      )
+                    : 0,
                 grade: sm.grade || "—",
-                remarks: sm.remarks || "—"
+                remarks: sm.remarks || "—",
               }))
             : [];
 
@@ -643,12 +719,12 @@ export function AchievementsPage() {
             absentDays: existingRc.absent_days,
             classTeacherRemarks: existingRc.class_teacher_remarks || "—",
             principalRemarks: existingRc.principal_remarks || "—",
-            latestRemark: existingRc.class_teacher_remarks || "Demonstrates consistent progress."
+            latestRemark: existingRc.class_teacher_remarks || "Demonstrates consistent progress.",
           });
           setLoadingReportCard(false);
           return;
         }
-        
+
         // 1. Fetch class exams
         const { data: classExData } = await supabase
           .from("exams")
@@ -656,40 +732,45 @@ export function AchievementsPage() {
           .eq("school_id", schoolId)
           .eq("class_id", classId)
           .is("deleted_at", null);
-          
-        const rawExamIds = (classExData || []).map(e => e.id);
+
+        const rawExamIds = (classExData || []).map((e) => e.id);
 
         // Fetch exam_subjects
-        const { data: examSubjs } = await (supabase as any).from("exam_subjects")
+        const { data: examSubjs } = await (supabase as any)
+          .from("exam_subjects")
           .select("id, exam_id, subject_id, max_marks")
           .eq("school_id", schoolId)
           .in("exam_id", rawExamIds.length ? rawExamIds : ["00000000-0000-0000-0000-000000000000"]);
 
         const classEx: any[] = [];
         (examSubjs || []).forEach((es: any) => {
-          const exam = (classExData || []).find(e => e.id === es.exam_id);
+          const exam = (classExData || []).find((e) => e.id === es.exam_id);
           if (exam) {
             classEx.push({
               id: es.id,
               name: exam.name,
               max_marks: Number(es.max_marks || 100),
-              subject_id: es.subject_id
+              subject_id: es.subject_id,
             });
           }
         });
-        const mappedExamIds = classEx.map(c => c.id);
-        
+        const mappedExamIds = classEx.map((c) => c.id);
+
         // 2. Fetch marks for this student
-        const { data: studentMarksData } = await (supabase as any).from("mark_entries")
+        const { data: studentMarksData } = await (supabase as any)
+          .from("mark_entries")
           .select("exam_subject_id, marks_obtained")
           .eq("student_id", reportCardStudent.id)
-          .in("exam_subject_id", mappedExamIds.length ? mappedExamIds : ["00000000-0000-0000-0000-000000000000"]);
+          .in(
+            "exam_subject_id",
+            mappedExamIds.length ? mappedExamIds : ["00000000-0000-0000-0000-000000000000"],
+          );
 
         const studentMarks = (studentMarksData || []).map((m: any) => ({
           exam_id: m.exam_subject_id,
-          marks_obtained: m.marks_obtained
+          marks_obtained: m.marks_obtained,
         }));
-          
+
         // 3. Fetch latest remark
         const { data: latestRemData } = await supabase
           .from("remarks")
@@ -699,14 +780,14 @@ export function AchievementsPage() {
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-          
+
         // 4. Fetch attendance stats
         const { data: attData } = await supabase
           .from("attendance")
           .select("status")
           .eq("student_id", reportCardStudent.id)
           .is("deleted_at", null);
-          
+
         // 5. Fetch student rank
         const { data: rankData } = await supabase
           .from("rankings")
@@ -715,59 +796,64 @@ export function AchievementsPage() {
           .eq("academic_year", academicYear)
           .is("exam_id", null) // overall class rank
           .maybeSingle();
-          
+
         // Process marks by subject
         const subjectMap = new Map<string, { obtained: number; max: number; name: string }>();
-        
-        (classEx || []).forEach(ex => {
+
+        (classEx || []).forEach((ex) => {
           const markObj = (studentMarks || []).find((m: any) => m.exam_id === ex.id);
           if (markObj && ex.subject_id) {
-            const subj = subjects.find(s => s.id === ex.subject_id);
+            const subj = subjects.find((s) => s.id === ex.subject_id);
             const subjectName = subj?.name || "Other";
-            
-            const current = subjectMap.get(ex.subject_id) || { obtained: 0, max: 0, name: subjectName };
+
+            const current = subjectMap.get(ex.subject_id) || {
+              obtained: 0,
+              max: 0,
+              name: subjectName,
+            };
             current.obtained += Number(markObj.marks_obtained);
             current.max += Number(ex.max_marks);
             subjectMap.set(ex.subject_id, current);
           }
         });
-        
-        const subjectsMarks = Array.from(subjectMap.values()).map(sm => {
+
+        const subjectsMarks = Array.from(subjectMap.values()).map((sm) => {
           const percentage = sm.max > 0 ? (sm.obtained / sm.max) * 100 : 0;
           const grade = getGradeFromPercentage(percentage);
-          
+
           return {
             subjectName: sm.name,
             obtained: Number(sm.obtained.toFixed(1)),
             max: sm.max,
             percentage: Number(percentage.toFixed(1)),
             grade,
-            remarks: percentage >= 80 ? "Excellent" : (percentage >= 60 ? "Good" : "Needs Improvement")
+            remarks:
+              percentage >= 80 ? "Excellent" : percentage >= 60 ? "Good" : "Needs Improvement",
           };
         });
-        
+
         let totalObtained = 0;
         let totalMax = 0;
-        subjectsMarks.forEach(sm => {
+        subjectsMarks.forEach((sm) => {
           totalObtained += sm.obtained;
           totalMax += sm.max;
         });
-        
+
         const overallPercentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
-        
+
         // Attendance calc
         let present = 0;
         let total = 0;
-        (attData || []).forEach(a => {
+        (attData || []).forEach((a) => {
           total++;
           if (a.status === "present" || a.status === "late" || a.status === "half_day") {
-            present += (a.status === "half_day" ? 0.5 : 1);
+            present += a.status === "half_day" ? 0.5 : 1;
           }
         });
         const attendancePercentage = total > 0 ? (present / total) * 100 : 100; // fallback to 100
         const totalWorkingDays = rcWorkingDays || 220;
         const computedPresent = Math.round(totalWorkingDays * (attendancePercentage / 100));
-        
+
         setReportCardData({
           subjectsMarks,
           totalObtained: Number(totalObtained.toFixed(1)),
@@ -779,9 +865,14 @@ export function AchievementsPage() {
           workingDays: totalWorkingDays,
           presentDays: computedPresent,
           absentDays: totalWorkingDays - computedPresent,
-          classTeacherRemarks: latestRemData ? latestRemData.content : "Demonstrates consistent progress and participates actively in class activities.",
-          principalRemarks: overallPercentage >= 75 ? "Excellent performance." : "Satisfactory progress.",
-          latestRemark: latestRemData ? latestRemData.content : "Demonstrates consistent progress and participates actively in class activities."
+          classTeacherRemarks: latestRemData
+            ? latestRemData.content
+            : "Demonstrates consistent progress and participates actively in class activities.",
+          principalRemarks:
+            overallPercentage >= 75 ? "Excellent performance." : "Satisfactory progress.",
+          latestRemark: latestRemData
+            ? latestRemData.content
+            : "Demonstrates consistent progress and participates actively in class activities.",
         });
       } catch (err: any) {
         console.error("Failed to load report card:", err);
@@ -790,7 +881,7 @@ export function AchievementsPage() {
         setLoadingReportCard(false);
       }
     };
-    
+
     void fetchReportCardDetails();
   }, [reportCardStudent, academicYear, schoolId, subjects, selectedReportCardExam]);
 
@@ -801,23 +892,23 @@ export function AchievementsPage() {
       toast.error("Report card element not found.");
       return;
     }
-    
+
     toast.info("Generating Report Card PDF. Please wait...");
-    
+
     try {
       const canvas = await safeHtml2Canvas(element, { scale: 3, useCORS: true });
       const imgData = canvas.toDataURL("image/png");
-      
+
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
-        format: "a4"
+        format: "a4",
       });
-      
+
       const imgWidth = 210;
       const pageHeight = 297;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
+
       pdf.addImage(imgData, "PNG", 0, 0, imgWidth, Math.min(imgHeight, pageHeight));
       pdf.save(`${reportCardStudent.full_name}_Report_Card.pdf`);
       toast.success("Report Card downloaded successfully.");
@@ -827,7 +918,11 @@ export function AchievementsPage() {
     }
   };
 
-  const logAuditAction = async (studentId: string, reportCardId: string | null, action: 'Created' | 'Edited' | 'Approved' | 'Published') => {
+  const logAuditAction = async (
+    studentId: string,
+    reportCardId: string | null,
+    action: "Created" | "Edited" | "Approved" | "Published",
+  ) => {
     if (!schoolId || !user) return;
     try {
       const { error } = await (supabase as any).from("report_card_audit_logs").insert({
@@ -836,7 +931,7 @@ export function AchievementsPage() {
         report_card_id: reportCardId,
         action: action,
         performed_by: user.id,
-        performed_by_name: user.email?.split("@")[0] || "User"
+        performed_by_name: user.email?.split("@")[0] || "User",
       });
       if (error) console.error("Audit log failed:", error);
     } catch (err) {
@@ -847,7 +942,8 @@ export function AchievementsPage() {
   const loadStudentDocuments = async (studentId: string) => {
     if (!schoolId) return;
     try {
-      const { data, error } = await (supabase as any).from("student_documents")
+      const { data, error } = await (supabase as any)
+        .from("student_documents")
         .select("*")
         .eq("student_id", studentId)
         .eq("school_id", schoolId);
@@ -861,7 +957,8 @@ export function AchievementsPage() {
   const loadAuditLogs = async (studentId: string) => {
     if (!schoolId) return;
     try {
-      const { data, error } = await (supabase as any).from("report_card_audit_logs")
+      const { data, error } = await (supabase as any)
+        .from("report_card_audit_logs")
         .select("*")
         .eq("student_id", studentId)
         .eq("school_id", schoolId)
@@ -876,7 +973,7 @@ export function AchievementsPage() {
   const handleUploadDocument = async (studentId: string, documentType: string, file: File) => {
     if (!schoolId || !user) return;
     try {
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const path = `${schoolId}/${studentId}/${fileName}`;
       const { error: uploadError } = await supabase.storage
@@ -885,19 +982,16 @@ export function AchievementsPage() {
 
       if (uploadError) throw uploadError;
 
-      const { data: pubUrl } = supabase.storage
-        .from("student-photos")
-        .getPublicUrl(path);
+      const { data: pubUrl } = supabase.storage.from("student-photos").getPublicUrl(path);
 
-      const { error: dbError } = await (supabase as any).from("student_documents")
-        .insert({
-          school_id: schoolId,
-          student_id: studentId,
-          document_type: documentType,
-          file_name: file.name,
-          file_url: pubUrl.publicUrl,
-          uploaded_by: user.id
-        });
+      const { error: dbError } = await (supabase as any).from("student_documents").insert({
+        school_id: schoolId,
+        student_id: studentId,
+        document_type: documentType,
+        file_name: file.name,
+        file_url: pubUrl.publicUrl,
+        uploaded_by: user.id,
+      });
 
       if (dbError) throw dbError;
 
@@ -910,9 +1004,7 @@ export function AchievementsPage() {
 
   const handleDeleteDocument = async (docId: string, studentId: string) => {
     try {
-      const { error } = await (supabase as any).from("student_documents")
-        .delete()
-        .eq("id", docId);
+      const { error } = await (supabase as any).from("student_documents").delete().eq("id", docId);
       if (error) throw error;
       toast.success("Document deleted successfully");
       void loadStudentDocuments(studentId);
@@ -921,14 +1013,18 @@ export function AchievementsPage() {
     }
   };
 
-  const handlePromoteStudents = async (action: 'promote' | 'retain' | 'transfer', studentIds: string[], targetClassId?: string) => {
+  const handlePromoteStudents = async (
+    action: "promote" | "retain" | "transfer",
+    studentIds: string[],
+    targetClassId?: string,
+  ) => {
     if (!schoolId || studentIds.length === 0) {
       toast.error("Please select at least one student");
       return;
     }
     setIsLoading(true);
     try {
-      if (action === 'promote') {
+      if (action === "promote") {
         if (!targetClassId) {
           toast.error("Please select a target class for promotion");
           setIsLoading(false);
@@ -939,30 +1035,34 @@ export function AchievementsPage() {
           .from("students")
           .update({
             class_id: targetClassId,
-            academic_year: nextYear
+            academic_year: nextYear,
           })
           .in("id", studentIds)
           .eq("school_id", schoolId);
 
         if (error) throw error;
-        toast.success(`Successfully promoted ${studentIds.length} student(s) to Class ${classes.find(c => c.id === targetClassId)?.name || 'Next Class'} and updated academic year to ${nextYear}!`);
-      } else if (action === 'retain') {
+        toast.success(
+          `Successfully promoted ${studentIds.length} student(s) to Class ${classes.find((c) => c.id === targetClassId)?.name || "Next Class"} and updated academic year to ${nextYear}!`,
+        );
+      } else if (action === "retain") {
         const nextYear = academicYear === "2025-2026" ? "2026-2027" : "2027-2028";
         const { error } = await supabase
           .from("students")
           .update({
-            academic_year: nextYear
+            academic_year: nextYear,
           })
           .in("id", studentIds)
           .eq("school_id", schoolId);
 
         if (error) throw error;
-        toast.success(`Successfully retained ${studentIds.length} student(s) in current class for academic year ${nextYear}.`);
-      } else if (action === 'transfer') {
+        toast.success(
+          `Successfully retained ${studentIds.length} student(s) in current class for academic year ${nextYear}.`,
+        );
+      } else if (action === "transfer") {
         const { error } = await supabase
           .from("students")
           .update({
-            class_id: null
+            class_id: null,
           })
           .in("id", studentIds)
           .eq("school_id", schoolId);
@@ -984,20 +1084,32 @@ export function AchievementsPage() {
   const autoGenerateAwards = async (classId: string) => {
     if (!schoolId) return;
     try {
-      const classRcs = reportCards.filter(rc => rc.class_id === classId && rc.exam_type === selectedReportCardExam);
+      const classRcs = reportCards.filter(
+        (rc) => rc.class_id === classId && rc.exam_type === selectedReportCardExam,
+      );
       if (classRcs.length === 0) return;
 
       const issuedBy = user?.id || adminUserId;
-      
-      const studentIds = classRcs.map(rc => rc.student_id);
-      await supabase.from("awards").delete()
+
+      const studentIds = classRcs.map((rc) => rc.student_id);
+      await supabase
+        .from("awards")
+        .delete()
         .eq("school_id", schoolId)
         .eq("academic_year", academicYear)
         .in("student_id", studentIds)
-        .in("category", ["gold_medal", "silver_medal", "bronze_medal", "academic_star", "attendance_champion", "subject_topper", "best_improvement"]);
+        .in("category", [
+          "gold_medal",
+          "silver_medal",
+          "bronze_medal",
+          "academic_star",
+          "attendance_champion",
+          "subject_topper",
+          "best_improvement",
+        ]);
 
       const awardPromises = classRcs.map(async (rc) => {
-        const studentObj = students.find(s => s.id === rc.student_id);
+        const studentObj = students.find((s) => s.id === rc.student_id);
         if (!studentObj) return;
 
         if (rc.class_rank === 1) {
@@ -1009,10 +1121,9 @@ export function AchievementsPage() {
             title: "Gold Medal for Academic Excellence",
             description: `Secured 1st Rank in Class with an outstanding cumulative score of ${rc.percentage}% in ${selectedReportCardExam}.`,
             issued_by: issuedBy,
-            is_published: true
+            is_published: true,
           });
-        }
-        else if (rc.class_rank === 2) {
+        } else if (rc.class_rank === 2) {
           await supabase.from("awards").insert({
             school_id: schoolId,
             student_id: rc.student_id,
@@ -1021,10 +1132,9 @@ export function AchievementsPage() {
             title: "Silver Medal for Academic Distinction",
             description: `Secured 2nd Rank in Class with a cumulative score of ${rc.percentage}% in ${selectedReportCardExam}.`,
             issued_by: issuedBy,
-            is_published: true
+            is_published: true,
           });
-        }
-        else if (rc.class_rank === 3) {
+        } else if (rc.class_rank === 3) {
           await supabase.from("awards").insert({
             school_id: schoolId,
             student_id: rc.student_id,
@@ -1033,7 +1143,7 @@ export function AchievementsPage() {
             title: "Bronze Medal for Academic Merit",
             description: `Secured 3rd Rank in Class with a cumulative score of ${rc.percentage}% in ${selectedReportCardExam}.`,
             issued_by: issuedBy,
-            is_published: true
+            is_published: true,
           });
         }
 
@@ -1046,7 +1156,7 @@ export function AchievementsPage() {
             title: "Academic Star Award",
             description: `Scored distinction grade of ${rc.percentage}% in ${selectedReportCardExam}.`,
             issued_by: issuedBy,
-            is_published: true
+            is_published: true,
           });
         }
 
@@ -1059,7 +1169,7 @@ export function AchievementsPage() {
             title: "Attendance Champion Award",
             description: `Maintained an exemplary attendance rate of ${rc.attendance_percentage}% during the academic term.`,
             issued_by: issuedBy,
-            is_published: true
+            is_published: true,
           });
         }
 
@@ -1074,7 +1184,7 @@ export function AchievementsPage() {
                 title: `Subject Topper - ${sm.subject_name}`,
                 description: `Scored top marks of ${sm.obtained_marks}/${sm.max_marks} in ${sm.subject_name}.`,
                 issued_by: issuedBy,
-                is_published: true
+                is_published: true,
               });
               break;
             }
@@ -1090,7 +1200,7 @@ export function AchievementsPage() {
             title: "Best Improvement Award",
             description: `Demonstrated exceptional academic growth and progress during the term, achieving a cumulative percentage of ${rc.percentage}%.`,
             issued_by: issuedBy,
-            is_published: true
+            is_published: true,
           });
         }
       });
@@ -1116,8 +1226,11 @@ export function AchievementsPage() {
     setIsLoading(true);
     try {
       // 0) Fetch School details
-      const { data: schoolRes } = await (supabase as any).from("schools")
-        .select("id, name, school_name, logo_url, school_logo, address, phone_number, email, principal_name, principal_signature_url")
+      const { data: schoolRes } = await (supabase as any)
+        .from("schools")
+        .select(
+          "id, name, school_name, logo_url, school_logo, address, phone_number, email, principal_name, principal_signature_url",
+        )
         .eq("id", schoolId)
         .single();
       if (schoolRes) {
@@ -1134,7 +1247,8 @@ export function AchievementsPage() {
       }
 
       // 1) Fetch Classes
-      const { data: classesData } = await (supabase as any).from("classes")
+      const { data: classesData } = await (supabase as any)
+        .from("classes")
         .select("id, name, grade, section, class_teacher_id")
         .eq("school_id", schoolId)
         .is("deleted_at", null)
@@ -1160,14 +1274,16 @@ export function AchievementsPage() {
       // 3) Fetch Students
       const { data: studentsData } = await supabase
         .from("students")
-        .select("id, full_name, roll_number, class_id, photo_url, parent_user_id, parent_email, parent_name, parent_phone, admission_number, classes(name, section)")
+        .select(
+          "id, full_name, roll_number, class_id, photo_url, parent_user_id, parent_email, parent_name, parent_phone, admission_number, classes(name, section)",
+        )
         .eq("school_id", schoolId)
         .is("deleted_at", null)
         .order("full_name");
-      
+
       const normStudents = (studentsData || []).map((s: any) => ({
         ...s,
-        classes: Array.isArray(s.classes) ? s.classes[0] || null : s.classes
+        classes: Array.isArray(s.classes) ? s.classes[0] || null : s.classes,
       }));
       setStudents(normStudents);
 
@@ -1177,14 +1293,15 @@ export function AchievementsPage() {
         .select("id, class_id, name, type, date")
         .eq("school_id", schoolId)
         .is("deleted_at", null);
-      
-      const { data: examSubjs } = await (supabase as any).from("exam_subjects")
+
+      const { data: examSubjs } = await (supabase as any)
+        .from("exam_subjects")
         .select("id, exam_id, subject_id, max_marks")
         .eq("school_id", schoolId);
 
       const combinedExams: any[] = [];
       (examSubjs || []).forEach((es: any) => {
-        const exam = (rawExams || []).find(e => e.id === es.exam_id);
+        const exam = (rawExams || []).find((e) => e.id === es.exam_id);
         if (exam) {
           combinedExams.push({
             id: es.id,
@@ -1194,7 +1311,7 @@ export function AchievementsPage() {
             type: exam.type,
             max_marks: Number(es.max_marks || 100),
             subject_id: es.subject_id,
-            date: exam.date
+            date: exam.date,
           });
         }
       });
@@ -1205,7 +1322,8 @@ export function AchievementsPage() {
       }
 
       // 5) Fetch Marks
-      const { data: rawMarks } = await (supabase as any).from("mark_entries")
+      const { data: rawMarks } = await (supabase as any)
+        .from("mark_entries")
         .select("id, student_id, exam_id, exam_subject_id, marks_obtained")
         .eq("school_id", schoolId);
 
@@ -1213,7 +1331,7 @@ export function AchievementsPage() {
         id: m.id,
         student_id: m.student_id,
         exam_id: m.exam_subject_id,
-        marks_obtained: m.marks_obtained
+        marks_obtained: m.marks_obtained,
       }));
       setMarks(mappedMarks);
 
@@ -1235,7 +1353,9 @@ export function AchievementsPage() {
       // 7) Fetch Rankings
       const { data: rankingsData } = await supabase
         .from("rankings")
-        .select("id, student_id, academic_year, exam_id, total_marks, percentage, gpa, rank_position, rank_type, subject_id, students(full_name, roll_number, photo_url, classes(name))")
+        .select(
+          "id, student_id, academic_year, exam_id, total_marks, percentage, gpa, rank_position, rank_type, subject_id, students(full_name, roll_number, photo_url, classes(name))",
+        )
         .eq("school_id", schoolId)
         .order("rank_position");
 
@@ -1243,11 +1363,13 @@ export function AchievementsPage() {
         const stud = Array.isArray(r.students) ? r.students[0] : r.students;
         return {
           ...r,
-          student: stud ? {
-            full_name: stud.full_name,
-            roll_number: stud.roll_number,
-            classes: Array.isArray(stud.classes) ? stud.classes[0] : stud.classes
-          } : null
+          student: stud
+            ? {
+                full_name: stud.full_name,
+                roll_number: stud.roll_number,
+                classes: Array.isArray(stud.classes) ? stud.classes[0] : stud.classes,
+              }
+            : null,
         };
       });
       setRankings(mappedRankings);
@@ -1255,7 +1377,9 @@ export function AchievementsPage() {
       // 8) Fetch Awards
       const { data: awardsData } = await supabase
         .from("awards")
-        .select("id, student_id, academic_year, category, title, description, issued_at, students(full_name, roll_number, classes(name))")
+        .select(
+          "id, student_id, academic_year, category, title, description, issued_at, students(full_name, roll_number, classes(name))",
+        )
         .eq("school_id", schoolId)
         .order("issued_at", { ascending: false });
 
@@ -1263,11 +1387,13 @@ export function AchievementsPage() {
         const stud = Array.isArray(a.students) ? a.students[0] : a.students;
         return {
           ...a,
-          student: stud ? {
-            full_name: stud.full_name,
-            roll_number: stud.roll_number,
-            classes: Array.isArray(stud.classes) ? stud.classes[0] : stud.classes
-          } : null
+          student: stud
+            ? {
+                full_name: stud.full_name,
+                roll_number: stud.roll_number,
+                classes: Array.isArray(stud.classes) ? stud.classes[0] : stud.classes,
+              }
+            : null,
         };
       });
       setAwards(mappedAwards);
@@ -1275,7 +1401,9 @@ export function AchievementsPage() {
       // 9) Fetch Certificates
       const { data: certsData } = await supabase
         .from("certificates")
-        .select("id, student_id, award_id, certificate_type, certificate_number, issued_date, students(full_name), awards(title, category)")
+        .select(
+          "id, student_id, award_id, certificate_type, certificate_number, issued_date, students(full_name), awards(title, category)",
+        )
         .eq("school_id", schoolId);
 
       const mappedCerts = (certsData || []).map((c: any) => {
@@ -1284,7 +1412,7 @@ export function AchievementsPage() {
         return {
           ...c,
           student: stud,
-          award: awd
+          award: awd,
         };
       });
       setCertificates(mappedCerts);
@@ -1292,7 +1420,9 @@ export function AchievementsPage() {
       // 10) Fetch Notification Logs
       const { data: notifyData } = await supabase
         .from("notification_logs")
-        .select("id, parent_user_id, student_id, type, title, body, status, sent_at, students(full_name)")
+        .select(
+          "id, parent_user_id, student_id, type, title, body, status, sent_at, students(full_name)",
+        )
         .eq("school_id", schoolId)
         .order("sent_at", { ascending: false });
 
@@ -1300,22 +1430,25 @@ export function AchievementsPage() {
         const stud = Array.isArray(n.students) ? n.students[0] : n.students;
         return {
           ...n,
-          student: stud
+          student: stud,
         };
       });
       setNotifications(mappedNotify);
 
       // 11) Fetch Report Cards
-      const { data: rcData, error: rcErr } = await (supabase as any).from("report_cards")
-        .select(`
+      const { data: rcData, error: rcErr } = await (supabase as any)
+        .from("report_cards")
+        .select(
+          `
           id, school_id, student_id, class_id, exam_type, academic_year,
           total_obtained, total_max, percentage, class_rank, section_rank, school_rank,
           result_status, working_days, present_days, absent_days, attendance_percentage,
           subject_marks, class_teacher_remarks, principal_remarks, pdf_url, status,
           students (full_name, roll_number, admission_number, photo_url, parent_name, parent_phone, parent_email, parent_user_id)
-        `)
+        `,
+        )
         .eq("school_id", schoolId);
-      
+
       if (rcErr) {
         console.error("Error fetching report cards:", rcErr);
       } else {
@@ -1323,14 +1456,15 @@ export function AchievementsPage() {
           const stud = Array.isArray(r.students) ? r.students[0] : r.students;
           return {
             ...r,
-            student: stud
+            student: stud,
           };
         });
         setReportCards(mappedRc);
       }
 
       // 12) Fetch Subject Allocations
-      const { data: allocationsData } = await (supabase as any).from("teacher_allocations")
+      const { data: allocationsData } = await (supabase as any)
+        .from("teacher_allocations")
         .select("id, teacher_id, subject_id, class_id")
         .eq("school_id", schoolId);
       setSubjectAllocations(allocationsData || []);
@@ -1350,12 +1484,11 @@ export function AchievementsPage() {
       setAllRoles(rolesData || []);
 
       const teachersList = (profilesData || []).filter((p: any) =>
-        (rolesData || []).some((r: any) => r.user_id === p.user_id && r.role === 'teacher')
+        (rolesData || []).some((r: any) => r.user_id === p.user_id && r.role === "teacher"),
       );
       if (teachersList.length > 0) {
         setAllocTeacherId(teachersList[0].user_id);
       }
-
     } catch (e: any) {
       toast.error("Error loading data: " + e.message);
     } finally {
@@ -1373,37 +1506,45 @@ export function AchievementsPage() {
   const filteredStudents = useMemo(() => {
     let result = students;
     if (selectedClass) {
-      result = result.filter(s => s.class_id === selectedClass);
+      result = result.filter((s) => s.class_id === selectedClass);
     }
     if (searchQuery) {
-      result = result.filter(s => s.full_name.toLowerCase().includes(searchQuery.toLowerCase()));
+      result = result.filter((s) => s.full_name.toLowerCase().includes(searchQuery.toLowerCase()));
     }
     return result;
   }, [students, selectedClass, searchQuery]);
 
   const filteredRankings = useMemo(() => {
-    let result = rankings.filter(r => r.academic_year === academicYear);
+    let result = rankings.filter((r) => r.academic_year === academicYear);
     if (selectedClass) {
-      result = result.filter(r => r.student?.classes?.name === classes.find(c => c.id === selectedClass)?.name);
+      result = result.filter(
+        (r) => r.student?.classes?.name === classes.find((c) => c.id === selectedClass)?.name,
+      );
     }
     if (selectedExam) {
-      result = result.filter(r => r.exam_id === selectedExam);
+      result = result.filter((r) => r.exam_id === selectedExam);
     } else {
-      result = result.filter(r => r.exam_id === null); // overall year rank
+      result = result.filter((r) => r.exam_id === null); // overall year rank
     }
     if (selectedSubject) {
-      result = result.filter(r => r.subject_id === selectedSubject);
+      result = result.filter((r) => r.subject_id === selectedSubject);
     }
     return result;
   }, [rankings, selectedClass, selectedExam, selectedSubject, academicYear, classes]);
 
   const filteredAwards = useMemo(() => {
-    let result = awards.filter(a => a.academic_year === academicYear);
+    let result = awards.filter((a) => a.academic_year === academicYear);
     if (selectedClass) {
-      result = result.filter(a => a.student?.classes?.name === classes.find(c => c.id === selectedClass)?.name);
+      result = result.filter(
+        (a) => a.student?.classes?.name === classes.find((c) => c.id === selectedClass)?.name,
+      );
     }
     if (searchQuery) {
-      result = result.filter(a => a.student?.full_name.toLowerCase().includes(searchQuery.toLowerCase()) || a.title.toLowerCase().includes(searchQuery.toLowerCase()));
+      result = result.filter(
+        (a) =>
+          a.student?.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          a.title.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
     }
     return result;
   }, [awards, selectedClass, searchQuery, academicYear, classes]);
@@ -1455,21 +1596,22 @@ export function AchievementsPage() {
         return;
       }
 
-      const rawExamIds = classExamsData.map(e => e.id);
-      const { data: examSubjs } = await (supabase as any).from("exam_subjects")
+      const rawExamIds = classExamsData.map((e) => e.id);
+      const { data: examSubjs } = await (supabase as any)
+        .from("exam_subjects")
         .select("id, exam_id, subject_id, max_marks")
         .eq("school_id", schoolId)
         .in("exam_id", rawExamIds);
 
       const classExams: any[] = [];
       (examSubjs || []).forEach((es: any) => {
-        const exam = classExamsData.find(e => e.id === es.exam_id);
+        const exam = classExamsData.find((e) => e.id === es.exam_id);
         if (exam) {
           classExams.push({
             id: es.id,
             name: exam.name,
             max_marks: Number(es.max_marks || 100),
-            subject_id: es.subject_id
+            subject_id: es.subject_id,
           });
         }
       });
@@ -1481,7 +1623,8 @@ export function AchievementsPage() {
       }
 
       const examIds = classExams.map((e: any) => e.id);
-      const { data: classMarksData } = await (supabase as any).from("mark_entries")
+      const { data: classMarksData } = await (supabase as any)
+        .from("mark_entries")
         .select("student_id, exam_subject_id, marks_obtained")
         .eq("school_id", schoolId)
         .in("exam_subject_id", examIds);
@@ -1489,7 +1632,7 @@ export function AchievementsPage() {
       const classMarks = (classMarksData || []).map((m: any) => ({
         student_id: m.student_id,
         exam_id: m.exam_subject_id,
-        marks_obtained: m.marks_obtained
+        marks_obtained: m.marks_obtained,
       }));
 
       // 3) Fetch attendance rates for the students
@@ -1502,24 +1645,24 @@ export function AchievementsPage() {
 
       // Map attendance
       const attendanceMap = new Map<string, { present: number; total: number }>();
-      (attendanceData || []).forEach(a => {
+      (attendanceData || []).forEach((a) => {
         const stats = attendanceMap.get(a.student_id) || { present: 0, total: 0 };
         stats.total += 1;
         if (a.status === "present" || a.status === "late" || a.status === "half_day") {
-          stats.present += (a.status === "half_day" ? 0.5 : 1);
+          stats.present += a.status === "half_day" ? 0.5 : 1;
         }
         attendanceMap.set(a.student_id, stats);
       });
 
       // Calculate totals
-      const studentTotals = classStudents.map(student => {
+      const studentTotals = classStudents.map((student) => {
         const studMarks = (classMarks || []).filter((m: any) => m.student_id === student.id);
-        
+
         let totalObtained = 0;
         let totalMax = 0;
-        
+
         studMarks.forEach((sm: any) => {
-          const ex = classExams.find(e => e.id === sm.exam_id);
+          const ex = classExams.find((e) => e.id === sm.exam_id);
           if (ex) {
             totalObtained += Number(sm.marks_obtained);
             totalMax += Number(ex.max_marks);
@@ -1528,18 +1671,22 @@ export function AchievementsPage() {
 
         // Compute percentage and GPA
         const basePercentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
-        
+
         // Attendance Weightage (Optional)
         const attStats = attendanceMap.get(student.id) || { present: 0, total: 0 };
-        const attRate = attStats.total > 0 ? (attStats.present / attStats.total) : 0;
-        
+        const attRate = attStats.total > 0 ? attStats.present / attStats.total : 0;
+
         let weightedPercentage = basePercentage;
         if (attendanceWeightage > 0) {
           // Add attendance rate weightage bonus (e.g. 10% weight adds up to 10 points for 100% attendance)
-          weightedPercentage = (basePercentage * (1 - attendanceWeightage)) + (attRate * 100 * attendanceWeightage);
+          weightedPercentage =
+            basePercentage * (1 - attendanceWeightage) + attRate * 100 * attendanceWeightage;
         }
 
-        const calculatedGpa = Math.min(Math.max(Number((weightedPercentage / 10).toFixed(2)), 0.0), 10.0);
+        const calculatedGpa = Math.min(
+          Math.max(Number((weightedPercentage / 10).toFixed(2)), 0.0),
+          10.0,
+        );
 
         return {
           studentId: student.id,
@@ -1551,7 +1698,7 @@ export function AchievementsPage() {
           totalMax,
           percentage: Number(weightedPercentage.toFixed(2)),
           gpa: calculatedGpa,
-          attendanceRate: Number((attRate * 100).toFixed(1))
+          attendanceRate: Number((attRate * 100).toFixed(1)),
         };
       });
 
@@ -1561,12 +1708,22 @@ export function AchievementsPage() {
       // Save rankings & awards in database
       // Clear previous calculations for this class in this academic year
       const targetExamId = selectedExam || null;
-      const studentIdsList = classStudents.map(s => s.id);
-      
+      const studentIdsList = classStudents.map((s) => s.id);
+
       if (targetExamId) {
-        await supabase.from("rankings").delete().eq("school_id", schoolId).eq("exam_id", targetExamId).in("student_id", studentIdsList);
+        await supabase
+          .from("rankings")
+          .delete()
+          .eq("school_id", schoolId)
+          .eq("exam_id", targetExamId)
+          .in("student_id", studentIdsList);
       } else {
-        await supabase.from("rankings").delete().eq("school_id", schoolId).is("exam_id", null).in("student_id", studentIdsList);
+        await supabase
+          .from("rankings")
+          .delete()
+          .eq("school_id", schoolId)
+          .is("exam_id", null)
+          .in("student_id", studentIdsList);
       }
 
       let currentRank = 1;
@@ -1592,8 +1749,8 @@ export function AchievementsPage() {
           percentage: st.percentage,
           gpa: st.gpa,
           rank_position: rankPos,
-          rank_type: targetExamId ? 'subject' : 'class',
-          is_published: false // draft initially
+          rank_type: targetExamId ? "subject" : "class",
+          is_published: false, // draft initially
         });
       });
       await Promise.all(insRankPromises);
@@ -1601,11 +1758,20 @@ export function AchievementsPage() {
       const isCategoryEnabled = (cat: string) => enabledCategories.includes(cat);
 
       // Clear previous awards in these categories to prevent duplicates
-      await supabase.from("awards").delete()
+      await supabase
+        .from("awards")
+        .delete()
         .eq("school_id", schoolId)
         .eq("academic_year", academicYear)
         .in("student_id", studentIdsList)
-        .in("category", ["rank_1", "rank_2", "rank_3", "top_10", "attendance_topper", "discipline_award"]);
+        .in("category", [
+          "rank_1",
+          "rank_2",
+          "rank_3",
+          "top_10",
+          "attendance_topper",
+          "discipline_award",
+        ]);
 
       const issuedBy = user?.id || adminUserId;
       const parentNotifPromises = [];
@@ -1630,69 +1796,81 @@ export function AchievementsPage() {
         const category = `rank_${rank}`;
 
         if (isCategoryEnabled(category)) {
-          const titleSuffix = rank === 1 ? "First" : (rank === 2 ? "Second" : "Third");
+          const titleSuffix = rank === 1 ? "First" : rank === 2 ? "Second" : "Third";
           const awardTitle = `${titleSuffix} Rank Academic Excellence Award`;
           const awardDesc = `Awarded to ${st.fullName} for securing Rank #${rank} in Class with a cumulative score of ${st.percentage}% (GPA: ${st.gpa}) for the exam terms.`;
 
-          const { data: awardIns } = await supabase.from("awards").insert({
-            school_id: schoolId,
-            student_id: st.studentId,
-            academic_year: academicYear,
-            category,
-            title: awardTitle,
-            description: awardDesc,
-            issued_by: issuedBy,
-            is_published: false
-          }).select("id").single();
+          const { data: awardIns } = await supabase
+            .from("awards")
+            .insert({
+              school_id: schoolId,
+              student_id: st.studentId,
+              academic_year: academicYear,
+              category,
+              title: awardTitle,
+              description: awardDesc,
+              issued_by: issuedBy,
+              is_published: false,
+            })
+            .select("id")
+            .single();
 
           const awardId = awardIns?.id;
 
-          const certNo = `HZ-${academicYear.replace('-', '')}-C00${rank}-${st.rollNumber}-${Math.round(Math.random()*100)}`;
+          const certNo = `HZ-${academicYear.replace("-", "")}-C00${rank}-${st.rollNumber}-${Math.round(Math.random() * 100)}`;
           await supabase.from("certificates").insert({
             school_id: schoolId,
             student_id: st.studentId,
             award_id: awardId,
             certificate_type: `${titleSuffix} Rank Certificate`,
             certificate_number: certNo,
-            issued_date: new Date().toISOString().slice(0, 10)
+            issued_date: new Date().toISOString().slice(0, 10),
           });
 
-          const posterThemeMap: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
+          const posterThemeMap: Record<number, string> = { 1: "gold", 2: "silver", 3: "bronze" };
           await supabase.from("posters").insert({
             school_id: schoolId,
             student_id: st.studentId,
             award_id: awardId,
-            theme: posterThemeMap[rank] || 'modern'
+            theme: posterThemeMap[rank] || "modern",
           });
 
           if (st.parentUserId) {
-            parentNotifPromises.push(supabase.from("notification_logs").insert({
-              school_id: schoolId,
-              parent_user_id: st.parentUserId,
-              student_id: st.studentId,
-              award_id: awardId,
-              type: "rank",
-              title: `🏆 Rank #${rank} Calculated for ${st.fullName}`,
-              body: `Rank #${rank} has been calculated for ${st.fullName} as draft. Awaiting administrative verification before final release.`,
-              status: "sent"
-            }));
+            parentNotifPromises.push(
+              supabase.from("notification_logs").insert({
+                school_id: schoolId,
+                parent_user_id: st.parentUserId,
+                student_id: st.studentId,
+                award_id: awardId,
+                type: "rank",
+                title: `🏆 Rank #${rank} Calculated for ${st.fullName}`,
+                body: `Rank #${rank} has been calculated for ${st.fullName} as draft. Awaiting administrative verification before final release.`,
+                status: "sent",
+              }),
+            );
           }
         }
       }
 
-      if (isCategoryEnabled('attendance_topper')) {
-        const attendanceWinner = [...studentTotals].sort((a, b) => b.attendanceRate - a.attendanceRate)[0];
+      if (isCategoryEnabled("attendance_topper")) {
+        const attendanceWinner = [...studentTotals].sort(
+          (a, b) => b.attendanceRate - a.attendanceRate,
+        )[0];
         if (attendanceWinner && attendanceWinner.attendanceRate >= attendanceThreshold) {
-          const { data: attAwardIns } = await supabase.from("awards").insert({
-            school_id: schoolId,
-            student_id: attendanceWinner.studentId,
-            academic_year: academicYear,
-            category: 'attendance_topper',
-            title: 'Outstanding Attendance Championship',
-            description: `Presented to ${attendanceWinner.fullName} for maintaining an exceptional attendance rate of ${attendanceWinner.attendanceRate}% during the academic term.`,
-            issued_by: issuedBy,
-            is_published: false
-          }).select("id").single();
+          const { data: attAwardIns } = await supabase
+            .from("awards")
+            .insert({
+              school_id: schoolId,
+              student_id: attendanceWinner.studentId,
+              academic_year: academicYear,
+              category: "attendance_topper",
+              title: "Outstanding Attendance Championship",
+              description: `Presented to ${attendanceWinner.fullName} for maintaining an exceptional attendance rate of ${attendanceWinner.attendanceRate}% during the academic term.`,
+              issued_by: issuedBy,
+              is_published: false,
+            })
+            .select("id")
+            .single();
 
           const attAwardId = attAwardIns?.id;
 
@@ -1700,39 +1878,47 @@ export function AchievementsPage() {
             school_id: schoolId,
             student_id: attendanceWinner.studentId,
             award_id: attAwardId,
-            certificate_type: 'Best Attendance Certificate',
-            certificate_number: `HZ-${academicYear.replace('-', '')}-ATT-${attendanceWinner.rollNumber}`,
-            issued_date: new Date().toISOString().slice(0, 10)
+            certificate_type: "Best Attendance Certificate",
+            certificate_number: `HZ-${academicYear.replace("-", "")}-ATT-${attendanceWinner.rollNumber}`,
+            issued_date: new Date().toISOString().slice(0, 10),
           });
 
           if (attendanceWinner.parentUserId) {
-            parentNotifPromises.push(supabase.from("notification_logs").insert({
-              school_id: schoolId,
-              parent_user_id: attendanceWinner.parentUserId,
-              student_id: attendanceWinner.studentId,
-              award_id: attAwardId,
-              type: "award",
-              title: `📅 Attendance Topper: ${attendanceWinner.fullName}`,
-              body: `Attendance Champion award has been drafted for ${attendanceWinner.fullName} with a rate of ${attendanceWinner.attendanceRate}%.`,
-              status: "sent"
-            }));
+            parentNotifPromises.push(
+              supabase.from("notification_logs").insert({
+                school_id: schoolId,
+                parent_user_id: attendanceWinner.parentUserId,
+                student_id: attendanceWinner.studentId,
+                award_id: attAwardId,
+                type: "award",
+                title: `📅 Attendance Topper: ${attendanceWinner.fullName}`,
+                body: `Attendance Champion award has been drafted for ${attendanceWinner.fullName} with a rate of ${attendanceWinner.attendanceRate}%.`,
+                status: "sent",
+              }),
+            );
           }
         }
       }
 
-      if (isCategoryEnabled('discipline_award')) {
-        const disciplineWinner = studentTotals.find(s => s.fullName.toLowerCase().includes("rohan")) || studentTotals[studentTotals.length - 1];
+      if (isCategoryEnabled("discipline_award")) {
+        const disciplineWinner =
+          studentTotals.find((s) => s.fullName.toLowerCase().includes("rohan")) ||
+          studentTotals[studentTotals.length - 1];
         if (disciplineWinner) {
-          const { data: discAwardIns } = await supabase.from("awards").insert({
-            school_id: schoolId,
-            student_id: disciplineWinner.studentId,
-            academic_year: academicYear,
-            category: 'discipline_award',
-            title: 'Best Discipline & Leadership Award',
-            description: `Awarded to ${disciplineWinner.fullName} for demonstrating exemplary behavior, integrity, respect, and adherence to school codes.`,
-            issued_by: issuedBy,
-            is_published: false
-          }).select("id").single();
+          const { data: discAwardIns } = await supabase
+            .from("awards")
+            .insert({
+              school_id: schoolId,
+              student_id: disciplineWinner.studentId,
+              academic_year: academicYear,
+              category: "discipline_award",
+              title: "Best Discipline & Leadership Award",
+              description: `Awarded to ${disciplineWinner.fullName} for demonstrating exemplary behavior, integrity, respect, and adherence to school codes.`,
+              issued_by: issuedBy,
+              is_published: false,
+            })
+            .select("id")
+            .single();
 
           const discAwardId = discAwardIns?.id;
 
@@ -1740,9 +1926,9 @@ export function AchievementsPage() {
             school_id: schoolId,
             student_id: disciplineWinner.studentId,
             award_id: discAwardId,
-            certificate_type: 'Best Discipline Certificate',
-            certificate_number: `HZ-${academicYear.replace('-', '')}-DIS-${disciplineWinner.rollNumber}`,
-            issued_date: new Date().toISOString().slice(0, 10)
+            certificate_type: "Best Discipline Certificate",
+            certificate_number: `HZ-${academicYear.replace("-", "")}-DIS-${disciplineWinner.rollNumber}`,
+            issued_date: new Date().toISOString().slice(0, 10),
           });
         }
       }
@@ -1752,7 +1938,6 @@ export function AchievementsPage() {
       toast.success("Ranks calculated in draft mode! Verify and publish to release to parents.");
       triggerConfetti();
       void loadData(); // reload dashboards
-
     } catch (e: any) {
       toast.error("Calculation failed: " + e.message);
     } finally {
@@ -1775,7 +1960,7 @@ export function AchievementsPage() {
         setIsLoading(false);
         return;
       }
-      const studentIds = classStudents.map(s => s.id);
+      const studentIds = classStudents.map((s) => s.id);
 
       // Publish Rankings
       const { error: re } = await supabase
@@ -1798,15 +1983,17 @@ export function AchievementsPage() {
         const releaseNotifs = [];
         for (const st of classStudents) {
           if (st.parent_user_id) {
-            releaseNotifs.push(supabase.from("notification_logs").insert({
-              school_id: schoolId,
-              parent_user_id: st.parent_user_id,
-              student_id: st.id,
-              type: "rank",
-              title: `📢 Rankings Published for ${st.full_name}`,
-              body: `The official school rankings and certifications have been published. View child cards and download reports now.`,
-              status: "delivered"
-            }));
+            releaseNotifs.push(
+              supabase.from("notification_logs").insert({
+                school_id: schoolId,
+                parent_user_id: st.parent_user_id,
+                student_id: st.id,
+                type: "rank",
+                title: `📢 Rankings Published for ${st.full_name}`,
+                body: `The official school rankings and certifications have been published. View child cards and download reports now.`,
+                status: "delivered",
+              }),
+            );
           }
         }
         await Promise.all(releaseNotifs);
@@ -1829,11 +2016,12 @@ export function AchievementsPage() {
     }
     setIsLoading(true);
     try {
-      const { error } = await (supabase as any).from("classes")
+      const { error } = await (supabase as any)
+        .from("classes")
         .update({ class_teacher_id: allocTeacherId })
         .eq("id", allocClassId)
         .eq("school_id", schoolId);
-      
+
       if (error) {
         toast.error("Failed to assign class teacher: " + error.message);
       } else {
@@ -1854,17 +2042,18 @@ export function AchievementsPage() {
     }
     setIsLoading(true);
     try {
-      const { error } = await (supabase as any).from("teacher_allocations")
-        .insert({
-          school_id: schoolId,
-          class_id: allocClassId,
-          subject_id: allocSubjectId,
-          teacher_id: allocTeacherId
-        });
-      
+      const { error } = await (supabase as any).from("teacher_allocations").insert({
+        school_id: schoolId,
+        class_id: allocClassId,
+        subject_id: allocSubjectId,
+        teacher_id: allocTeacherId,
+      });
+
       if (error) {
-        if (error.code === "23505") { // Unique constraint violation (class_id, subject_id)
-          const { error: updErr } = await (supabase as any).from("teacher_allocations")
+        if (error.code === "23505") {
+          // Unique constraint violation (class_id, subject_id)
+          const { error: updErr } = await (supabase as any)
+            .from("teacher_allocations")
             .update({ teacher_id: allocTeacherId })
             .eq("class_id", allocClassId)
             .eq("subject_id", allocSubjectId)
@@ -1893,7 +2082,8 @@ export function AchievementsPage() {
     if (!confirm("Are you sure you want to remove this allocation?")) return;
     setIsLoading(true);
     try {
-      const { error } = await (supabase as any).from("teacher_allocations")
+      const { error } = await (supabase as any)
+        .from("teacher_allocations")
         .delete()
         .eq("id", allocId)
         .eq("school_id", schoolId!);
@@ -1912,7 +2102,7 @@ export function AchievementsPage() {
 
   // Helper internal function to seed academic data for a specific class ID
   const handleSeedMockAcademicDataInternal = async (targetClassId: string) => {
-    const classStuds = students.filter(s => s.class_id === targetClassId);
+    const classStuds = students.filter((s) => s.class_id === targetClassId);
     if (classStuds.length === 0) return;
 
     const coreSubjects = [
@@ -1922,7 +2112,7 @@ export function AchievementsPage() {
       { name: "Mathematics", code: "MAT" },
       { name: "Science", code: "SCI" },
       { name: "Social Studies", code: "SOC" },
-      { name: "Computer", code: "CMP" }
+      { name: "Computer", code: "CMP" },
     ];
 
     const { data: dbSubjects } = await supabase
@@ -1931,7 +2121,7 @@ export function AchievementsPage() {
       .eq("school_id", schoolId!);
 
     const finalSubjectsMap = new Map<string, string>();
-    (dbSubjects || []).forEach(s => {
+    (dbSubjects || []).forEach((s) => {
       finalSubjectsMap.set(s.name, s.id);
     });
 
@@ -1955,7 +2145,7 @@ export function AchievementsPage() {
       .eq("type", selectedReportCardExam)
       .is("deleted_at", null);
 
-    let generalExam = (dbExams || []).find(e => e.name === examNamePrefix);
+    let generalExam = (dbExams || []).find((e) => e.name === examNamePrefix);
     if (!generalExam) {
       const { data: newExam, error: examErr } = await supabase
         .from("exams")
@@ -1964,7 +2154,7 @@ export function AchievementsPage() {
           class_id: targetClassId,
           name: examNamePrefix,
           type: selectedReportCardExam,
-          date: new Date().toISOString().slice(0, 10)
+          date: new Date().toISOString().slice(0, 10),
         })
         .select("id")
         .single();
@@ -1975,7 +2165,8 @@ export function AchievementsPage() {
     const examId = (generalExam as any).id;
 
     // Fetch existing exam_subjects for this exam
-    const { data: dbExamSubjs } = await (supabase as any).from("exam_subjects")
+    const { data: dbExamSubjs } = await (supabase as any)
+      .from("exam_subjects")
       .select("id, subject_id")
       .eq("exam_id", examId);
 
@@ -1986,13 +2177,14 @@ export function AchievementsPage() {
 
     for (const [subjName, subjId] of finalSubjectsMap.entries()) {
       if (!examSubjMap.has(subjId)) {
-        const { data: newES, error: esErr } = await (supabase as any).from("exam_subjects")
+        const { data: newES, error: esErr } = await (supabase as any)
+          .from("exam_subjects")
           .insert({
             school_id: schoolId!,
             exam_id: examId,
             subject_id: subjId,
             max_marks: 100,
-            pass_marks: 35
+            pass_marks: 35,
           })
           .select("id")
           .single();
@@ -2002,14 +2194,17 @@ export function AchievementsPage() {
     }
 
     // Now seed mark_entries (formerly exam_marks)
-    const { data: existingMarks } = await (supabase as any).from("mark_entries")
+    const { data: existingMarks } = await (supabase as any)
+      .from("mark_entries")
       .select("student_id, exam_subject_id")
       .eq("exam_id", examId);
 
     const marksToInsert = [];
     for (const stud of classStuds) {
       for (const [subjId, esId] of examSubjMap.entries()) {
-        const hasMark = (existingMarks || []).some((m: any) => m.student_id === stud.id && m.exam_subject_id === esId);
+        const hasMark = (existingMarks || []).some(
+          (m: any) => m.student_id === stud.id && m.exam_subject_id === esId,
+        );
         if (!hasMark) {
           const obtained = Math.floor(Math.random() * 53) + 45;
           marksToInsert.push({
@@ -2018,9 +2213,24 @@ export function AchievementsPage() {
             exam_subject_id: esId,
             student_id: stud.id,
             marks_obtained: obtained,
-            grade: obtained >= 91 ? "A+" : obtained >= 81 ? "A" : obtained >= 71 ? "B+" : obtained >= 61 ? "B" : obtained >= 51 ? "C+" : obtained >= 41 ? "C" : obtained >= 35 ? "D" : "F",
+            grade:
+              obtained >= 91
+                ? "A+"
+                : obtained >= 81
+                  ? "A"
+                  : obtained >= 71
+                    ? "B+"
+                    : obtained >= 61
+                      ? "B"
+                      : obtained >= 51
+                        ? "C+"
+                        : obtained >= 41
+                          ? "C"
+                          : obtained >= 35
+                            ? "D"
+                            : "F",
             remarks: "Demo score",
-            status: "Draft"
+            status: "Draft",
           });
         }
       }
@@ -2040,9 +2250,9 @@ export function AchievementsPage() {
     setIsLoading(true);
     try {
       await handleSeedMockAcademicDataInternal(activeClassId);
-      
+
       // Ensure some Attendance data exists for this class
-      const classStuds = students.filter(s => s.class_id === activeClassId);
+      const classStuds = students.filter((s) => s.class_id === activeClassId);
       const { count: attCount } = await supabase
         .from("attendance")
         .select("id", { count: "exact", head: true })
@@ -2053,17 +2263,19 @@ export function AchievementsPage() {
         const attToInsert = [];
         const today = new Date();
         for (let dIdx = 0; dIdx < 20; dIdx++) {
-          const dateStr = new Date(today.getTime() - dIdx * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+          const dateStr = new Date(today.getTime() - dIdx * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .slice(0, 10);
           for (const stud of classStuds) {
             const roll = Math.random();
-            const status = roll < 0.90 ? "present" : (roll < 0.95 ? "late" : "absent");
+            const status = roll < 0.9 ? "present" : roll < 0.95 ? "late" : "absent";
             attToInsert.push({
               school_id: schoolId,
               class_id: activeClassId,
               student_id: stud.id,
               date: dateStr,
               status: status,
-              marked_by: user?.id || adminUserId
+              marked_by: user?.id || adminUserId,
             });
           }
         }
@@ -2077,13 +2289,14 @@ export function AchievementsPage() {
         .eq("school_id", schoolId);
 
       if ((remCount || 0) === 0) {
-        const remsToInsert = classStuds.map(stud => ({
+        const remsToInsert = classStuds.map((stud) => ({
           school_id: schoolId,
           student_id: stud.id,
           teacher_id: user?.id || adminUserId,
           category: "academic",
-          content: "Exhibits excellent learning interest, participates actively in team projects, and shows consistent progress.",
-          visible_to_parent: true
+          content:
+            "Exhibits excellent learning interest, participates actively in team projects, and shows consistent progress.",
+          visible_to_parent: true,
         }));
         await (supabase as any).from("remarks").insert(remsToInsert as any);
       }
@@ -2099,14 +2312,17 @@ export function AchievementsPage() {
 
   // Helper internal function to generate report cards for a specific class ID
   const handleGenerateClassReportCardsInternal = async (targetClassId: string) => {
-    const classStuds = students.filter(s => s.class_id === targetClassId);
+    const classStuds = students.filter((s) => s.class_id === targetClassId);
     if (classStuds.length === 0) return;
 
-    const classExams = exams.filter(e => e.class_id === targetClassId && e.type === selectedReportCardExam);
+    const classExams = exams.filter(
+      (e) => e.class_id === targetClassId && e.type === selectedReportCardExam,
+    );
     if (classExams.length === 0) return;
 
     const examIds = classExams.map((e: any) => e.id);
-    const { data: dbMarksData } = await (supabase as any).from("mark_entries")
+    const { data: dbMarksData } = await (supabase as any)
+      .from("mark_entries")
       .select("student_id, exam_subject_id, marks_obtained")
       .eq("school_id", schoolId!)
       .in("exam_subject_id", examIds);
@@ -2114,7 +2330,7 @@ export function AchievementsPage() {
     const dbMarks = (dbMarksData || []).map((m: any) => ({
       student_id: m.student_id,
       exam_id: m.exam_subject_id,
-      marks_obtained: m.marks_obtained
+      marks_obtained: m.marks_obtained,
     }));
 
     const { data: dbAttendance } = await supabase
@@ -2128,35 +2344,35 @@ export function AchievementsPage() {
       .select("student_id, content")
       .eq("school_id", schoolId!);
 
-    const studentMetrics = classStuds.map(stud => {
+    const studentMetrics = classStuds.map((stud) => {
       const studMarks = (dbMarks || []).filter((m: any) => m.student_id === stud.id);
       let totalObtained = 0;
       let totalMax = 0;
-      
-      const subjectMarks = classExams.map(ex => {
+
+      const subjectMarks = classExams.map((ex) => {
         const markObj = studMarks.find((m: any) => m.exam_id === ex.id);
         const obtained = markObj ? Number(markObj.marks_obtained) : 0;
         const max = Number(ex.max_marks);
         totalObtained += obtained;
         totalMax += max;
-        
+
         const pct = max > 0 ? (obtained / max) * 100 : 0;
         const grade = getGradeFromPercentage(pct);
-        
-        const subjObj = subjects.find(s => s.id === ex.subject_id);
+
+        const subjObj = subjects.find((s) => s.id === ex.subject_id);
         return {
           subject_id: ex.subject_id,
           subject_name: subjObj?.name || "Subject",
           max_marks: max,
           obtained_marks: obtained,
           grade: grade,
-          remarks: pct >= 80 ? "Excellent" : (pct >= 60 ? "Good" : "Needs Improvement")
+          remarks: pct >= 80 ? "Excellent" : pct >= 60 ? "Good" : "Needs Improvement",
         };
       });
 
       const overallPercentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
       let resultStatus = "Pass";
-      const hasFailedSubject = subjectMarks.some(sm => sm.grade === "F");
+      const hasFailedSubject = subjectMarks.some((sm) => sm.grade === "F");
       if (overallPercentage < 35 || hasFailedSubject) {
         resultStatus = "Fail";
       } else if (overallPercentage >= 85) {
@@ -2167,24 +2383,33 @@ export function AchievementsPage() {
         resultStatus = "First Class";
       }
 
-      const studAtt = (dbAttendance || []).filter(a => a.student_id === stud.id);
+      const studAtt = (dbAttendance || []).filter((a) => a.student_id === stud.id);
       const totalWorkingDays = rcWorkingDays || 220;
       let presentCount = 0;
-      studAtt.forEach(a => {
+      studAtt.forEach((a) => {
         if (a.status === "present" || a.status === "late") presentCount++;
         else if (a.status === "half_day") presentCount += 0.5;
       });
-      
+
       if (studAtt.length === 0) {
         presentCount = Math.floor(totalWorkingDays * (0.85 + Math.random() * 0.12));
       }
-      
-      const absentCount = totalWorkingDays - presentCount;
-      const attendancePercentage = totalWorkingDays > 0 ? (presentCount / totalWorkingDays) * 100 : 0;
 
-      const studRem = (dbRemarks || []).filter(r => r.student_id === stud.id);
-      const classTeacherRemarks = studRem.length > 0 ? studRem[0].content : "Demonstrates strong performance in core subjects. Active and positive contributor to class discussions.";
-      const principalRemarks = overallPercentage >= 80 ? "Outstanding term performance. Keep up the excellent work!" : (overallPercentage >= 50 ? "Satisfactory progress. Continued efforts will yield higher achievements." : "Needs personal guidance and focused study sessions.");
+      const absentCount = totalWorkingDays - presentCount;
+      const attendancePercentage =
+        totalWorkingDays > 0 ? (presentCount / totalWorkingDays) * 100 : 0;
+
+      const studRem = (dbRemarks || []).filter((r) => r.student_id === stud.id);
+      const classTeacherRemarks =
+        studRem.length > 0
+          ? studRem[0].content
+          : "Demonstrates strong performance in core subjects. Active and positive contributor to class discussions.";
+      const principalRemarks =
+        overallPercentage >= 80
+          ? "Outstanding term performance. Keep up the excellent work!"
+          : overallPercentage >= 50
+            ? "Satisfactory progress. Continued efforts will yield higher achievements."
+            : "Needs personal guidance and focused study sessions.";
 
       return {
         student_id: stud.id,
@@ -2201,7 +2426,7 @@ export function AchievementsPage() {
         attendance_percentage: Number(attendancePercentage.toFixed(2)),
         subject_marks: subjectMarks,
         class_teacher_remarks: classTeacherRemarks,
-        principal_remarks: principalRemarks
+        principal_remarks: principalRemarks,
       };
     });
 
@@ -2225,7 +2450,6 @@ export function AchievementsPage() {
       const sectionRank = rankPos;
       const schoolRank = rankPos;
 
-
       const payload = {
         school_id: schoolId!,
         student_id: sm.student_id,
@@ -2247,25 +2471,26 @@ export function AchievementsPage() {
         class_teacher_remarks: sm.class_teacher_remarks,
         principal_remarks: sm.principal_remarks,
         status: "draft",
-        created_by: user?.id || adminUserId
+        created_by: user?.id || adminUserId,
       };
 
-      const existingRc = reportCards.find(rc => 
-        rc.student_id === sm.student_id && 
-        rc.exam_type === sm.exam_type && 
-        rc.academic_year === sm.academic_year
+      const existingRc = reportCards.find(
+        (rc) =>
+          rc.student_id === sm.student_id &&
+          rc.exam_type === sm.exam_type &&
+          rc.academic_year === sm.academic_year,
       );
 
       if (existingRc) {
-        void logAuditAction(sm.student_id, existingRc.id, 'Edited');
-        return (supabase as any).from("report_cards")
+        void logAuditAction(sm.student_id, existingRc.id, "Edited");
+        return (supabase as any)
+          .from("report_cards")
           .update(payload)
           .eq("id", existingRc.id)
           .eq("school_id", schoolId!);
       } else {
-        void logAuditAction(sm.student_id, null, 'Created');
-        return (supabase as any).from("report_cards")
-          .insert(payload);
+        void logAuditAction(sm.student_id, null, "Created");
+        return (supabase as any).from("report_cards").insert(payload);
       }
     });
 
@@ -2280,20 +2505,29 @@ export function AchievementsPage() {
     }
     setIsLoading(true);
     try {
-      const classStuds = students.filter(s => s.class_id === activeClassId);
+      const classStuds = students.filter((s) => s.class_id === activeClassId);
       if (classStuds.length === 0) {
         toast.error("No students found in this class");
         setIsLoading(false);
         return;
       }
 
-      const classExams = exams.filter(e => e.class_id === activeClassId && e.type === selectedReportCardExam);
+      const classExams = exams.filter(
+        (e) => e.class_id === activeClassId && e.type === selectedReportCardExam,
+      );
       if (classExams.length === 0) {
         toast.info("No exams found for this term. Automatically seeding mock exams & marks...");
         await handleSeedMockAcademicDataInternal(activeClassId);
-        const { data: updatedEx } = await supabase.from("exams").select("*").eq("school_id", schoolId).is("deleted_at", null);
+        const { data: updatedEx } = await supabase
+          .from("exams")
+          .select("*")
+          .eq("school_id", schoolId)
+          .is("deleted_at", null);
         setExams(updatedEx || []);
-        const { data: updatedMk } = await (supabase as any).from("mark_entries").select("*").eq("school_id", schoolId);
+        const { data: updatedMk } = await (supabase as any)
+          .from("mark_entries")
+          .select("*")
+          .eq("school_id", schoolId);
         setMarks(updatedMk || []);
       }
 
@@ -2318,17 +2552,26 @@ export function AchievementsPage() {
     try {
       toast.info("Generating report cards for all classes in school...");
       for (const cls of classes) {
-        const classStuds = students.filter(s => s.class_id === cls.id);
+        const classStuds = students.filter((s) => s.class_id === cls.id);
         if (classStuds.length === 0) continue;
 
-        const classEx = exams.filter((e: any) => e.class_id === cls.id && e.type === selectedReportCardExam);
+        const classEx = exams.filter(
+          (e: any) => e.class_id === cls.id && e.type === selectedReportCardExam,
+        );
         if (classEx.length === 0) {
           await handleSeedMockAcademicDataInternal(cls.id);
         }
-        
-        const { data: updatedEx } = await supabase.from("exams").select("*").eq("school_id", schoolId).is("deleted_at", null);
+
+        const { data: updatedEx } = await supabase
+          .from("exams")
+          .select("*")
+          .eq("school_id", schoolId)
+          .is("deleted_at", null);
         setExams(updatedEx || []);
-        const { data: updatedMk } = await (supabase as any).from("mark_entries").select("*").eq("school_id", schoolId);
+        const { data: updatedMk } = await (supabase as any)
+          .from("mark_entries")
+          .select("*")
+          .eq("school_id", schoolId);
         setMarks(updatedMk || []);
 
         await handleGenerateClassReportCardsInternal(cls.id);
@@ -2347,7 +2590,8 @@ export function AchievementsPage() {
     if (!schoolId || !activeClassId) return;
     setIsLoading(true);
     try {
-      const { data: updatedRc, error: rcErr } = await (supabase as any).from("report_cards")
+      const { data: updatedRc, error: rcErr } = await (supabase as any)
+        .from("report_cards")
         .update({ status: "published" })
         .eq("school_id", schoolId)
         .eq("class_id", activeClassId)
@@ -2363,7 +2607,7 @@ export function AchievementsPage() {
       }
 
       const notifPromises = updatedRc.map((rc: any) => {
-        const studentObj = students.find(s => s.id === rc.student_id);
+        const studentObj = students.find((s) => s.id === rc.student_id);
         if (studentObj && studentObj.parent_user_id) {
           return supabase.from("notification_logs").insert({
             school_id: schoolId,
@@ -2372,17 +2616,17 @@ export function AchievementsPage() {
             type: "report_card",
             title: `📢 Report Card Published for ${studentObj.full_name}`,
             body: `Dear Parent, ${studentObj.full_name}'s Term Report Card is now available. Percentage: ${rc.percentage}% | Rank: ${rc.class_rank}. View or download the PDF in the app.`,
-            status: "delivered"
+            status: "delivered",
           });
         }
         return Promise.resolve();
       });
 
       await Promise.all(notifPromises);
-      
+
       const issuedBy = user?.id || adminUserId;
       const famePromises = updatedRc.map(async (rc: any) => {
-        const studentObj = students.find(s => s.id === rc.student_id);
+        const studentObj = students.find((s) => s.id === rc.student_id);
         if (!studentObj) return;
 
         if (rc.class_rank === 1) {
@@ -2394,7 +2638,7 @@ export function AchievementsPage() {
             title: `First Rank - ${selectedReportCardExam} Academic Excellence`,
             description: `Awarded to ${studentObj.full_name} for securing Rank #1 in Class with a cumulative score of ${rc.percentage}% in ${selectedReportCardExam}.`,
             issued_by: issuedBy,
-            is_published: true
+            is_published: true,
           });
         }
         if (rc.percentage >= 90) {
@@ -2406,7 +2650,7 @@ export function AchievementsPage() {
             title: `Academic Star Distinction`,
             description: `Recognized for outstanding academic achievement by scoring ${rc.percentage}% in ${selectedReportCardExam}.`,
             issued_by: issuedBy,
-            is_published: true
+            is_published: true,
           });
         }
       });
@@ -2423,14 +2667,22 @@ export function AchievementsPage() {
 
   const getReportCardDataFromCard = (card: any) => {
     if (!card) return null;
-    const subjectsMarks = Array.isArray(card.subject_marks) 
+    const subjectsMarks = Array.isArray(card.subject_marks)
       ? card.subject_marks.map((sm: any) => ({
           subjectName: sm.subject_name || sm.subjectName || "Subject",
           obtained: sm.obtained_marks ?? sm.obtained ?? 0,
           max: sm.max_marks ?? sm.max ?? 100,
-          percentage: sm.max_marks > 0 ? Number((((sm.obtained_marks ?? sm.obtained ?? 0) / (sm.max_marks ?? sm.max ?? 100)) * 100).toFixed(1)) : 0,
+          percentage:
+            sm.max_marks > 0
+              ? Number(
+                  (
+                    ((sm.obtained_marks ?? sm.obtained ?? 0) / (sm.max_marks ?? sm.max ?? 100)) *
+                    100
+                  ).toFixed(1),
+                )
+              : 0,
           grade: sm.grade || "—",
-          remarks: sm.remarks || "—"
+          remarks: sm.remarks || "—",
         }))
       : [];
 
@@ -2453,45 +2705,46 @@ export function AchievementsPage() {
 
   const handleDownloadSinglePDF = async (student: StudentRow) => {
     const card = reportCards.find(
-      rc => rc.student_id === student.id && 
-      rc.exam_type === selectedReportCardExam && 
-      rc.academic_year === academicYear
+      (rc) =>
+        rc.student_id === student.id &&
+        rc.exam_type === selectedReportCardExam &&
+        rc.academic_year === academicYear,
     );
     if (!card) {
       toast.error("No report card generated for this student.");
       return;
     }
-    
+
     toast.info(`Generating PDF for ${student.full_name}...`);
-    
+
     try {
       setHiddenRenderStudent(student);
       setHiddenRenderData(getReportCardDataFromCard(card));
-      
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       const element = document.getElementById("hidden-report-card-print-area");
       if (!element) {
         toast.error("Hidden PDF renderer failed to initialize.");
         return;
       }
-      
+
       const canvas = await safeHtml2Canvas(element, { scale: 3, useCORS: true });
       const imgData = canvas.toDataURL("image/png");
-      
+
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
-        format: "a4"
+        format: "a4",
       });
-      
+
       const imgWidth = 210;
       const pageHeight = 297;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
+
       pdf.addImage(imgData, "PNG", 0, 0, imgWidth, Math.min(imgHeight, pageHeight));
       pdf.save(`${student.full_name}_Report_Card_${selectedReportCardExam}.pdf`);
-      
+
       toast.success("PDF downloaded successfully!");
     } catch (err: any) {
       console.error(err);
@@ -2504,52 +2757,57 @@ export function AchievementsPage() {
 
   const handleDownloadCombinedClassPDF = async () => {
     const activeClassId = selectedReportCardClass || selectedClass;
-    const classRcs = reportCards.filter(r => r.class_id === activeClassId && r.exam_type === selectedReportCardExam && r.academic_year === academicYear);
+    const classRcs = reportCards.filter(
+      (r) =>
+        r.class_id === activeClassId &&
+        r.exam_type === selectedReportCardExam &&
+        r.academic_year === academicYear,
+    );
     if (classRcs.length === 0) {
       toast.error("No report cards available for this class.");
       return;
     }
-    
-    const className = classes.find(c => c.id === activeClassId)?.name || "Class";
+
+    const className = classes.find((c) => c.id === activeClassId)?.name || "Class";
     toast.info(`Compiling combined PDF for ${classRcs.length} students in ${className}...`);
-    
+
     try {
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
-        format: "a4"
+        format: "a4",
       });
-      
+
       let pagesAdded = 0;
-      
+
       for (let i = 0; i < classRcs.length; i++) {
         const rc = classRcs[i];
-        const stud = students.find(s => s.id === rc.student_id);
+        const stud = students.find((s) => s.id === rc.student_id);
         if (!stud) continue;
-        
+
         setHiddenRenderStudent(stud);
         setHiddenRenderData(getReportCardDataFromCard(rc));
-        
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
+
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
         const element = document.getElementById("hidden-report-card-print-area");
         if (element) {
           const canvas = await safeHtml2Canvas(element, { scale: 2, useCORS: true });
           const imgData = canvas.toDataURL("image/png");
-          
+
           if (pagesAdded > 0) {
             pdf.addPage();
           }
-          
+
           const imgWidth = 210;
           const pageHeight = 297;
           const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          
+
           pdf.addImage(imgData, "PNG", 0, 0, imgWidth, Math.min(imgHeight, pageHeight));
           pagesAdded++;
         }
       }
-      
+
       if (pagesAdded > 0) {
         pdf.save(`${className}_Combined_Report_Cards_${selectedReportCardExam}.pdf`);
         toast.success(`Successfully downloaded combined PDF with ${pagesAdded} pages!`);
@@ -2567,53 +2825,58 @@ export function AchievementsPage() {
 
   const handleDownloadClassZIP = async () => {
     const activeClassId = selectedReportCardClass || selectedClass;
-    const classRcs = reportCards.filter(r => r.class_id === activeClassId && r.exam_type === selectedReportCardExam && r.academic_year === academicYear);
+    const classRcs = reportCards.filter(
+      (r) =>
+        r.class_id === activeClassId &&
+        r.exam_type === selectedReportCardExam &&
+        r.academic_year === academicYear,
+    );
     if (classRcs.length === 0) {
       toast.error("No report cards available for this class.");
       return;
     }
-    
-    const className = classes.find(c => c.id === activeClassId)?.name || "Class";
+
+    const className = classes.find((c) => c.id === activeClassId)?.name || "Class";
     toast.info(`Preparing ZIP archive of individual PDFs for ${classRcs.length} students...`);
-    
+
     try {
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
       let filesAdded = 0;
-      
+
       for (let i = 0; i < classRcs.length; i++) {
         const rc = classRcs[i];
-        const stud = students.find(s => s.id === rc.student_id);
+        const stud = students.find((s) => s.id === rc.student_id);
         if (!stud) continue;
-        
+
         setHiddenRenderStudent(stud);
         setHiddenRenderData(getReportCardDataFromCard(rc));
-        
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
+
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
         const element = document.getElementById("hidden-report-card-print-area");
         if (element) {
           const canvas = await safeHtml2Canvas(element, { scale: 2, useCORS: true });
           const imgData = canvas.toDataURL("image/png");
-          
+
           const pdf = new jsPDF({
             orientation: "portrait",
             unit: "mm",
-            format: "a4"
+            format: "a4",
           });
-          
+
           const imgWidth = 210;
           const pageHeight = 297;
           const imgHeight = (canvas.height * imgWidth) / canvas.width;
           pdf.addImage(imgData, "PNG", 0, 0, imgWidth, Math.min(imgHeight, pageHeight));
-          
+
           const pdfBlob = pdf.output("blob");
           const safeName = stud.full_name.replace(/[^a-zA-Z0-9]/g, "_");
           zip.file(`${safeName}_Report_Card_${selectedReportCardExam}.pdf`, pdfBlob);
           filesAdded++;
         }
       }
-      
+
       if (filesAdded > 0) {
         const zipBlob = await zip.generateAsync({ type: "blob" });
         const link = document.createElement("a");
@@ -2640,38 +2903,40 @@ export function AchievementsPage() {
       elementId: "achievement-poster-export",
       found: !!element,
       theme: posterTheme,
-      format: posterSize
+      format: posterSize,
     });
 
     if (!element) {
       toast.error("Poster container element not found.");
       return;
     }
-    
+
     toast.info("Generating your high-resolution poster. Please wait...");
-    
+
     safeHtml2Canvas(element, {
       scale: 3, // Premium quality (resulting in exact requested dimensions)
       useCORS: true,
       backgroundColor: null,
       logging: false,
-    }).then(canvas => {
-      const imgData = canvas.toDataURL("image/png");
-      
-      // Diagnostics check 4
-      console.log("POSTER EXPORT DIAGNOSTICS: PNG generated successfully.");
+    })
+      .then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
 
-      const link = document.createElement("a");
-      link.href = imgData;
-      link.download = `${selectedStudentForPoster?.full_name || "achievement"}_poster_${posterSize}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success("Poster downloaded successfully!");
-    }).catch(e => {
-      console.error("POSTER EXPORT DIAGNOSTICS: Export failed:", e);
-      toast.error("Failed to generate poster: " + e.message);
-    });
+        // Diagnostics check 4
+        console.log("POSTER EXPORT DIAGNOSTICS: PNG generated successfully.");
+
+        const link = document.createElement("a");
+        link.href = imgData;
+        link.download = `${selectedStudentForPoster?.full_name || "achievement"}_poster_${posterSize}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Poster downloaded successfully!");
+      })
+      .catch((e) => {
+        console.error("POSTER EXPORT DIAGNOSTICS: Export failed:", e);
+        toast.error("Failed to generate poster: " + e.message);
+      });
   };
 
   // Certificate download engine via html2canvas and jsPDF
@@ -2700,68 +2965,72 @@ export function AchievementsPage() {
       useCORS: true,
       backgroundColor: "#ffffff",
       logging: false,
-    }).then(canvas => {
-      console.log("Canvas generation success:", {
-        width: canvas.width,
-        height: canvas.height,
+    })
+      .then((canvas) => {
+        console.log("Canvas generation success:", {
+          width: canvas.width,
+          height: canvas.height,
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+        // Create landscape standard A4 PDF (dimensions in pt: 841.89 x 595.28)
+        const pdf = new jsPDF({
+          orientation: "landscape",
+          unit: "pt",
+          format: "a4",
+        });
+
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+
+        // Calculate aspect ratio to fit the page
+        const canvasRatio = canvas.width / canvas.height;
+        const pageRatio = pdfWidth / pdfHeight;
+
+        let imgWidth = pdfWidth;
+        let imgHeight = pdfHeight;
+        let x = 0;
+        let y = 0;
+
+        if (canvasRatio > pageRatio) {
+          // Canvas is wider than standard page ratio
+          imgHeight = pdfWidth / canvasRatio;
+          y = (pdfHeight - imgHeight) / 2;
+        } else {
+          // Canvas is taller than standard page ratio
+          imgWidth = pdfHeight * canvasRatio;
+          x = (pdfWidth - imgWidth) / 2;
+        }
+
+        pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
+        pdf.save(`${selectedStudentForCert?.full_name || "student"}_certificate.pdf`);
+        console.log("PDF generation success");
+        toast.success("Certificate PDF downloaded successfully!");
+      })
+      .catch((e) => {
+        console.error("PDF generation failed:", e);
+        toast.error("Failed to generate certificate: " + e.message);
       });
-
-      const imgData = canvas.toDataURL("image/png");
-      // Create landscape standard A4 PDF (dimensions in pt: 841.89 x 595.28)
-      const pdf = new jsPDF({
-        orientation: "landscape",
-        unit: "pt",
-        format: "a4"
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      // Calculate aspect ratio to fit the page
-      const canvasRatio = canvas.width / canvas.height;
-      const pageRatio = pdfWidth / pdfHeight;
-
-      let imgWidth = pdfWidth;
-      let imgHeight = pdfHeight;
-      let x = 0;
-      let y = 0;
-
-      if (canvasRatio > pageRatio) {
-        // Canvas is wider than standard page ratio
-        imgHeight = pdfWidth / canvasRatio;
-        y = (pdfHeight - imgHeight) / 2;
-      } else {
-        // Canvas is taller than standard page ratio
-        imgWidth = pdfHeight * canvasRatio;
-        x = (pdfWidth - imgWidth) / 2;
-      }
-
-      pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
-      pdf.save(`${selectedStudentForCert?.full_name || "student"}_certificate.pdf`);
-      console.log("PDF generation success");
-      toast.success("Certificate PDF downloaded successfully!");
-    }).catch(e => {
-      console.error("PDF generation failed:", e);
-      toast.error("Failed to generate certificate: " + e.message);
-    });
   };
 
   // Analytics datasets
   const classAveragesData = useMemo(() => {
     // Collect averages across exams for the selected class
     if (!selectedClass) return [];
-    
-    const classEx = exams.filter(e => e.class_id === selectedClass);
-    const examAves = classEx.map(ex => {
-      const exMarks = marks.filter(m => m.exam_id === ex.id);
-      const sum = exMarks.reduce((acc, curr) => acc + Number(curr.marks_obtained), 0);
-      const avg = exMarks.length > 0 ? (sum / exMarks.length) : 0;
-      const pct = ex.max_marks > 0 ? (avg / ex.max_marks) * 100 : 0;
-      return {
-        name: ex.name.split(" - ")[0], // Short name
-        "Class Average %": Number(pct.toFixed(1)),
-      };
-    }).reverse();
+
+    const classEx = exams.filter((e) => e.class_id === selectedClass);
+    const examAves = classEx
+      .map((ex) => {
+        const exMarks = marks.filter((m) => m.exam_id === ex.id);
+        const sum = exMarks.reduce((acc, curr) => acc + Number(curr.marks_obtained), 0);
+        const avg = exMarks.length > 0 ? sum / exMarks.length : 0;
+        const pct = ex.max_marks > 0 ? (avg / ex.max_marks) * 100 : 0;
+        return {
+          name: ex.name.split(" - ")[0], // Short name
+          "Class Average %": Number(pct.toFixed(1)),
+        };
+      })
+      .reverse();
     return examAves;
   }, [exams, marks, selectedClass]);
 
@@ -2771,10 +3040,10 @@ export function AchievementsPage() {
       { range: "80-89% (A)", count: 0 },
       { range: "70-79% (B)", count: 0 },
       { range: "60-69% (C)", count: 0 },
-      { range: "Below 60% (D/F)", count: 0 }
+      { range: "Below 60% (D/F)", count: 0 },
     ];
 
-    filteredRankings.forEach(r => {
+    filteredRankings.forEach((r) => {
       const pct = Number(r.percentage);
       if (pct >= 90) result[0].count += 1;
       else if (pct >= 80) result[1].count += 1;
@@ -2787,33 +3056,37 @@ export function AchievementsPage() {
   }, [filteredRankings]);
 
   const classWisePerformanceData = useMemo(() => {
-    return classes.map(c => {
-      const classRcs = reportCards.filter(rc => rc.class_id === c.id && rc.exam_type === selectedReportCardExam);
-      const avgPct = classRcs.length > 0
-        ? classRcs.reduce((acc, curr) => acc + Number(curr.percentage), 0) / classRcs.length
-        : 0;
+    return classes.map((c) => {
+      const classRcs = reportCards.filter(
+        (rc) => rc.class_id === c.id && rc.exam_type === selectedReportCardExam,
+      );
+      const avgPct =
+        classRcs.length > 0
+          ? classRcs.reduce((acc, curr) => acc + Number(curr.percentage), 0) / classRcs.length
+          : 0;
       return {
         name: c.name,
-        "Average Score %": Number(avgPct.toFixed(1))
+        "Average Score %": Number(avgPct.toFixed(1)),
       };
     });
   }, [classes, reportCards, selectedReportCardExam]);
 
   const subjectWisePerformanceData = useMemo(() => {
     const subjectAverages: Record<string, { total: number; count: number }> = {};
-    subjects.forEach(s => {
+    subjects.forEach((s) => {
       subjectAverages[s.name] = { total: 0, count: 0 };
     });
 
-    reportCards.filter(rc => !selectedReportCardClass || rc.class_id === selectedReportCardClass)
-      .forEach(rc => {
+    reportCards
+      .filter((rc) => !selectedReportCardClass || rc.class_id === selectedReportCardClass)
+      .forEach((rc) => {
         if (Array.isArray(rc.subject_marks)) {
           rc.subject_marks.forEach((sm: any) => {
             const name = sm.subject_name || sm.subjectName;
             const obtained = sm.obtained_marks ?? sm.obtained ?? 0;
             const max = sm.max_marks ?? sm.max ?? 100;
             const pct = max > 0 ? (obtained / max) * 100 : 0;
-            
+
             if (name) {
               if (!subjectAverages[name]) {
                 subjectAverages[name] = { total: 0, count: 0 };
@@ -2829,21 +3102,22 @@ export function AchievementsPage() {
       .filter(([_, data]) => data.count > 0)
       .map(([name, data]) => ({
         name,
-        "Average %": Number((data.total / data.count).toFixed(1))
+        "Average %": Number((data.total / data.count).toFixed(1)),
       }));
   }, [subjects, reportCards, selectedReportCardClass]);
 
   const monthlyProgressData = useMemo(() => {
     const monthMap: Record<string, { total: number; count: number }> = {};
-    
-    exams.forEach(ex => {
+
+    exams.forEach((ex) => {
       if (ex.date) {
         const date = new Date(ex.date);
-        const monthName = date.toLocaleDateString(undefined, { month: 'short' });
-        const exMarks = marks.filter(m => m.exam_id === ex.id);
-        
-        exMarks.forEach(m => {
-          const pct = ex.max_marks > 0 ? (Number(m.marks_obtained) / Number(ex.max_marks)) * 100 : 0;
+        const monthName = date.toLocaleDateString(undefined, { month: "short" });
+        const exMarks = marks.filter((m) => m.exam_id === ex.id);
+
+        exMarks.forEach((m) => {
+          const pct =
+            ex.max_marks > 0 ? (Number(m.marks_obtained) / Number(ex.max_marks)) * 100 : 0;
           if (!monthMap[monthName]) {
             monthMap[monthName] = { total: 0, count: 0 };
           }
@@ -2853,21 +3127,38 @@ export function AchievementsPage() {
       }
     });
 
-    const monthsOrder = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthsOrder = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     return Object.entries(monthMap)
       .sort((a, b) => monthsOrder.indexOf(a[0]) - monthsOrder.indexOf(b[0]))
       .map(([name, data]) => ({
         name,
-        "Class Average %": Number((data.total / data.count).toFixed(1))
+        "Class Average %": Number((data.total / data.count).toFixed(1)),
       }));
   }, [exams, marks]);
 
   const passFailAnalyticsData = useMemo(() => {
     let passCount = 0;
     let failCount = 0;
-    
-    const relevantRcs = reportCards.filter(rc => (!selectedReportCardClass || rc.class_id === selectedReportCardClass) && rc.exam_type === selectedReportCardExam);
-    relevantRcs.forEach(rc => {
+
+    const relevantRcs = reportCards.filter(
+      (rc) =>
+        (!selectedReportCardClass || rc.class_id === selectedReportCardClass) &&
+        rc.exam_type === selectedReportCardExam,
+    );
+    relevantRcs.forEach((rc) => {
       if (rc.result_status === "Fail") {
         failCount++;
       } else {
@@ -2877,21 +3168,22 @@ export function AchievementsPage() {
 
     return [
       { name: "Pass", value: passCount, color: "#10b981" },
-      { name: "Fail", value: failCount, color: "#ef4444" }
+      { name: "Fail", value: failCount, color: "#ef4444" },
     ];
   }, [reportCards, selectedReportCardClass, selectedReportCardExam]);
 
   const teacherPerformanceData = useMemo(() => {
     const teacherScores: Record<string, { total: number; count: number }> = {};
-    
-    reportCards.filter(rc => !selectedReportCardClass || rc.class_id === selectedReportCardClass)
-      .forEach(rc => {
+
+    reportCards
+      .filter((rc) => !selectedReportCardClass || rc.class_id === selectedReportCardClass)
+      .forEach((rc) => {
         if (Array.isArray(rc.subject_marks)) {
           rc.subject_marks.forEach((sm: any) => {
             const subjectName = sm.subject_name || sm.subjectName || "General";
             const teacherName = `${subjectName} Teacher`;
             const pct = sm.max_marks > 0 ? (sm.obtained_marks / sm.max_marks) * 100 : 0;
-            
+
             if (!teacherScores[teacherName]) {
               teacherScores[teacherName] = { total: 0, count: 0 };
             }
@@ -2903,19 +3195,25 @@ export function AchievementsPage() {
 
     return Object.entries(teacherScores).map(([name, data]) => ({
       name,
-      "Performance Index": Number((data.total / data.count).toFixed(1))
+      "Performance Index": Number((data.total / data.count).toFixed(1)),
     }));
   }, [reportCards, selectedReportCardClass]);
 
   const dashboardTopPerformers = useMemo(() => {
-    const relevantRcs = reportCards.filter(rc => (!selectedReportCardClass || rc.class_id === selectedReportCardClass) && rc.exam_type === selectedReportCardExam);
-    return [...relevantRcs]
-      .sort((a, b) => b.percentage - a.percentage)
-      .slice(0, 5);
+    const relevantRcs = reportCards.filter(
+      (rc) =>
+        (!selectedReportCardClass || rc.class_id === selectedReportCardClass) &&
+        rc.exam_type === selectedReportCardExam,
+    );
+    return [...relevantRcs].sort((a, b) => b.percentage - a.percentage).slice(0, 5);
   }, [reportCards, selectedReportCardClass, selectedReportCardExam]);
 
   const dashboardAttendanceChampions = useMemo(() => {
-    const relevantRcs = reportCards.filter(rc => (!selectedReportCardClass || rc.class_id === selectedReportCardClass) && rc.exam_type === selectedReportCardExam);
+    const relevantRcs = reportCards.filter(
+      (rc) =>
+        (!selectedReportCardClass || rc.class_id === selectedReportCardClass) &&
+        rc.exam_type === selectedReportCardExam,
+    );
     return [...relevantRcs]
       .sort((a, b) => b.attendance_percentage - a.attendance_percentage)
       .slice(0, 5);
@@ -2924,15 +3222,15 @@ export function AchievementsPage() {
   // Export tables to CSV
   const exportToCSV = (dataset: any[], filename: string) => {
     if (dataset.length === 0) return toast.error("No data to export");
-    
+
     const headers = Object.keys(dataset[0]);
     const csvRows = [
-      headers.join(','),
-      ...dataset.map(row => 
-        headers.map(fieldName => JSON.stringify(row[fieldName] || '')).join(',')
-      )
+      headers.join(","),
+      ...dataset.map((row) =>
+        headers.map((fieldName) => JSON.stringify(row[fieldName] || "")).join(","),
+      ),
     ];
-    
+
     const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -2954,17 +3252,24 @@ export function AchievementsPage() {
   }, [filteredRankings]);
 
   // Filter components based on Simulated Role permissions
-  const isAdminOrTeacher = simulatedRole === "admin" || simulatedRole === "super_admin" || simulatedRole === "principal" || simulatedRole === "teacher";
-  const isPrincipal = simulatedRole === "principal" || simulatedRole === "admin" || simulatedRole === "super_admin";
+  const isAdminOrTeacher =
+    simulatedRole === "admin" ||
+    simulatedRole === "super_admin" ||
+    simulatedRole === "principal" ||
+    simulatedRole === "teacher";
+  const isPrincipal =
+    simulatedRole === "principal" || simulatedRole === "admin" || simulatedRole === "super_admin";
   const isParent = simulatedRole === "parent";
   const isStudent = simulatedRole === "student";
 
   // Simulate active parent profile linked children
   const parentChildren = useMemo(() => {
-    return students.filter(s => s.parent_user_id === parentUserId);
+    return students.filter((s) => s.parent_user_id === parentUserId);
   }, [students]);
 
-  const [selectedParentChild, setSelectedParentChild] = useState<string>(parentChildren[0]?.id || "");
+  const [selectedParentChild, setSelectedParentChild] = useState<string>(
+    parentChildren[0]?.id || "",
+  );
 
   useEffect(() => {
     if (parentChildren.length > 0 && !selectedParentChild) {
@@ -2974,25 +3279,25 @@ export function AchievementsPage() {
 
   // Parent notifications
   const parentNotificationsList = useMemo(() => {
-    return notifications.filter(n => n.parent_user_id === parentUserId);
+    return notifications.filter((n) => n.parent_user_id === parentUserId);
   }, [notifications]);
 
   // Parent child rankings
   const parentChildRankings = useMemo(() => {
     if (!selectedParentChild) return [];
-    return rankings.filter(r => r.student_id === selectedParentChild);
+    return rankings.filter((r) => r.student_id === selectedParentChild);
   }, [rankings, selectedParentChild]);
 
   // Parent child awards
   const parentChildAwards = useMemo(() => {
     if (!selectedParentChild) return [];
-    return awards.filter(a => a.student_id === selectedParentChild);
+    return awards.filter((a) => a.student_id === selectedParentChild);
   }, [awards, selectedParentChild]);
 
   return (
     <>
       <CanvasConfetti active={showConfetti} />
-      
+
       {/* Role Simulator Banner */}
       <div className="bg-brand-soft border-b border-brand/20 px-6 py-2 flex items-center justify-between flex-wrap gap-2 text-xs">
         <div className="flex items-center gap-2 font-medium text-brand">
@@ -3001,8 +3306,8 @@ export function AchievementsPage() {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-muted-foreground font-medium">Select view perspective:</span>
-          <select 
-            value={simulatedRole} 
+          <select
+            value={simulatedRole}
             onChange={(e) => {
               setSimulatedRole(e.target.value);
               // reset tab if switching to parent/student which has limited views
@@ -3024,7 +3329,7 @@ export function AchievementsPage() {
           {simulatedRole === "teacher" && (
             <>
               <span className="text-muted-foreground font-medium ml-2">Teacher Subject:</span>
-              <select 
+              <select
                 value={simulatedTeacherSubject}
                 onChange={(e) => {
                   setSimulatedTeacherSubject(e.target.value);
@@ -3053,15 +3358,15 @@ export function AchievementsPage() {
             <div className="flex gap-2">
               {isPrincipal && (
                 <>
-                  <button 
+                  <button
                     onClick={handleCalculateRankings}
                     disabled={isCalculating}
                     className="px-4 py-1.5 text-xs font-semibold bg-brand/10 text-brand hover:bg-brand/20 transition-colors rounded-lg flex items-center gap-1.5 disabled:opacity-50"
                   >
-                    <RefreshCw className={`size-3.5 ${isCalculating ? 'animate-spin' : ''}`} /> 
+                    <RefreshCw className={`size-3.5 ${isCalculating ? "animate-spin" : ""}`} />
                     {isCalculating ? "Calculating..." : "Run Ranking Engine"}
                   </button>
-                  <button 
+                  <button
                     onClick={handlePublishRankings}
                     disabled={isLoading || isCalculating}
                     className="px-4 py-1.5 text-xs font-semibold bg-brand text-white hover:bg-brand/90 transition-colors rounded-lg flex items-center gap-1.5 shadow-sm disabled:opacity-50"
@@ -3077,22 +3382,61 @@ export function AchievementsPage() {
 
       {/* Main Container */}
       <div className="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-slate-950 p-6 lg:p-8 space-y-6">
-        
         {/* Navigation Tabs Bar */}
         <div className="flex border-b border-border dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-1.5 shadow-xs overflow-x-auto gap-1">
-          <TabButton active={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} label="Dashboard" icon={<Trophy className="size-4" />} />
-          <TabButton active={activeTab === "hall_of_fame"} onClick={() => setActiveTab("hall_of_fame")} label="Hall of Fame" icon={<Sparkles className="size-4" />} />
-          <TabButton active={activeTab === "posters"} onClick={() => setActiveTab("posters")} label="Poster Generator" icon={<Share2 className="size-4" />} />
-          <TabButton active={activeTab === "certificates"} onClick={() => setActiveTab("certificates")} label="Certificates" icon={<Award className="size-4" />} />
-          <TabButton active={activeTab === "report_cards"} onClick={() => setActiveTab("report_cards")} label="Report Cards" icon={<BookOpen className="size-4" />} />
+          <TabButton
+            active={activeTab === "dashboard"}
+            onClick={() => setActiveTab("dashboard")}
+            label="Dashboard"
+            icon={<Trophy className="size-4" />}
+          />
+          <TabButton
+            active={activeTab === "hall_of_fame"}
+            onClick={() => setActiveTab("hall_of_fame")}
+            label="Hall of Fame"
+            icon={<Sparkles className="size-4" />}
+          />
+          <TabButton
+            active={activeTab === "posters"}
+            onClick={() => setActiveTab("posters")}
+            label="Poster Generator"
+            icon={<Share2 className="size-4" />}
+          />
+          <TabButton
+            active={activeTab === "certificates"}
+            onClick={() => setActiveTab("certificates")}
+            label="Certificates"
+            icon={<Award className="size-4" />}
+          />
+          <TabButton
+            active={activeTab === "report_cards"}
+            onClick={() => setActiveTab("report_cards")}
+            label="Report Cards"
+            icon={<BookOpen className="size-4" />}
+          />
           {isAdminOrTeacher && (
-            <TabButton active={activeTab === "reports"} onClick={() => setActiveTab("reports")} label="Reports & Analytics" icon={<FileDown className="size-4" />} />
+            <TabButton
+              active={activeTab === "reports"}
+              onClick={() => setActiveTab("reports")}
+              label="Reports & Analytics"
+              icon={<FileDown className="size-4" />}
+            />
           )}
           {isAdminOrTeacher && (
-            <TabButton active={activeTab === "admin"} onClick={() => setActiveTab("admin")} label="Ranking Engine Rules" icon={<Sliders className="size-4" />} />
+            <TabButton
+              active={activeTab === "admin"}
+              onClick={() => setActiveTab("admin")}
+              label="Ranking Engine Rules"
+              icon={<Sliders className="size-4" />}
+            />
           )}
           {(isAdminOrTeacher || isParent) && (
-            <TabButton active={activeTab === "notifications"} onClick={() => setActiveTab("notifications")} label="Notifications Center" icon={<Bell className="size-4" />} />
+            <TabButton
+              active={activeTab === "notifications"}
+              onClick={() => setActiveTab("notifications")}
+              label="Notifications Center"
+              icon={<Bell className="size-4" />}
+            />
           )}
         </div>
 
@@ -3106,34 +3450,71 @@ export function AchievementsPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            
             {/* Perspective View Checklists and Filter Section (Not for pure parent/student) */}
             {!isParent && !isStudent && (
               <div className="bg-white p-5 rounded-2xl border border-border shadow-xs flex flex-wrap items-center justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">Class</span>
-                    <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="mt-1 bg-card border border-border rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand">
-                      {classes.map(c => <option key={c.id} value={c.id}>{c.name} ({c.grade}-{c.section})</option>)}
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                      Class
+                    </span>
+                    <select
+                      value={selectedClass}
+                      onChange={(e) => setSelectedClass(e.target.value)}
+                      className="mt-1 bg-card border border-border rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand"
+                    >
+                      {classes.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} ({c.grade}-{c.section})
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">Exam</span>
-                    <select value={selectedExam} onChange={(e) => setSelectedExam(e.target.value)} className="mt-1 bg-card border border-border rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                      Exam
+                    </span>
+                    <select
+                      value={selectedExam}
+                      onChange={(e) => setSelectedExam(e.target.value)}
+                      className="mt-1 bg-card border border-border rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand"
+                    >
                       <option value="">Overall Academic Year</option>
-                      {exams.filter(e => e.class_id === selectedClass).map(e => <option key={e.id} value={e.id}>{e.name.split(" - ")[0]}</option>)}
+                      {exams
+                        .filter((e) => e.class_id === selectedClass)
+                        .map((e) => (
+                          <option key={e.id} value={e.id}>
+                            {e.name.split(" - ")[0]}
+                          </option>
+                        ))}
                     </select>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">Subject Filter</span>
-                    <select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)} className="mt-1 bg-card border border-border rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                      Subject Filter
+                    </span>
+                    <select
+                      value={selectedSubject}
+                      onChange={(e) => setSelectedSubject(e.target.value)}
+                      className="mt-1 bg-card border border-border rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand"
+                    >
                       <option value="">All Subjects</option>
-                      {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      {subjects.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">Academic Year</span>
-                    <select value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} className="mt-1 bg-card border border-border rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                      Academic Year
+                    </span>
+                    <select
+                      value={academicYear}
+                      onChange={(e) => setAcademicYear(e.target.value)}
+                      className="mt-1 bg-card border border-border rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand"
+                    >
                       <option value="2025-2026">2025-2026</option>
                       <option value="2024-2025">2024-2025</option>
                     </select>
@@ -3157,9 +3538,8 @@ export function AchievementsPage() {
             {/* TAB CONTENT: DASHBOARD */}
             {activeTab === "dashboard" && (
               <div className="space-y-6">
-                
                 {/* Simulated Parent/Student Specific Dashboard View */}
-                {(isParent || isStudent) ? (
+                {isParent || isStudent ? (
                   <div className="space-y-6">
                     {/* Header Details */}
                     <div className="bg-linear-to-r from-violet-600 via-indigo-600 to-indigo-700 text-white p-6 rounded-2xl shadow-md relative overflow-hidden">
@@ -3168,28 +3548,33 @@ export function AchievementsPage() {
                         <span className="bg-white/20 backdrop-blur-xs text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
                           {isParent ? "PARENT ACHIEVEMENTS FEED" : "STUDENT REPORT HUB"}
                         </span>
-                        
+
                         {isParent && parentChildren.length > 1 && (
                           <div className="flex items-center gap-3">
                             <span className="text-sm font-medium opacity-85">Linked Children:</span>
-                            <select 
-                              value={selectedParentChild} 
-                              onChange={(e) => setSelectedParentChild(e.target.value)} 
+                            <select
+                              value={selectedParentChild}
+                              onChange={(e) => setSelectedParentChild(e.target.value)}
                               className="bg-white/10 border border-white/20 text-white font-semibold text-xs px-3 py-1.5 rounded-lg focus:outline-none"
                             >
-                              {parentChildren.map(c => <option key={c.id} value={c.id} className="text-black">{c.full_name}</option>)}
+                              {parentChildren.map((c) => (
+                                <option key={c.id} value={c.id} className="text-black">
+                                  {c.full_name}
+                                </option>
+                              ))}
                             </select>
                           </div>
                         )}
 
                         <div className="space-y-1">
                           <h2 className="text-2xl font-bold">
-                            {isParent 
-                              ? `Academic Showcase for ${students.find(s => s.id === selectedParentChild)?.full_name || 'Child'}`
+                            {isParent
+                              ? `Academic Showcase for ${students.find((s) => s.id === selectedParentChild)?.full_name || "Child"}`
                               : `Welcome back, ${profileName(user)}!`}
                           </h2>
                           <p className="text-sm opacity-85">
-                            Track rank performance, view achievement badges, and instantly download awards.
+                            Track rank performance, view achievement badges, and instantly download
+                            awards.
                           </p>
                         </div>
                       </div>
@@ -3197,7 +3582,6 @@ export function AchievementsPage() {
 
                     {/* Rankings & Badges Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      
                       {/* Rank Card */}
                       <div className="bg-white border border-border p-6 rounded-2xl shadow-xs flex flex-col justify-between">
                         <div className="space-y-3">
@@ -3205,15 +3589,19 @@ export function AchievementsPage() {
                             <Trophy className="size-5" />
                           </div>
                           <div>
-                            <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider">LATEST RANK POSITION</span>
+                            <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider">
+                              LATEST RANK POSITION
+                            </span>
                             <h3 className="text-4xl font-extrabold text-slate-800 mt-1">
-                              {parentChildRankings[0] ? `#${parentChildRankings[0].rank_position}` : "—"}
+                              {parentChildRankings[0]
+                                ? `#${parentChildRankings[0].rank_position}`
+                                : "—"}
                             </h3>
                           </div>
                         </div>
                         <div className="border-t border-slate-100 mt-4 pt-3 text-xs text-muted-foreground">
-                          {parentChildRankings[0] 
-                            ? `Class Rank calculated with percentage of ${parentChildRankings[0].percentage}%` 
+                          {parentChildRankings[0]
+                            ? `Class Rank calculated with percentage of ${parentChildRankings[0].percentage}%`
                             : "No computed ranking available for the current term."}
                         </div>
                       </div>
@@ -3225,15 +3613,21 @@ export function AchievementsPage() {
                             <Percent className="size-5" />
                           </div>
                           <div>
-                            <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider">CUMULATIVE PERCENTAGE</span>
+                            <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider">
+                              CUMULATIVE PERCENTAGE
+                            </span>
                             <h3 className="text-4xl font-extrabold text-slate-800 mt-1">
-                              {parentChildRankings[0] ? `${parentChildRankings[0].percentage}%` : "—"}
+                              {parentChildRankings[0]
+                                ? `${parentChildRankings[0].percentage}%`
+                                : "—"}
                             </h3>
                           </div>
                         </div>
                         <div className="border-t border-slate-100 mt-4 pt-3 text-xs text-muted-foreground flex justify-between items-center">
                           <span>GPA / CGPA equivalent:</span>
-                          <span className="font-bold text-slate-700">{parentChildRankings[0] ? `${parentChildRankings[0].gpa} / 10` : "—"}</span>
+                          <span className="font-bold text-slate-700">
+                            {parentChildRankings[0] ? `${parentChildRankings[0].gpa} / 10` : "—"}
+                          </span>
                         </div>
                       </div>
 
@@ -3244,13 +3638,20 @@ export function AchievementsPage() {
                             <Award className="size-5" />
                           </div>
                           <div>
-                            <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider">BADGES & AWARDS</span>
+                            <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider">
+                              BADGES & AWARDS
+                            </span>
                             <div className="flex flex-wrap gap-2 mt-2">
                               {parentChildAwards.length === 0 ? (
-                                <span className="text-xs text-muted-foreground">No awards issued yet.</span>
+                                <span className="text-xs text-muted-foreground">
+                                  No awards issued yet.
+                                </span>
                               ) : (
-                                parentChildAwards.map(a => (
-                                  <span key={a.id} className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-[10px] font-bold">
+                                parentChildAwards.map((a) => (
+                                  <span
+                                    key={a.id}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-[10px] font-bold"
+                                  >
                                     <Sparkles className="size-3" /> {badgeLabel(a.category)}
                                   </span>
                                 ))
@@ -3262,19 +3663,23 @@ export function AchievementsPage() {
                           {parentChildAwards.length} total certificates available to download.
                         </div>
                       </div>
-
                     </div>
 
                     {/* Official Report Card Card */}
                     <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-6 rounded-2xl shadow-xs flex items-center justify-between flex-wrap gap-4">
                       <div className="space-y-1">
-                        <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">Term Academic Report Card</h4>
-                        <p className="text-xs text-muted-foreground">View official subjects, grades, class rank position, attendance register, and principal's remarks.</p>
+                        <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">
+                          Term Academic Report Card
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          View official subjects, grades, class rank position, attendance register,
+                          and principal's remarks.
+                        </p>
                       </div>
                       <button
                         onClick={() => {
                           const studId = isParent ? selectedParentChild : user?.id;
-                          const studObj = students.find(s => s.id === studId);
+                          const studObj = students.find((s) => s.id === studId);
                           setReportCardStudent(studObj || null);
                         }}
                         className="px-4 py-2 text-xs font-semibold bg-brand text-white hover:bg-brand/90 transition-colors rounded-lg flex items-center gap-1.5 shadow-sm"
@@ -3288,18 +3693,24 @@ export function AchievementsPage() {
                       <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2 mb-4">
                         <Medal className="size-5 text-brand" /> Academic Honors & Award Certificates
                       </h3>
-                      
+
                       {parentChildAwards.length === 0 ? (
                         <div className="text-center py-10 text-muted-foreground space-y-1">
                           <p className="font-semibold">No awards issued yet</p>
-                          <p className="text-xs">Once rankings are calculated and verified by administration, certifications will appear here.</p>
+                          <p className="text-xs">
+                            Once rankings are calculated and verified by administration,
+                            certifications will appear here.
+                          </p>
                         </div>
                       ) : (
                         <div className="space-y-4">
-                          {parentChildAwards.map(aw => {
-                            const hasCert = certificates.find(c => c.award_id === aw.id);
+                          {parentChildAwards.map((aw) => {
+                            const hasCert = certificates.find((c) => c.award_id === aw.id);
                             return (
-                              <div key={aw.id} className="flex items-center justify-between flex-wrap gap-4 p-4 rounded-xl border border-slate-100 hover:border-slate-200 bg-slate-50/30 transition-all">
+                              <div
+                                key={aw.id}
+                                className="flex items-center justify-between flex-wrap gap-4 p-4 rounded-xl border border-slate-100 hover:border-slate-200 bg-slate-50/30 transition-all"
+                              >
                                 <div className="space-y-1 max-w-xl">
                                   <div className="flex items-center gap-2">
                                     <span className="bg-brand/10 text-brand text-[9px] uppercase font-bold px-2 py-0.5 rounded">
@@ -3315,9 +3726,17 @@ export function AchievementsPage() {
                                 <div className="flex gap-2">
                                   <button
                                     onClick={() => {
-                                      const studObj = students.find(s => s.id === aw.student_id);
+                                      const studObj = students.find((s) => s.id === aw.student_id);
                                       setSelectedStudentForPoster(studObj);
-                                      setPosterTheme(aw.category.includes("1") ? "gold" : (aw.category.includes("2") ? "silver" : (aw.category.includes("3") ? "bronze" : "royal")));
+                                      setPosterTheme(
+                                        aw.category.includes("1")
+                                          ? "gold"
+                                          : aw.category.includes("2")
+                                            ? "silver"
+                                            : aw.category.includes("3")
+                                              ? "bronze"
+                                              : "royal",
+                                      );
                                       setActiveTab("posters");
                                       toast.success("Ready to preview achievement poster!");
                                     }}
@@ -3328,7 +3747,9 @@ export function AchievementsPage() {
                                   {hasCert && (
                                     <button
                                       onClick={() => {
-                                        const studObj = students.find(s => s.id === aw.student_id);
+                                        const studObj = students.find(
+                                          (s) => s.id === aw.student_id,
+                                        );
                                         setSelectedStudentForCert(studObj);
                                         setActiveTab("certificates");
                                         toast.success("Ready to preview digital certificate!");
@@ -3353,36 +3774,67 @@ export function AchievementsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
                       {/* KPI: Total Students */}
                       <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-4 rounded-xl shadow-xs">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Total Students</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                          Total Students
+                        </span>
                         <h4 className="text-2xl font-extrabold text-slate-850 dark:text-slate-100 mt-1">
-                          {students.filter(s => !selectedClass || s.class_id === selectedClass).length}
+                          {
+                            students.filter((s) => !selectedClass || s.class_id === selectedClass)
+                              .length
+                          }
                         </h4>
                         <p className="text-[9px] text-muted-foreground">Total Enrolled</p>
                       </div>
 
                       {/* KPI: Generated */}
                       <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-4 rounded-xl shadow-xs">
-                        <span className="text-[10px] font-bold text-indigo-650 uppercase">Generated</span>
+                        <span className="text-[10px] font-bold text-indigo-650 uppercase">
+                          Generated
+                        </span>
                         <h4 className="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-1">
-                          {reportCards.filter(r => (!selectedClass || r.class_id === selectedClass) && r.exam_type === selectedReportCardExam).length}
+                          {
+                            reportCards.filter(
+                              (r) =>
+                                (!selectedClass || r.class_id === selectedClass) &&
+                                r.exam_type === selectedReportCardExam,
+                            ).length
+                          }
                         </h4>
                         <p className="text-[9px] text-indigo-500">Academic Term</p>
                       </div>
 
                       {/* KPI: Published */}
                       <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-4 rounded-xl shadow-xs">
-                        <span className="text-[10px] font-bold text-emerald-600 uppercase">Published</span>
+                        <span className="text-[10px] font-bold text-emerald-600 uppercase">
+                          Published
+                        </span>
                         <h4 className="text-2xl font-extrabold text-emerald-500 dark:text-emerald-400 mt-1">
-                          {reportCards.filter(r => r.status === "published" && (!selectedClass || r.class_id === selectedClass) && r.exam_type === selectedReportCardExam).length}
+                          {
+                            reportCards.filter(
+                              (r) =>
+                                r.status === "published" &&
+                                (!selectedClass || r.class_id === selectedClass) &&
+                                r.exam_type === selectedReportCardExam,
+                            ).length
+                          }
                         </h4>
                         <p className="text-[9px] text-emerald-500">Live for Parents</p>
                       </div>
 
                       {/* KPI: Pending Approval */}
                       <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-4 rounded-xl shadow-xs">
-                        <span className="text-[10px] font-bold text-amber-600 uppercase">Pending Approval</span>
+                        <span className="text-[10px] font-bold text-amber-600 uppercase">
+                          Pending Approval
+                        </span>
                         <h4 className="text-2xl font-extrabold text-amber-500 dark:text-amber-400 mt-1">
-                          {reportCards.filter(r => (r.status === "draft" || r.status === "verified") && (!selectedClass || r.class_id === selectedClass) && r.exam_type === selectedReportCardExam).length}
+                          {
+                            reportCards.filter(
+                              (r) =>
+                                (r.status === "draft" || r.status === "verified") &&
+                                (!selectedClass || r.class_id === selectedClass) &&
+                                r.exam_type === selectedReportCardExam,
+                            ).length
+                          }
                         </h4>
                         <p className="text-[9px] text-amber-500">Requires Signoff</p>
                       </div>
@@ -3392,9 +3844,13 @@ export function AchievementsPage() {
                         <span className="text-[10px] font-bold text-sky-600 uppercase">Pass %</span>
                         <h4 className="text-2xl font-extrabold text-sky-500 dark:text-sky-400 mt-1">
                           {(() => {
-                            const termRcs = reportCards.filter(r => (!selectedClass || r.class_id === selectedClass) && r.exam_type === selectedReportCardExam);
+                            const termRcs = reportCards.filter(
+                              (r) =>
+                                (!selectedClass || r.class_id === selectedClass) &&
+                                r.exam_type === selectedReportCardExam,
+                            );
                             if (termRcs.length === 0) return "—";
-                            const passed = termRcs.filter(r => r.result_status !== "Fail").length;
+                            const passed = termRcs.filter((r) => r.result_status !== "Fail").length;
                             return `${((passed / termRcs.length) * 100).toFixed(1)}%`;
                           })()}
                         </h4>
@@ -3403,18 +3859,36 @@ export function AchievementsPage() {
 
                       {/* KPI: Distinction Count */}
                       <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-4 rounded-xl shadow-xs">
-                        <span className="text-[10px] font-bold text-purple-600 uppercase">Distinctions</span>
+                        <span className="text-[10px] font-bold text-purple-600 uppercase">
+                          Distinctions
+                        </span>
                         <h4 className="text-2xl font-extrabold text-purple-500 dark:text-purple-400 mt-1">
-                          {reportCards.filter(r => r.percentage >= 75 && (!selectedClass || r.class_id === selectedClass) && r.exam_type === selectedReportCardExam).length}
+                          {
+                            reportCards.filter(
+                              (r) =>
+                                r.percentage >= 75 &&
+                                (!selectedClass || r.class_id === selectedClass) &&
+                                r.exam_type === selectedReportCardExam,
+                            ).length
+                          }
                         </h4>
                         <p className="text-[9px] text-purple-500">Score &gt;= 75%</p>
                       </div>
 
                       {/* KPI: Merit Count */}
                       <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-4 rounded-xl shadow-xs">
-                        <span className="text-[10px] font-bold text-amber-500 uppercase">Merits</span>
+                        <span className="text-[10px] font-bold text-amber-500 uppercase">
+                          Merits
+                        </span>
                         <h4 className="text-2xl font-extrabold text-amber-500 dark:text-amber-400 mt-1">
-                          {reportCards.filter(r => r.percentage >= 85 && (!selectedClass || r.class_id === selectedClass) && r.exam_type === selectedReportCardExam).length}
+                          {
+                            reportCards.filter(
+                              (r) =>
+                                r.percentage >= 85 &&
+                                (!selectedClass || r.class_id === selectedClass) &&
+                                r.exam_type === selectedReportCardExam,
+                            ).length
+                          }
                         </h4>
                         <p className="text-[9px] text-amber-500">Score &gt;= 85%</p>
                       </div>
@@ -3428,21 +3902,32 @@ export function AchievementsPage() {
                           <Trophy className="size-4 text-amber-500" /> Top Performers Leaderboard
                         </h3>
                         {dashboardTopPerformers.length === 0 ? (
-                          <p className="text-xs text-muted-foreground py-8 text-center">No calculations generated yet</p>
+                          <p className="text-xs text-muted-foreground py-8 text-center">
+                            No calculations generated yet
+                          </p>
                         ) : (
                           <div className="space-y-3">
                             {dashboardTopPerformers.map((rc, idx) => {
-                              const stud = students.find(s => s.id === rc.student_id);
+                              const stud = students.find((s) => s.id === rc.student_id);
                               return (
-                                <div key={rc.id} className="flex items-center justify-between p-2 bg-slate-50/50 dark:bg-slate-800/20 rounded-lg text-xs">
+                                <div
+                                  key={rc.id}
+                                  className="flex items-center justify-between p-2 bg-slate-50/50 dark:bg-slate-800/20 rounded-lg text-xs"
+                                >
                                   <div className="flex items-center gap-2">
                                     <span className="font-bold text-slate-400">#{idx + 1}</span>
                                     <div>
-                                      <p className="font-bold text-slate-700 dark:text-slate-300">{stud?.full_name}</p>
-                                      <p className="text-[9px] text-muted-foreground">Roll No: {stud?.roll_number} | Class Rank: #{rc.class_rank}</p>
+                                      <p className="font-bold text-slate-700 dark:text-slate-300">
+                                        {stud?.full_name}
+                                      </p>
+                                      <p className="text-[9px] text-muted-foreground">
+                                        Roll No: {stud?.roll_number} | Class Rank: #{rc.class_rank}
+                                      </p>
                                     </div>
                                   </div>
-                                  <span className="font-extrabold text-brand">{rc.percentage}% (GPA {rc.gpa})</span>
+                                  <span className="font-extrabold text-brand">
+                                    {rc.percentage}% (GPA {rc.gpa})
+                                  </span>
                                 </div>
                               );
                             })}
@@ -3456,21 +3941,32 @@ export function AchievementsPage() {
                           <Clock className="size-4 text-emerald-500" /> Attendance Champions
                         </h3>
                         {dashboardAttendanceChampions.length === 0 ? (
-                          <p className="text-xs text-muted-foreground py-8 text-center">No evaluation data available</p>
+                          <p className="text-xs text-muted-foreground py-8 text-center">
+                            No evaluation data available
+                          </p>
                         ) : (
                           <div className="space-y-3">
                             {dashboardAttendanceChampions.map((rc, idx) => {
-                              const stud = students.find(s => s.id === rc.student_id);
+                              const stud = students.find((s) => s.id === rc.student_id);
                               return (
-                                <div key={rc.id} className="flex items-center justify-between p-2 bg-slate-50/50 dark:bg-slate-800/20 rounded-lg text-xs">
+                                <div
+                                  key={rc.id}
+                                  className="flex items-center justify-between p-2 bg-slate-50/50 dark:bg-slate-800/20 rounded-lg text-xs"
+                                >
                                   <div className="flex items-center gap-2">
                                     <span className="font-bold text-slate-400">#{idx + 1}</span>
                                     <div>
-                                      <p className="font-bold text-slate-700 dark:text-slate-300">{stud?.full_name}</p>
-                                      <p className="text-[9px] text-muted-foreground">Present: {rc.present_days}/{rc.working_days} Days</p>
+                                      <p className="font-bold text-slate-700 dark:text-slate-300">
+                                        {stud?.full_name}
+                                      </p>
+                                      <p className="text-[9px] text-muted-foreground">
+                                        Present: {rc.present_days}/{rc.working_days} Days
+                                      </p>
                                     </div>
                                   </div>
-                                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400">{rc.attendance_percentage}%</span>
+                                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
+                                    {rc.attendance_percentage}%
+                                  </span>
                                 </div>
                               );
                             })}
@@ -3483,7 +3979,9 @@ export function AchievementsPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       {/* Class-wise Performance Chart */}
                       <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 rounded-xl p-5 shadow-xs">
-                        <h3 className="font-bold text-xs text-slate-800 dark:text-slate-200 mb-3 uppercase tracking-wider">Class-wise Performance Average</h3>
+                        <h3 className="font-bold text-xs text-slate-800 dark:text-slate-200 mb-3 uppercase tracking-wider">
+                          Class-wise Performance Average
+                        </h3>
                         <ResponsiveContainer width="100%" height={200}>
                           <BarChart data={classWisePerformanceData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -3497,7 +3995,9 @@ export function AchievementsPage() {
 
                       {/* Subject-wise Performance Chart */}
                       <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 rounded-xl p-5 shadow-xs">
-                        <h3 className="font-bold text-xs text-slate-800 dark:text-slate-200 mb-3 uppercase tracking-wider">Subject-wise Average Score</h3>
+                        <h3 className="font-bold text-xs text-slate-800 dark:text-slate-200 mb-3 uppercase tracking-wider">
+                          Subject-wise Average Score
+                        </h3>
                         <ResponsiveContainer width="100%" height={200}>
                           <BarChart data={subjectWisePerformanceData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -3511,21 +4011,31 @@ export function AchievementsPage() {
 
                       {/* Monthly Progress Chart */}
                       <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 rounded-xl p-5 shadow-xs">
-                        <h3 className="font-bold text-xs text-slate-800 dark:text-slate-200 mb-3 uppercase tracking-wider">Monthly Academic Performance Trend</h3>
+                        <h3 className="font-bold text-xs text-slate-800 dark:text-slate-200 mb-3 uppercase tracking-wider">
+                          Monthly Academic Performance Trend
+                        </h3>
                         <ResponsiveContainer width="100%" height={200}>
                           <LineChart data={monthlyProgressData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                             <XAxis dataKey="name" tick={{ fontSize: 9 }} />
                             <YAxis domain={[0, 100]} tick={{ fontSize: 9 }} />
                             <Tooltip />
-                            <Line type="monotone" dataKey="Class Average %" stroke="#3b82f6" strokeWidth={2.5} dot={{ r: 4 }} />
+                            <Line
+                              type="monotone"
+                              dataKey="Class Average %"
+                              stroke="#3b82f6"
+                              strokeWidth={2.5}
+                              dot={{ r: 4 }}
+                            />
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
 
                       {/* Pass/Fail Analytics Pie Chart */}
                       <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 rounded-xl p-5 shadow-xs">
-                        <h3 className="font-bold text-xs text-slate-800 dark:text-slate-200 mb-3 uppercase tracking-wider">Pass/Fail Distribution Ratio</h3>
+                        <h3 className="font-bold text-xs text-slate-800 dark:text-slate-200 mb-3 uppercase tracking-wider">
+                          Pass/Fail Distribution Ratio
+                        </h3>
                         <div className="flex items-center justify-around h-[200px]">
                           <ResponsiveContainer width="60%" height="100%">
                             <PieChart>
@@ -3548,8 +4058,13 @@ export function AchievementsPage() {
                           <div className="flex flex-col gap-2 text-xs">
                             {passFailAnalyticsData.map((item, idx) => (
                               <div key={idx} className="flex items-center gap-2">
-                                <div className="size-3 rounded-full" style={{ backgroundColor: item.color }} />
-                                <span className="font-semibold">{item.name}: {item.value} Cards</span>
+                                <div
+                                  className="size-3 rounded-full"
+                                  style={{ backgroundColor: item.color }}
+                                />
+                                <span className="font-semibold">
+                                  {item.name}: {item.value} Cards
+                                </span>
                               </div>
                             ))}
                           </div>
@@ -3558,7 +4073,9 @@ export function AchievementsPage() {
 
                       {/* Teacher Performance Index */}
                       <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 rounded-xl p-5 shadow-xs lg:col-span-2">
-                        <h3 className="font-bold text-xs text-slate-800 dark:text-slate-200 mb-3 uppercase tracking-wider">Teacher Subject Performance Indices</h3>
+                        <h3 className="font-bold text-xs text-slate-800 dark:text-slate-200 mb-3 uppercase tracking-wider">
+                          Teacher Subject Performance Indices
+                        </h3>
                         <ResponsiveContainer width="100%" height={220}>
                           <BarChart data={teacherPerformanceData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -3582,7 +4099,7 @@ export function AchievementsPage() {
                 <div className="relative overflow-hidden bg-slate-900 text-white rounded-3xl p-8 shadow-xl border border-slate-800 text-center space-y-3">
                   <div className="absolute top-0 left-0 -translate-x-10 -translate-y-10 size-48 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
                   <div className="absolute bottom-0 right-0 translate-x-10 translate-y-10 size-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-                  
+
                   <div className="inline-flex size-14 rounded-full bg-amber-500/10 border border-amber-500/30 items-center justify-center text-amber-400 mb-2">
                     <Sparkles className="size-7 animate-pulse" />
                   </div>
@@ -3590,7 +4107,8 @@ export function AchievementsPage() {
                     {schoolDisplayName.toUpperCase()} WALL OF HONOR
                   </h2>
                   <p className="text-slate-400 text-sm max-w-xl mx-auto">
-                    Celebrating outstanding academic excellence, unmatched sports records, perfect attendance registers, and distinguished student contributions.
+                    Celebrating outstanding academic excellence, unmatched sports records, perfect
+                    attendance registers, and distinguished student contributions.
                   </p>
                 </div>
 
@@ -3600,45 +4118,73 @@ export function AchievementsPage() {
                     <div className="col-span-full bg-white border border-dashed border-border rounded-2xl p-16 text-center text-muted-foreground">
                       <Trophy className="size-8 mx-auto mb-2 opacity-50" />
                       <p className="font-semibold">Hall of Fame is currently empty</p>
-                      <p className="text-xs">Ranks and accolades will display here once academic honors are computed.</p>
+                      <p className="text-xs">
+                        Ranks and accolades will display here once academic honors are computed.
+                      </p>
                     </div>
                   ) : (
                     awards.map((aw) => {
                       const themeDetails = fameCardTheme(aw.category);
                       return (
-                        <div key={aw.id} className={`rounded-2xl border p-6 flex flex-col justify-between shadow-xs transition-all duration-300 hover:-translate-y-1.5 ${themeDetails.cardBg} ${themeDetails.border}`}>
+                        <div
+                          key={aw.id}
+                          className={`rounded-2xl border p-6 flex flex-col justify-between shadow-xs transition-all duration-300 hover:-translate-y-1.5 ${themeDetails.cardBg} ${themeDetails.border}`}
+                        >
                           <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${themeDetails.badgeClass}`}>
+                              <span
+                                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${themeDetails.badgeClass}`}
+                              >
                                 <Sparkles className="size-3" /> {badgeLabel(aw.category)}
                               </span>
-                              <span className="text-xs text-muted-foreground">{aw.academic_year}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {aw.academic_year}
+                              </span>
                             </div>
                             <div className="space-y-1.5">
                               <h3 className="text-base font-bold text-slate-800">{aw.title}</h3>
-                              <p className="text-xs text-slate-600 line-clamp-3">{aw.description}</p>
+                              <p className="text-xs text-slate-600 line-clamp-3">
+                                {aw.description}
+                              </p>
                             </div>
                           </div>
-                          
+
                           <div className="border-t border-slate-100 mt-6 pt-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                            <div className="size-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-xs shadow-xs overflow-hidden">
+                              <div className="size-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-xs shadow-xs overflow-hidden">
                                 {aw.student?.photo_url ? (
-                                  <img src={aw.student.photo_url} alt="" className="size-full object-cover" crossOrigin="anonymous" />
+                                  <img
+                                    src={aw.student.photo_url}
+                                    alt=""
+                                    className="size-full object-cover"
+                                    crossOrigin="anonymous"
+                                  />
                                 ) : (
-                                  aw.student?.full_name?.slice(0,1) || "S"
+                                  aw.student?.full_name?.slice(0, 1) || "S"
                                 )}
                               </div>
                               <div>
-                                <h4 className="font-bold text-xs text-slate-700">{aw.student?.full_name}</h4>
-                                <p className="text-[10px] text-muted-foreground">Roll No. {aw.student?.roll_number} · {aw.student?.classes?.name}</p>
+                                <h4 className="font-bold text-xs text-slate-700">
+                                  {aw.student?.full_name}
+                                </h4>
+                                <p className="text-[10px] text-muted-foreground">
+                                  Roll No. {aw.student?.roll_number} · {aw.student?.classes?.name}
+                                </p>
                               </div>
                             </div>
                             <button
                               onClick={() => {
-                                const studObj = students.find(s => s.id === aw.student_id);
+                                const studObj = students.find((s) => s.id === aw.student_id);
                                 setSelectedStudentForPoster(studObj);
-                                setPosterTheme(aw.category.includes("1") ? "gold" : (aw.category.includes("2") ? "silver" : (aw.category.includes("3") ? "bronze" : "royal")));
+                                setPosterTheme(
+                                  aw.category.includes("1")
+                                    ? "gold"
+                                    : aw.category.includes("2")
+                                      ? "silver"
+                                      : aw.category.includes("3")
+                                        ? "bronze"
+                                        : "royal",
+                                );
                                 setActiveTab("posters");
                               }}
                               className="size-8 hover:bg-slate-100 border border-slate-200 rounded-lg flex items-center justify-center text-slate-600 transition-colors"
@@ -3658,47 +4204,98 @@ export function AchievementsPage() {
             {/* TAB CONTENT: POSTER GENERATOR */}
             {activeTab === "posters" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                
                 {/* Left controls */}
                 <div className="bg-white border border-border rounded-2xl p-6 shadow-xs space-y-6">
                   <div>
                     <h3 className="font-bold text-lg text-slate-800">Poster Canvas Controls</h3>
-                    <p className="text-xs text-muted-foreground">Select a student and custom theme to generate social-ready posters.</p>
+                    <p className="text-xs text-muted-foreground">
+                      Select a student and custom theme to generate social-ready posters.
+                    </p>
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex flex-col">
-                      <label className="text-xs font-bold text-muted-foreground uppercase">Select Student</label>
-                      <select 
-                        value={selectedStudentForPoster?.id || ""} 
+                      <label className="text-xs font-bold text-muted-foreground uppercase">
+                        Select Student
+                      </label>
+                      <select
+                        value={selectedStudentForPoster?.id || ""}
                         onChange={(e) => {
-                          const stud = students.find(s => s.id === e.target.value);
+                          const stud = students.find((s) => s.id === e.target.value);
                           setSelectedStudentForPoster(stud);
-                        }} 
+                        }}
                         className="mt-1 bg-card border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none"
                       >
-                        {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+                        {filteredStudents.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.full_name}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
                     <div className="flex flex-col">
-                      <label className="text-xs font-bold text-muted-foreground uppercase">Choose Theme</label>
+                      <label className="text-xs font-bold text-muted-foreground uppercase">
+                        Choose Theme
+                      </label>
                       <div className="grid grid-cols-3 gap-2 mt-2">
-                        <ThemeButton active={posterTheme === "gold"} onClick={() => setPosterTheme("gold")} label="Gold Theme" colorClass="bg-yellow-400" />
-                        <ThemeButton active={posterTheme === "silver"} onClick={() => setPosterTheme("silver")} label="Silver Theme" colorClass="bg-slate-300" />
-                        <ThemeButton active={posterTheme === "bronze"} onClick={() => setPosterTheme("bronze")} label="Bronze Theme" colorClass="bg-amber-600" />
-                        <ThemeButton active={posterTheme === "royal"} onClick={() => setPosterTheme("royal")} label="Royal Blue" colorClass="bg-indigo-900" />
-                        <ThemeButton active={posterTheme === "modern"} onClick={() => setPosterTheme("modern")} label="Modern School" colorClass="bg-slate-800" />
+                        <ThemeButton
+                          active={posterTheme === "gold"}
+                          onClick={() => setPosterTheme("gold")}
+                          label="Gold Theme"
+                          colorClass="bg-yellow-400"
+                        />
+                        <ThemeButton
+                          active={posterTheme === "silver"}
+                          onClick={() => setPosterTheme("silver")}
+                          label="Silver Theme"
+                          colorClass="bg-slate-300"
+                        />
+                        <ThemeButton
+                          active={posterTheme === "bronze"}
+                          onClick={() => setPosterTheme("bronze")}
+                          label="Bronze Theme"
+                          colorClass="bg-amber-600"
+                        />
+                        <ThemeButton
+                          active={posterTheme === "royal"}
+                          onClick={() => setPosterTheme("royal")}
+                          label="Royal Blue"
+                          colorClass="bg-indigo-900"
+                        />
+                        <ThemeButton
+                          active={posterTheme === "modern"}
+                          onClick={() => setPosterTheme("modern")}
+                          label="Modern School"
+                          colorClass="bg-slate-800"
+                        />
                       </div>
                     </div>
 
                     {/* Format / Dimensions selector */}
                     <div className="flex flex-col">
-                      <label className="text-xs font-bold text-muted-foreground uppercase">Select Format</label>
+                      <label className="text-xs font-bold text-muted-foreground uppercase">
+                        Select Format
+                      </label>
                       <div className="grid grid-cols-3 gap-2 mt-2">
-                        <SizeButton active={posterSize === "portrait"} onClick={() => setPosterSize("portrait")} label="Portrait" dimensions="1080 x 1350" />
-                        <SizeButton active={posterSize === "landscape"} onClick={() => setPosterSize("landscape")} label="Landscape" dimensions="1920 x 1080" />
-                        <SizeButton active={posterSize === "square"} onClick={() => setPosterSize("square")} label="Square" dimensions="1080 x 1080" />
+                        <SizeButton
+                          active={posterSize === "portrait"}
+                          onClick={() => setPosterSize("portrait")}
+                          label="Portrait"
+                          dimensions="1080 x 1350"
+                        />
+                        <SizeButton
+                          active={posterSize === "landscape"}
+                          onClick={() => setPosterSize("landscape")}
+                          label="Landscape"
+                          dimensions="1920 x 1080"
+                        />
+                        <SizeButton
+                          active={posterSize === "square"}
+                          onClick={() => setPosterSize("square")}
+                          label="Square"
+                          dimensions="1080 x 1080"
+                        />
                       </div>
                     </div>
                   </div>
@@ -3715,11 +4312,10 @@ export function AchievementsPage() {
 
                 {/* Right Visual Poster Preview */}
                 <div className="lg:col-span-2 flex items-center justify-center p-4 bg-slate-200/50 rounded-3xl border border-dashed border-slate-300 min-h-[500px]">
-                  
                   {/* High fidelity canvas render container */}
                   {posterSize === "landscape" ? (
-                    <div 
-                      id="achievement-poster-export" 
+                    <div
+                      id="achievement-poster-export"
                       style={getPosterStyle("landscape", posterTheme)}
                     >
                       {/* Decorative Background Rings */}
@@ -3730,82 +4326,119 @@ export function AchievementsPage() {
                       <div className="flex flex-col justify-between w-[52%] h-full relative z-10 border-r border-black/10 pr-6">
                         {/* Poster Header */}
                         <div className="flex items-center gap-2">
-                          <div className={`size-8 font-extrabold text-sm rounded-lg flex items-center justify-center shadow-xs ${
-                            posterTheme === "royal" || posterTheme === "modern" ? "bg-brand text-white" : "bg-black/10 text-slate-800"
-                          }`}>
+                          <div
+                            className={`size-8 font-extrabold text-sm rounded-lg flex items-center justify-center shadow-xs ${
+                              posterTheme === "royal" || posterTheme === "modern"
+                                ? "bg-brand text-white"
+                                : "bg-black/10 text-slate-800"
+                            }`}
+                          >
                             H
                           </div>
                           <div>
-                            <h4 className="font-extrabold text-[10px] tracking-wider">{schoolDisplayName}</h4>
-                            <p className="text-[6px] uppercase tracking-widest opacity-80">Empowering Academic Excellence</p>
+                            <h4 className="font-extrabold text-[10px] tracking-wider">
+                              {schoolDisplayName}
+                            </h4>
+                            <p className="text-[6px] uppercase tracking-widest opacity-80">
+                              Empowering Academic Excellence
+                            </p>
                           </div>
                         </div>
 
                         {/* Student Details */}
                         <div className="flex items-center gap-4 my-2">
-                          <div className={`size-20 rounded-full border-4 flex items-center justify-center font-bold text-2xl shadow-lg relative overflow-hidden flex-shrink-0 ${
-                            posterTheme === "royal" || posterTheme === "modern" ? "border-brand/40 bg-slate-800 text-white" : "border-black/10 bg-white/40 text-slate-700"
-                          }`}>
+                          <div
+                            className={`size-20 rounded-full border-4 flex items-center justify-center font-bold text-2xl shadow-lg relative overflow-hidden flex-shrink-0 ${
+                              posterTheme === "royal" || posterTheme === "modern"
+                                ? "border-brand/40 bg-slate-800 text-white"
+                                : "border-black/10 bg-white/40 text-slate-700"
+                            }`}
+                          >
                             {selectedStudentForPoster?.photo_url ? (
-                              <img src={selectedStudentForPoster.photo_url} alt="" className="size-full object-cover" crossOrigin="anonymous" />
+                              <img
+                                src={selectedStudentForPoster.photo_url}
+                                alt=""
+                                className="size-full object-cover"
+                                crossOrigin="anonymous"
+                              />
                             ) : (
-                              selectedStudentForPoster?.full_name?.slice(0,1) || "S"
+                              selectedStudentForPoster?.full_name?.slice(0, 1) || "S"
                             )}
                             <div className="absolute -top-1 -right-1">
                               <Sparkles className="size-3 text-amber-500 animate-pulse" />
                             </div>
                           </div>
                           <div className="space-y-0.5 text-left min-w-0">
-                            <p className="text-[8px] uppercase font-bold tracking-widest opacity-70">Honor Roll</p>
-                            <h3 className="text-lg font-black tracking-tight truncate">{selectedStudentForPoster?.full_name || "Aarav Sharma"}</h3>
+                            <p className="text-[8px] uppercase font-bold tracking-widest opacity-70">
+                              Honor Roll
+                            </p>
+                            <h3 className="text-lg font-black tracking-tight truncate">
+                              {selectedStudentForPoster?.full_name || "Aarav Sharma"}
+                            </h3>
                             <p className="text-[10px] font-semibold opacity-90 truncate">
-                              Class {posterClassName} · Roll No. {selectedStudentForPoster?.roll_number || "101"}
+                              Class {posterClassName} · Roll No.{" "}
+                              {selectedStudentForPoster?.roll_number || "101"}
                             </p>
                           </div>
                         </div>
 
-                        <span className="text-[8px] font-bold uppercase tracking-wider opacity-90">Official Showcase</span>
+                        <span className="text-[8px] font-bold uppercase tracking-wider opacity-90">
+                          Official Showcase
+                        </span>
                       </div>
 
                       {/* Right Column */}
                       <div className="flex flex-col justify-between w-[44%] h-full relative z-10 pl-2">
                         {/* Award Info */}
-                        <div className={`px-4 py-2.5 rounded-xl border text-center shadow-xs space-y-0.5 w-full ${
-                          posterTheme === "royal" || posterTheme === "modern" ? "bg-white/5 border-white/10" : "bg-white/40 border-black/5"
-                        }`}>
+                        <div
+                          className={`px-4 py-2.5 rounded-xl border text-center shadow-xs space-y-0.5 w-full ${
+                            posterTheme === "royal" || posterTheme === "modern"
+                              ? "bg-white/5 border-white/10"
+                              : "bg-white/40 border-black/5"
+                          }`}
+                        >
                           <div className="flex items-center justify-center gap-1 text-[11px] font-black uppercase text-amber-500">
                             <Trophy className="size-3.5 animate-bounce" /> {posterDetails.rankText}
                           </div>
-                          <div className="text-[8px] uppercase tracking-wider opacity-80 font-bold truncate">{posterDetails.label}</div>
-                          <div className="text-[9px] font-black text-brand">{posterDetails.stats}</div>
+                          <div className="text-[8px] uppercase tracking-wider opacity-80 font-bold truncate">
+                            {posterDetails.label}
+                          </div>
+                          <div className="text-[9px] font-black text-brand">
+                            {posterDetails.stats}
+                          </div>
                         </div>
 
                         {/* Signatures / QR code */}
                         <div className="flex items-end justify-between">
                           <div className="space-y-1">
-                            <span className="text-[6.5px] uppercase tracking-wider font-bold opacity-60">Verify</span>
+                            <span className="text-[6.5px] uppercase tracking-wider font-bold opacity-60">
+                              Verify
+                            </span>
                             <div className="p-1 bg-white rounded-md shadow-xs border border-slate-100 flex items-center justify-center">
-                              <img 
-                                src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=VERIFY-${selectedStudentForPoster?.full_name || 'STUDENT'}-HZ`} 
-                                alt="Verification QR" 
-                                className="size-8" 
+                              <img
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=VERIFY-${selectedStudentForPoster?.full_name || "STUDENT"}-HZ`}
+                                alt="Verification QR"
+                                className="size-8"
                                 crossOrigin="anonymous"
                               />
                             </div>
                           </div>
 
                           <div className="text-right space-y-1">
-                            <span className="font-serif italic text-amber-600 font-bold text-xs tracking-wide block">Nirosha Reddy</span>
+                            <span className="font-serif italic text-amber-600 font-bold text-xs tracking-wide block">
+                              Nirosha Reddy
+                            </span>
                             <div className="h-0.5 w-16 bg-black/10 ml-auto" />
-                            <span className="text-[7px] uppercase font-bold tracking-wider opacity-70">Principal</span>
+                            <span className="text-[7px] uppercase font-bold tracking-wider opacity-70">
+                              Principal
+                            </span>
                           </div>
                         </div>
                       </div>
-
                     </div>
                   ) : (
-                    <div 
-                      id="achievement-poster-export" 
+                    <div
+                      id="achievement-poster-export"
                       style={getPosterStyle(posterSize, posterTheme)}
                     >
                       {/* Decorative Background Rings */}
@@ -3815,31 +4448,54 @@ export function AchievementsPage() {
                       {/* Poster Header */}
                       <div className="flex items-center justify-between border-b border-black/10 pb-4 relative z-10">
                         <div className="flex items-center gap-2">
-                          <div className={`size-8 font-extrabold text-sm rounded-lg flex items-center justify-center shadow-xs ${
-                            posterTheme === "royal" || posterTheme === "modern" ? "bg-brand text-white" : "bg-black/10 text-slate-800"
-                          }`}>
+                          <div
+                            className={`size-8 font-extrabold text-sm rounded-lg flex items-center justify-center shadow-xs ${
+                              posterTheme === "royal" || posterTheme === "modern"
+                                ? "bg-brand text-white"
+                                : "bg-black/10 text-slate-800"
+                            }`}
+                          >
                             H
                           </div>
                           <div>
-                            <h4 className="font-extrabold text-xs tracking-wider">{schoolDisplayName}</h4>
-                            <p className="text-[7px] uppercase tracking-widest opacity-80">Empowering Academic Excellence</p>
+                            <h4 className="font-extrabold text-xs tracking-wider">
+                              {schoolDisplayName}
+                            </h4>
+                            <p className="text-[7px] uppercase tracking-widest opacity-80">
+                              Empowering Academic Excellence
+                            </p>
                           </div>
                         </div>
-                        <span className="text-[8px] font-bold uppercase tracking-wider opacity-90">Academic Showcase</span>
+                        <span className="text-[8px] font-bold uppercase tracking-wider opacity-90">
+                          Academic Showcase
+                        </span>
                       </div>
 
                       {/* Poster Body */}
-                      <div className={`flex flex-col items-center text-center relative z-10 ${posterSize === 'square' ? 'my-2 space-y-2' : 'my-4 space-y-4'}`}>
+                      <div
+                        className={`flex flex-col items-center text-center relative z-10 ${posterSize === "square" ? "my-2 space-y-2" : "my-4 space-y-4"}`}
+                      >
                         {/* Avatar */}
-                        <div className={`rounded-full border-4 flex items-center justify-center font-bold shadow-lg relative overflow-hidden flex-shrink-0 ${
-                          posterSize === 'square' ? 'size-16 text-2xl border-2' : 'size-24 text-3xl'
-                        } ${
-                          posterTheme === "royal" || posterTheme === "modern" ? "border-brand/40 bg-slate-800 text-white" : "border-black/10 bg-white/40 text-slate-700"
-                        }`}>
+                        <div
+                          className={`rounded-full border-4 flex items-center justify-center font-bold shadow-lg relative overflow-hidden flex-shrink-0 ${
+                            posterSize === "square"
+                              ? "size-16 text-2xl border-2"
+                              : "size-24 text-3xl"
+                          } ${
+                            posterTheme === "royal" || posterTheme === "modern"
+                              ? "border-brand/40 bg-slate-800 text-white"
+                              : "border-black/10 bg-white/40 text-slate-700"
+                          }`}
+                        >
                           {selectedStudentForPoster?.photo_url ? (
-                            <img src={selectedStudentForPoster.photo_url} alt="" className="size-full object-cover" crossOrigin="anonymous" />
+                            <img
+                              src={selectedStudentForPoster.photo_url}
+                              alt=""
+                              className="size-full object-cover"
+                              crossOrigin="anonymous"
+                            />
                           ) : (
-                            selectedStudentForPoster?.full_name?.slice(0,1) || "S"
+                            selectedStudentForPoster?.full_name?.slice(0, 1) || "S"
                           )}
                           <div className="absolute -top-1 -right-1">
                             <Sparkles className="size-4 text-amber-500 animate-pulse" />
@@ -3847,164 +4503,222 @@ export function AchievementsPage() {
                         </div>
 
                         <div className="space-y-0.5">
-                          <p className="text-[9px] uppercase font-bold tracking-widest opacity-70">Honor Roll Achievement</p>
-                          <h3 className={`font-black tracking-tight ${posterSize === 'square' ? 'text-lg' : 'text-2xl'}`}>{selectedStudentForPoster?.full_name || "Aarav Sharma"}</h3>
+                          <p className="text-[9px] uppercase font-bold tracking-widest opacity-70">
+                            Honor Roll Achievement
+                          </p>
+                          <h3
+                            className={`font-black tracking-tight ${posterSize === "square" ? "text-lg" : "text-2xl"}`}
+                          >
+                            {selectedStudentForPoster?.full_name || "Aarav Sharma"}
+                          </h3>
                           <p className="text-xs font-semibold opacity-90">
-                            Class {posterClassName} · Roll No. {selectedStudentForPoster?.roll_number || "101"}
+                            Class {posterClassName} · Roll No.{" "}
+                            {selectedStudentForPoster?.roll_number || "101"}
                           </p>
                         </div>
 
                         {/* Rank Badges */}
-                        <div className={`px-5 py-2.5 rounded-2xl border text-center shadow-xs space-y-0.5 max-w-[200px] ${
-                          posterTheme === "royal" || posterTheme === "modern" ? "bg-white/5 border-white/10" : "bg-white/40 border-black/5"
-                        }`}>
+                        <div
+                          className={`px-5 py-2.5 rounded-2xl border text-center shadow-xs space-y-0.5 max-w-[200px] ${
+                            posterTheme === "royal" || posterTheme === "modern"
+                              ? "bg-white/5 border-white/10"
+                              : "bg-white/40 border-black/5"
+                          }`}
+                        >
                           <div className="flex items-center justify-center gap-1.5 text-xs font-black uppercase text-amber-500">
                             <Trophy className="size-4 animate-bounce" /> {posterDetails.rankText}
                           </div>
-                          <div className="text-[8px] uppercase tracking-wider opacity-80 font-bold">{posterDetails.label}</div>
-                          <div className="text-[9px] font-black text-brand">{posterDetails.stats}</div>
+                          <div className="text-[8px] uppercase tracking-wider opacity-80 font-bold">
+                            {posterDetails.label}
+                          </div>
+                          <div className="text-[9px] font-black text-brand">
+                            {posterDetails.stats}
+                          </div>
                         </div>
                       </div>
 
                       {/* Poster Footer */}
                       <div className="flex items-end justify-between border-t border-black/10 pt-4 text-left relative z-10">
                         <div className="space-y-1">
-                          <span className="text-[7px] uppercase tracking-wider font-bold opacity-60">Verification Code</span>
+                          <span className="text-[7px] uppercase tracking-wider font-bold opacity-60">
+                            Verification Code
+                          </span>
                           <div className="p-1 bg-white rounded-lg shadow-xs border border-slate-100 flex items-center justify-center">
-                            <img 
-                              src={`https://api.qrserver.com/v1/create-qr-code/?size=45x45&data=VERIFY-${selectedStudentForPoster?.full_name || 'STUDENT'}-HZ`} 
-                              alt="Verification QR" 
-                              className="size-8" 
+                            <img
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=45x45&data=VERIFY-${selectedStudentForPoster?.full_name || "STUDENT"}-HZ`}
+                              alt="Verification QR"
+                              className="size-8"
                               crossOrigin="anonymous"
                             />
                           </div>
                         </div>
 
                         <div className="text-right space-y-1">
-                          <span className="font-serif italic text-amber-600 font-bold text-xs tracking-wide block">Nirosha Reddy</span>
+                          <span className="font-serif italic text-amber-600 font-bold text-xs tracking-wide block">
+                            Nirosha Reddy
+                          </span>
                           <div className="h-0.5 w-20 bg-black/10 ml-auto" />
-                          <span className="text-[8px] uppercase font-bold tracking-wider opacity-70">School Principal</span>
+                          <span className="text-[8px] uppercase font-bold tracking-wider opacity-70">
+                            School Principal
+                          </span>
                         </div>
                       </div>
-
                     </div>
                   )}
-
                 </div>
-
               </div>
             )}
 
             {/* TAB CONTENT: CERTIFICATE GENERATOR */}
             {activeTab === "certificates" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                
                 {/* Left Controls */}
                 <div className="bg-white border border-border rounded-2xl p-6 shadow-xs space-y-6">
                   <div>
                     <h3 className="font-bold text-lg text-slate-800">Certificate Designer</h3>
-                    <p className="text-xs text-muted-foreground">Customize digital certifications and export print-ready PDFs.</p>
+                    <p className="text-xs text-muted-foreground">
+                      Customize digital certifications and export print-ready PDFs.
+                    </p>
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex flex-col">
-                      <label className="text-xs font-bold text-muted-foreground uppercase">Recipient Student</label>
-                      <select 
-                        value={selectedStudentForCert?.id || ""} 
+                      <label className="text-xs font-bold text-muted-foreground uppercase">
+                        Recipient Student
+                      </label>
+                      <select
+                        value={selectedStudentForCert?.id || ""}
                         onChange={(e) => {
-                          const stud = students.find(s => s.id === e.target.value);
+                          const stud = students.find((s) => s.id === e.target.value);
                           setSelectedStudentForCert(stud);
-                        }} 
+                        }}
                         className="mt-1 bg-card border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none"
                       >
-                        {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+                        {filteredStudents.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.full_name}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
                     <div className="flex flex-col">
-                      <label className="text-xs font-bold text-muted-foreground uppercase">Certificate Design Profile</label>
+                      <label className="text-xs font-bold text-muted-foreground uppercase">
+                        Certificate Design Profile
+                      </label>
                       <div className="space-y-2 mt-2 text-xs">
                         <div className="flex items-center gap-2">
-                          <input 
-                            type="radio" 
-                            id="cert-rank1" 
-                            name="cert-type" 
-                            checked={selectedCertProfile === "rank1"} 
-                            onChange={() => setSelectedCertProfile("rank1")} 
-                            className="cursor-pointer" 
+                          <input
+                            type="radio"
+                            id="cert-rank1"
+                            name="cert-type"
+                            checked={selectedCertProfile === "rank1"}
+                            onChange={() => setSelectedCertProfile("rank1")}
+                            className="cursor-pointer"
                           />
-                          <label htmlFor="cert-rank1" className="cursor-pointer font-medium text-slate-700 dark:text-slate-300">First Rank Certificate</label>
+                          <label
+                            htmlFor="cert-rank1"
+                            className="cursor-pointer font-medium text-slate-700 dark:text-slate-300"
+                          >
+                            First Rank Certificate
+                          </label>
                         </div>
                         <div className="flex items-center gap-2">
-                          <input 
-                            type="radio" 
-                            id="cert-rank2" 
-                            name="cert-type" 
-                            checked={selectedCertProfile === "rank2"} 
-                            onChange={() => setSelectedCertProfile("rank2")} 
-                            className="cursor-pointer" 
+                          <input
+                            type="radio"
+                            id="cert-rank2"
+                            name="cert-type"
+                            checked={selectedCertProfile === "rank2"}
+                            onChange={() => setSelectedCertProfile("rank2")}
+                            className="cursor-pointer"
                           />
-                          <label htmlFor="cert-rank2" className="cursor-pointer font-medium text-slate-700 dark:text-slate-300">Second Rank Certificate</label>
+                          <label
+                            htmlFor="cert-rank2"
+                            className="cursor-pointer font-medium text-slate-700 dark:text-slate-300"
+                          >
+                            Second Rank Certificate
+                          </label>
                         </div>
                         <div className="flex items-center gap-2">
-                          <input 
-                            type="radio" 
-                            id="cert-rank3" 
-                            name="cert-type" 
-                            checked={selectedCertProfile === "rank3"} 
-                            onChange={() => setSelectedCertProfile("rank3")} 
-                            className="cursor-pointer" 
+                          <input
+                            type="radio"
+                            id="cert-rank3"
+                            name="cert-type"
+                            checked={selectedCertProfile === "rank3"}
+                            onChange={() => setSelectedCertProfile("rank3")}
+                            className="cursor-pointer"
                           />
-                          <label htmlFor="cert-rank3" className="cursor-pointer font-medium text-slate-700 dark:text-slate-300">Third Rank Certificate</label>
+                          <label
+                            htmlFor="cert-rank3"
+                            className="cursor-pointer font-medium text-slate-700 dark:text-slate-300"
+                          >
+                            Third Rank Certificate
+                          </label>
                         </div>
                         <div className="flex items-center gap-2">
-                          <input 
-                            type="radio" 
-                            id="cert-attendance" 
-                            name="cert-type" 
-                            checked={selectedCertProfile === "attendance"} 
-                            onChange={() => setSelectedCertProfile("attendance")} 
-                            className="cursor-pointer" 
+                          <input
+                            type="radio"
+                            id="cert-attendance"
+                            name="cert-type"
+                            checked={selectedCertProfile === "attendance"}
+                            onChange={() => setSelectedCertProfile("attendance")}
+                            className="cursor-pointer"
                           />
-                          <label htmlFor="cert-attendance" className="cursor-pointer font-medium text-slate-700 dark:text-slate-300">Attendance Champion</label>
+                          <label
+                            htmlFor="cert-attendance"
+                            className="cursor-pointer font-medium text-slate-700 dark:text-slate-300"
+                          >
+                            Attendance Champion
+                          </label>
                         </div>
                         <div className="flex items-center gap-2">
-                          <input 
-                            type="radio" 
-                            id="cert-discipline" 
-                            name="cert-type" 
-                            checked={selectedCertProfile === "discipline"} 
-                            onChange={() => setSelectedCertProfile("discipline")} 
-                            className="cursor-pointer" 
+                          <input
+                            type="radio"
+                            id="cert-discipline"
+                            name="cert-type"
+                            checked={selectedCertProfile === "discipline"}
+                            onChange={() => setSelectedCertProfile("discipline")}
+                            className="cursor-pointer"
                           />
-                          <label htmlFor="cert-discipline" className="cursor-pointer font-medium text-slate-700 dark:text-slate-300">Best Discipline Award</label>
+                          <label
+                            htmlFor="cert-discipline"
+                            className="cursor-pointer font-medium text-slate-700 dark:text-slate-300"
+                          >
+                            Best Discipline Award
+                          </label>
                         </div>
                         <div className="flex items-center gap-2">
-                          <input 
-                            type="radio" 
-                            id="cert-excellence" 
-                            name="cert-type" 
-                            checked={selectedCertProfile === "excellence"} 
-                            onChange={() => setSelectedCertProfile("excellence")} 
-                            className="cursor-pointer" 
+                          <input
+                            type="radio"
+                            id="cert-excellence"
+                            name="cert-type"
+                            checked={selectedCertProfile === "excellence"}
+                            onChange={() => setSelectedCertProfile("excellence")}
+                            className="cursor-pointer"
                           />
-                          <label htmlFor="cert-excellence" className="cursor-pointer font-medium text-slate-700 dark:text-slate-300">Academic Excellence</label>
+                          <label
+                            htmlFor="cert-excellence"
+                            className="cursor-pointer font-medium text-slate-700 dark:text-slate-300"
+                          >
+                            Academic Excellence
+                          </label>
                         </div>
+                      </div>
+                    </div>
+
+                    {/* PDF Preview Validation Panel */}
+                    <div className="mt-4 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
+                        <span>PDF Preview Validated</span>
+                      </div>
+                      <p className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                        Compatible color format applied. Borders, dynamic typography, and seal
+                        structures verified for standard A4 landscape print format.
+                      </p>
                     </div>
                   </div>
 
-                  {/* PDF Preview Validation Panel */}
-                  <div className="mt-4 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold">
-                      <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
-                      <span>PDF Preview Validated</span>
-                    </div>
-                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400">
-                      Compatible color format applied. Borders, dynamic typography, and seal structures verified for standard A4 landscape print format.
-                    </p>
-                  </div>
-                </div>
- 
                   <div className="border-t border-slate-100 pt-6">
                     <button
                       onClick={downloadCertificate}
@@ -4014,87 +4728,142 @@ export function AchievementsPage() {
                     </button>
                   </div>
                 </div>
- 
+
                 {/* Right parchment layout certificate */}
                 <div className="lg:col-span-2 flex items-center justify-center p-4 bg-slate-100/30 rounded-3xl border border-dashed border-slate-200">
-                  
                   {/* Certificate Print Preview Container */}
-                  <div 
+                  <div
                     id="academic-certificate-export"
                     className="w-[640px] aspect-[1.414] bg-[#FDFBF7] p-12 border-[12px] rounded-sm shadow-2xl relative flex flex-col justify-between items-center text-center text-slate-800"
                     style={{ borderColor: certDetails.borderColor }}
                   >
                     {/* Inner border */}
-                    <div className="absolute inset-2 border-[2px] pointer-events-none" style={{ borderColor: certDetails.innerColor }} />
- 
+                    <div
+                      className="absolute inset-2 border-[2px] pointer-events-none"
+                      style={{ borderColor: certDetails.innerColor }}
+                    />
+
                     {/* Corner Details */}
-                    <div className="absolute top-4 left-4 size-8 border-t-2 border-l-2 pointer-events-none" style={{ borderColor: certDetails.borderColor }} />
-                    <div className="absolute top-4 right-4 size-8 border-t-2 border-r-2 pointer-events-none" style={{ borderColor: certDetails.borderColor }} />
-                    <div className="absolute bottom-4 left-4 size-8 border-b-2 border-l-2 pointer-events-none" style={{ borderColor: certDetails.borderColor }} />
-                    <div className="absolute bottom-4 right-4 size-8 border-b-2 border-r-2 pointer-events-none" style={{ borderColor: certDetails.borderColor }} />
- 
+                    <div
+                      className="absolute top-4 left-4 size-8 border-t-2 border-l-2 pointer-events-none"
+                      style={{ borderColor: certDetails.borderColor }}
+                    />
+                    <div
+                      className="absolute top-4 right-4 size-8 border-t-2 border-r-2 pointer-events-none"
+                      style={{ borderColor: certDetails.borderColor }}
+                    />
+                    <div
+                      className="absolute bottom-4 left-4 size-8 border-b-2 border-l-2 pointer-events-none"
+                      style={{ borderColor: certDetails.borderColor }}
+                    />
+                    <div
+                      className="absolute bottom-4 right-4 size-8 border-b-2 border-r-2 pointer-events-none"
+                      style={{ borderColor: certDetails.borderColor }}
+                    />
+
                     {/* Certificate Header */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-center gap-2">
                         <Trophy className="size-8" style={{ color: certDetails.innerColor }} />
-                        <h2 className="font-serif italic font-extrabold text-2xl tracking-wider text-amber-900">{schoolDisplayName}</h2>
+                        <h2 className="font-serif italic font-extrabold text-2xl tracking-wider text-amber-900">
+                          {schoolDisplayName}
+                        </h2>
                       </div>
-                      <p className="text-[8px] uppercase tracking-widest font-black opacity-85">Affiliated School Certificate of Honors</p>
+                      <p className="text-[8px] uppercase tracking-widest font-black opacity-85">
+                        Affiliated School Certificate of Honors
+                      </p>
                     </div>
- 
+
                     {/* Certificate Title */}
                     <div className="space-y-3 my-2 flex flex-col items-center">
-                      <h3 className="font-serif text-2xl font-extrabold tracking-tight animate-pulse" style={{ color: certDetails.textColor }}>{certDetails.title}</h3>
-                      
+                      <h3
+                        className="font-serif text-2xl font-extrabold tracking-tight animate-pulse"
+                        style={{ color: certDetails.textColor }}
+                      >
+                        {certDetails.title}
+                      </h3>
+
                       {/* High-res Certificate Student Photo Frame */}
-                      <div className="size-14 rounded-full border-2 bg-white overflow-hidden shadow-xs flex items-center justify-center my-1" style={{ borderColor: certDetails.innerColor }}>
+                      <div
+                        className="size-14 rounded-full border-2 bg-white overflow-hidden shadow-xs flex items-center justify-center my-1"
+                        style={{ borderColor: certDetails.innerColor }}
+                      >
                         {selectedStudentForCert?.photo_url ? (
-                          <img src={selectedStudentForCert.photo_url} alt="" className="size-full object-cover animate-fade-in" crossOrigin="anonymous" />
+                          <img
+                            src={selectedStudentForCert.photo_url}
+                            alt=""
+                            className="size-full object-cover animate-fade-in"
+                            crossOrigin="anonymous"
+                          />
                         ) : (
                           <User className="size-6 text-slate-300" />
                         )}
                       </div>
 
-                      <p className="text-[9px] italic text-slate-500">This certificate is proudly presented to</p>
-                      
-                      <h4 className="font-serif text-lg font-black border-b pb-0.5 px-6 inline-block" style={{ borderColor: certDetails.innerColor, color: certDetails.textColor }}>
+                      <p className="text-[9px] italic text-slate-500">
+                        This certificate is proudly presented to
+                      </p>
+
+                      <h4
+                        className="font-serif text-lg font-black border-b pb-0.5 px-6 inline-block"
+                        style={{
+                          borderColor: certDetails.innerColor,
+                          color: certDetails.textColor,
+                        }}
+                      >
                         {selectedStudentForCert?.full_name || "Aarav Sharma"}
                       </h4>
-                      
+
                       <p className="text-[10px] text-slate-600 max-w-lg mx-auto leading-relaxed">
                         {certDetails.desc}
                       </p>
                     </div>
- 
+
                     {/* Signatures & Seal */}
                     <div className="w-full flex items-end justify-between px-10 border-t border-slate-100 pt-6">
-                      
                       {/* Left: Principal Signature */}
                       <div className="text-center space-y-1.5 w-32">
-                        <span className="font-serif italic font-semibold text-xs tracking-wide" style={{ color: certDetails.textColor }}>Nirosha Reddy</span>
+                        <span
+                          className="font-serif italic font-semibold text-xs tracking-wide"
+                          style={{ color: certDetails.textColor }}
+                        >
+                          Nirosha Reddy
+                        </span>
                         <div className="h-[1px] bg-slate-300 w-full" />
-                        <span className="text-[7px] uppercase font-bold tracking-wider opacity-70">School Principal</span>
+                        <span className="text-[7px] uppercase font-bold tracking-wider opacity-70">
+                          School Principal
+                        </span>
                       </div>
- 
+
                       {/* Center: Gold Seal */}
-                      <div className="size-16 rounded-full border-4 bg-amber-50 shadow-md flex items-center justify-center relative shrink-0" style={{ borderColor: certDetails.innerColor }}>
-                        <div className="absolute inset-0.5 border border-dashed rounded-full" style={{ borderColor: certDetails.innerColor }} />
+                      <div
+                        className="size-16 rounded-full border-4 bg-amber-50 shadow-md flex items-center justify-center relative shrink-0"
+                        style={{ borderColor: certDetails.innerColor }}
+                      >
+                        <div
+                          className="absolute inset-0.5 border border-dashed rounded-full"
+                          style={{ borderColor: certDetails.innerColor }}
+                        />
                         <Award className="size-8" style={{ color: certDetails.innerColor }} />
                       </div>
- 
+
                       {/* Right: Date */}
                       <div className="text-center space-y-1.5 w-32 text-xs">
-                        <span className="font-bold text-slate-700">{new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</span>
+                        <span className="font-bold text-slate-700">
+                          {new Date().toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
                         <div className="h-[1px] bg-slate-300 w-full" />
-                        <span className="text-[7px] uppercase font-bold tracking-wider opacity-70">Issued Date</span>
+                        <span className="text-[7px] uppercase font-bold tracking-wider opacity-70">
+                          Issued Date
+                        </span>
                       </div>
- 
                     </div>
- 
                   </div>
-
                 </div>
-
               </div>
             )}
 
@@ -4104,17 +4873,22 @@ export function AchievementsPage() {
                 {/* Role Warning / Context */}
                 {isStudent && (
                   <div className="bg-blue-50 dark:bg-blue-955/30 border border-blue-200 dark:border-blue-900/30 text-blue-800 dark:text-blue-300 p-4 rounded-xl text-xs">
-                    As a student, you can view your own published report cards. Download the official PDF certificate for printing.
+                    As a student, you can view your own published report cards. Download the
+                    official PDF certificate for printing.
                   </div>
                 )}
                 {isParent && (
                   <div className="bg-blue-50 dark:bg-blue-955/30 border border-blue-200 dark:border-blue-900/30 text-blue-800 dark:text-blue-300 p-4 rounded-xl text-xs">
-                    Parent Portal: Select child to view official transcripts and term progress reports. WhatsApp notifications will be sent upon final release.
+                    Parent Portal: Select child to view official transcripts and term progress
+                    reports. WhatsApp notifications will be sent upon final release.
                   </div>
                 )}
                 {simulatedRole === "teacher" && simulatedTeacherSubject !== "All" && (
                   <div className="bg-amber-50 dark:bg-amber-955/30 border border-amber-200 dark:border-amber-900/30 text-amber-800 dark:text-amber-300 p-4 rounded-xl text-xs">
-                    <strong>Subject Teacher Access:</strong> You can view student lists and final report cards, but report card generation, publishing, and admin operations are restricted. Enter marks in the <strong>Academics &rarr; Marks Management</strong> module.
+                    <strong>Subject Teacher Access:</strong> You can view student lists and final
+                    report cards, but report card generation, publishing, and admin operations are
+                    restricted. Enter marks in the{" "}
+                    <strong>Academics &rarr; Marks Management</strong> module.
                   </div>
                 )}
 
@@ -4123,49 +4897,103 @@ export function AchievementsPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     {/* KPI 1: Total Students */}
                     <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-5 rounded-2xl shadow-xs">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">Total Students</span>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                        Total Students
+                      </span>
                       <h4 className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 mt-1">
-                        {students.filter(s => !selectedReportCardClass || s.class_id === selectedReportCardClass).length}
+                        {
+                          students.filter(
+                            (s) =>
+                              !selectedReportCardClass || s.class_id === selectedReportCardClass,
+                          ).length
+                        }
                       </h4>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">Enrolled in selected class</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        Enrolled in selected class
+                      </p>
                     </div>
                     {/* KPI 2: Generated */}
                     <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-5 rounded-2xl shadow-xs">
-                      <span className="text-[10px] font-bold text-indigo-600 uppercase">Generated Drafts</span>
+                      <span className="text-[10px] font-bold text-indigo-600 uppercase">
+                        Generated Drafts
+                      </span>
                       <h4 className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 mt-1">
-                        {reportCards.filter(r => r.status === "draft" && (!selectedReportCardClass || r.class_id === selectedReportCardClass) && r.exam_type === selectedReportCardExam).length}
+                        {
+                          reportCards.filter(
+                            (r) =>
+                              r.status === "draft" &&
+                              (!selectedReportCardClass ||
+                                r.class_id === selectedReportCardClass) &&
+                              r.exam_type === selectedReportCardExam,
+                          ).length
+                        }
                       </h4>
                       <p className="text-[10px] text-muted-foreground mt-0.5">Ready for review</p>
                     </div>
                     {/* KPI 3: Published */}
                     <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-5 rounded-2xl shadow-xs">
-                      <span className="text-[10px] font-bold text-emerald-600 uppercase">Published Cards</span>
+                      <span className="text-[10px] font-bold text-emerald-600 uppercase">
+                        Published Cards
+                      </span>
                       <h4 className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 mt-1">
-                        {reportCards.filter(r => r.status === "published" && (!selectedReportCardClass || r.class_id === selectedReportCardClass) && r.exam_type === selectedReportCardExam).length}
+                        {
+                          reportCards.filter(
+                            (r) =>
+                              r.status === "published" &&
+                              (!selectedReportCardClass ||
+                                r.class_id === selectedReportCardClass) &&
+                              r.exam_type === selectedReportCardExam,
+                          ).length
+                        }
                       </h4>
                       <p className="text-[10px] text-muted-foreground mt-0.5">Visible to parents</p>
                     </div>
                     {/* KPI 4: Pending */}
                     <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-5 rounded-2xl shadow-xs">
-                      <span className="text-[10px] font-bold text-amber-600 uppercase">Pending Cards</span>
+                      <span className="text-[10px] font-bold text-amber-600 uppercase">
+                        Pending Cards
+                      </span>
                       <h4 className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 mt-1">
-                        {Math.max(0, students.filter(s => !selectedReportCardClass || s.class_id === selectedReportCardClass).length - 
-                          reportCards.filter(r => (!selectedReportCardClass || r.class_id === selectedReportCardClass) && r.exam_type === selectedReportCardExam).length)}
+                        {Math.max(
+                          0,
+                          students.filter(
+                            (s) =>
+                              !selectedReportCardClass || s.class_id === selectedReportCardClass,
+                          ).length -
+                            reportCards.filter(
+                              (r) =>
+                                (!selectedReportCardClass ||
+                                  r.class_id === selectedReportCardClass) &&
+                                r.exam_type === selectedReportCardExam,
+                            ).length,
+                        )}
                       </h4>
                       <p className="text-[10px] text-muted-foreground mt-0.5">Need generation</p>
                     </div>
                     {/* KPI 5: Avg Score */}
                     <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-5 rounded-2xl shadow-xs">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">Class Avg Score</span>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                        Class Avg Score
+                      </span>
                       <h4 className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 mt-1">
                         {(() => {
-                          const classRcs = reportCards.filter(r => (!selectedReportCardClass || r.class_id === selectedReportCardClass) && r.exam_type === selectedReportCardExam);
+                          const classRcs = reportCards.filter(
+                            (r) =>
+                              (!selectedReportCardClass ||
+                                r.class_id === selectedReportCardClass) &&
+                              r.exam_type === selectedReportCardExam,
+                          );
                           if (classRcs.length === 0) return "—";
-                          const totalPct = classRcs.reduce((acc, curr) => acc + Number(curr.percentage), 0);
+                          const totalPct = classRcs.reduce(
+                            (acc, curr) => acc + Number(curr.percentage),
+                            0,
+                          );
                           return `${(totalPct / classRcs.length).toFixed(1)}%`;
                         })()}
                       </h4>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">Based on generated cards</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        Based on generated cards
+                      </p>
                     </div>
                   </div>
                 )}
@@ -4175,20 +5003,28 @@ export function AchievementsPage() {
                   <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-border dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-4">
                     <div className="flex flex-wrap items-center gap-3">
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Target Class</span>
-                        <select 
-                          value={selectedReportCardClass} 
-                          onChange={(e) => setSelectedReportCardClass(e.target.value)} 
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                          Target Class
+                        </span>
+                        <select
+                          value={selectedReportCardClass}
+                          onChange={(e) => setSelectedReportCardClass(e.target.value)}
                           className="mt-1 bg-card dark:bg-slate-800 text-foreground border border-border dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none"
                         >
-                          {classes.map(c => <option key={c.id} value={c.id}>{c.name} ({c.grade}-{c.section})</option>)}
+                          {classes.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name} ({c.grade}-{c.section})
+                            </option>
+                          ))}
                         </select>
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Exam Term</span>
-                        <select 
-                          value={selectedReportCardExam} 
-                          onChange={(e) => setSelectedReportCardExam(e.target.value)} 
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                          Exam Term
+                        </span>
+                        <select
+                          value={selectedReportCardExam}
+                          onChange={(e) => setSelectedReportCardExam(e.target.value)}
                           className="mt-1 bg-card dark:bg-slate-800 text-foreground border border-border dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none"
                         >
                           <option value="Unit Test">Unit Test</option>
@@ -4204,44 +5040,44 @@ export function AchievementsPage() {
                     {/* Bulk operations panel */}
                     {simulatedRole !== "teacher" || simulatedTeacherSubject === "All" ? (
                       <div className="flex flex-wrap gap-2">
-                        <button 
+                        <button
                           onClick={handleSeedMockAcademicData}
                           className="px-3 py-1.5 text-xs font-semibold border border-border dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg flex items-center gap-1 bg-card dark:bg-slate-900 text-slate-700 dark:text-slate-300 transition-all cursor-pointer animate-fade-in"
                         >
                           <Plus className="size-3.5" /> Seed Marks Data
                         </button>
-                        <button 
+                        <button
                           onClick={handleGenerateClassReportCards}
                           className="px-3 py-1.5 text-xs font-semibold bg-brand/10 text-brand hover:bg-brand/20 rounded-lg flex items-center gap-1 transition-all cursor-pointer"
                         >
                           <RefreshCw className="size-3.5" /> Generate Class Drafts
                         </button>
-                        <button 
+                        <button
                           onClick={handleGenerateSchoolReportCards}
                           className="px-3 py-1.5 text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 border border-indigo-100 dark:border-indigo-900/30 rounded-lg flex items-center gap-1 transition-all cursor-pointer"
                         >
                           <Sliders className="size-3.5" /> Generate School-wide
                         </button>
-                        <button 
+                        <button
                           onClick={handlePublishClassReportCards}
                           className="px-3 py-1.5 text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg flex items-center gap-1 shadow-xs transition-all cursor-pointer"
                         >
                           <CheckCircle2 className="size-3.5" /> Publish Class Cards
                         </button>
-                        <button 
+                        <button
                           onClick={handleDownloadCombinedClassPDF}
                           className="px-3 py-1.5 text-xs font-semibold bg-brand text-white hover:bg-brand/90 rounded-lg flex items-center gap-1 shadow-xs transition-all cursor-pointer"
                         >
                           <Download className="size-3.5" /> Download Combined PDF
                         </button>
-                        <button 
+                        <button
                           onClick={handleDownloadClassZIP}
                           className="px-3 py-1.5 text-xs font-semibold border border-border dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg flex items-center gap-1 bg-card dark:bg-slate-900 text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
                         >
                           <FileDown className="size-3.5" /> Download ZIP of PDFs
                         </button>
 
-                        <button 
+                        <button
                           onClick={() => {
                             setShowPromotionPanel(!showPromotionPanel);
                             setPromotionSelectedStudents([]);
@@ -4252,7 +5088,9 @@ export function AchievementsPage() {
                         </button>
                       </div>
                     ) : (
-                      <span className="text-xs text-muted-foreground italic">Report Card actions managed by Class Teacher or Admin</span>
+                      <span className="text-xs text-muted-foreground italic">
+                        Report Card actions managed by Class Teacher or Admin
+                      </span>
                     )}
                   </div>
                 )}
@@ -4266,10 +5104,13 @@ export function AchievementsPage() {
                           <Users className="size-5 text-violet-600" /> Student Promotion System
                         </h3>
                         <p className="text-xs text-muted-foreground">
-                          Bulk promote, retain, or transfer students in Class {classes.find(c => c.id === selectedReportCardClass)?.name || "Selected Class"} for the new academic year.
+                          Bulk promote, retain, or transfer students in Class{" "}
+                          {classes.find((c) => c.id === selectedReportCardClass)?.name ||
+                            "Selected Class"}{" "}
+                          for the new academic year.
                         </p>
                       </div>
-                      <button 
+                      <button
                         onClick={() => setShowPromotionPanel(false)}
                         className="text-xs font-semibold px-2.5 py-1 border border-border dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200"
                       >
@@ -4279,12 +5120,16 @@ export function AchievementsPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50/50 dark:bg-slate-800/10 p-4 rounded-xl text-xs">
                       <div className="flex flex-col gap-1.5">
-                        <label className="font-bold text-muted-foreground uppercase text-[10px]">1. Select Students to Action</label>
+                        <label className="font-bold text-muted-foreground uppercase text-[10px]">
+                          1. Select Students to Action
+                        </label>
                         <div className="flex gap-2">
                           <button
                             onClick={() => {
-                              const classStuds = students.filter(s => s.class_id === selectedReportCardClass);
-                              setPromotionSelectedStudents(classStuds.map(s => s.id));
+                              const classStuds = students.filter(
+                                (s) => s.class_id === selectedReportCardClass,
+                              );
+                              setPromotionSelectedStudents(classStuds.map((s) => s.id));
                             }}
                             className="px-2 py-1 bg-card border border-border rounded hover:bg-slate-50 text-[10px]"
                           >
@@ -4297,42 +5142,64 @@ export function AchievementsPage() {
                             Deselect All
                           </button>
                         </div>
-                        <span className="font-bold text-violet-600 mt-1">{promotionSelectedStudents.length} student(s) selected</span>
+                        <span className="font-bold text-violet-600 mt-1">
+                          {promotionSelectedStudents.length} student(s) selected
+                        </span>
                       </div>
 
                       <div className="flex flex-col gap-1">
-                        <label className="font-bold text-muted-foreground uppercase text-[10px]">2. Target Promotion Class</label>
+                        <label className="font-bold text-muted-foreground uppercase text-[10px]">
+                          2. Target Promotion Class
+                        </label>
                         <select
                           value={promotionTargetClass}
                           onChange={(e) => setPromotionTargetClass(e.target.value)}
                           className="bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none"
                         >
                           <option value="">-- Select Target Class --</option>
-                          {classes.filter(c => c.id !== selectedReportCardClass).map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                          ))}
+                          {classes
+                            .filter((c) => c.id !== selectedReportCardClass)
+                            .map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.name}
+                              </option>
+                            ))}
                         </select>
                       </div>
 
                       <div className="flex flex-col justify-end gap-2">
-                        <label className="font-bold text-muted-foreground uppercase text-[10px] block">3. Select Action</label>
+                        <label className="font-bold text-muted-foreground uppercase text-[10px] block">
+                          3. Select Action
+                        </label>
                         <div className="grid grid-cols-3 gap-2">
                           <button
-                            onClick={() => handlePromoteStudents('promote', promotionSelectedStudents, promotionTargetClass)}
-                            disabled={promotionSelectedStudents.length === 0 || !promotionTargetClass}
+                            onClick={() =>
+                              handlePromoteStudents(
+                                "promote",
+                                promotionSelectedStudents,
+                                promotionTargetClass,
+                              )
+                            }
+                            disabled={
+                              promotionSelectedStudents.length === 0 || !promotionTargetClass
+                            }
                             className="py-1.5 bg-emerald-600 text-white hover:bg-emerald-700 font-bold rounded-lg shadow-xs disabled:opacity-50 text-[10px] cursor-pointer"
                           >
                             Promote
                           </button>
                           <button
-                            onClick={() => handlePromoteStudents('retain', promotionSelectedStudents)}
+                            onClick={() =>
+                              handlePromoteStudents("retain", promotionSelectedStudents)
+                            }
                             disabled={promotionSelectedStudents.length === 0}
                             className="py-1.5 bg-amber-500 text-white hover:bg-amber-600 font-bold rounded-lg shadow-xs disabled:opacity-50 text-[10px] cursor-pointer"
                           >
                             Retain
                           </button>
                           <button
-                            onClick={() => handlePromoteStudents('transfer', promotionSelectedStudents)}
+                            onClick={() =>
+                              handlePromoteStudents("transfer", promotionSelectedStudents)
+                            }
                             disabled={promotionSelectedStudents.length === 0}
                             className="py-1.5 bg-rose-600 text-white hover:bg-rose-700 font-bold rounded-lg shadow-xs disabled:opacity-50 text-[10px] cursor-pointer"
                           >
@@ -4354,42 +5221,69 @@ export function AchievementsPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {students.filter(s => s.class_id === selectedReportCardClass).map(student => {
-                            const isSelected = promotionSelectedStudents.includes(student.id);
-                            const rc = reportCards.find(r => r.student_id === student.id && r.exam_type === selectedReportCardExam && r.academic_year === academicYear);
-                            return (
-                              <tr key={student.id} className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/20 dark:hover:bg-slate-800/20">
-                                <td className="py-2.5 px-4">
-                                  <input
-                                    type="checkbox"
-                                    checked={isSelected}
-                                    onChange={(e) => {
-                                      if (e.target.checked) {
-                                        setPromotionSelectedStudents(prev => [...prev, student.id]);
-                                      } else {
-                                        setPromotionSelectedStudents(prev => prev.filter(id => id !== student.id));
-                                      }
-                                    }}
-                                    className="rounded border-border text-brand focus:ring-brand cursor-pointer"
-                                  />
-                                </td>
-                                <td className="py-2.5 px-4 font-semibold text-slate-750 dark:text-slate-200">{student.full_name}</td>
-                                <td className="py-2.5 px-4 text-muted-foreground">{student.roll_number || "—"}</td>
-                                <td className="py-2.5 px-4 text-muted-foreground font-mono">{(student as any).academic_year || "—"}</td>
-                                <td className="py-2.5 px-4 text-center">
-                                  {rc ? (
-                                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
-                                      rc.result_status === "Fail" ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-800"
-                                    }`}>
-                                      {rc.result_status} ({rc.percentage}%)
-                                    </span>
-                                  ) : (
-                                    <span className="text-muted-foreground italic text-[10px]">No Card</span>
-                                  )}
-                                </td>
-                              </tr>
-                            );
-                          })}
+                          {students
+                            .filter((s) => s.class_id === selectedReportCardClass)
+                            .map((student) => {
+                              const isSelected = promotionSelectedStudents.includes(student.id);
+                              const rc = reportCards.find(
+                                (r) =>
+                                  r.student_id === student.id &&
+                                  r.exam_type === selectedReportCardExam &&
+                                  r.academic_year === academicYear,
+                              );
+                              return (
+                                <tr
+                                  key={student.id}
+                                  className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/20 dark:hover:bg-slate-800/20"
+                                >
+                                  <td className="py-2.5 px-4">
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setPromotionSelectedStudents((prev) => [
+                                            ...prev,
+                                            student.id,
+                                          ]);
+                                        } else {
+                                          setPromotionSelectedStudents((prev) =>
+                                            prev.filter((id) => id !== student.id),
+                                          );
+                                        }
+                                      }}
+                                      className="rounded border-border text-brand focus:ring-brand cursor-pointer"
+                                    />
+                                  </td>
+                                  <td className="py-2.5 px-4 font-semibold text-slate-750 dark:text-slate-200">
+                                    {student.full_name}
+                                  </td>
+                                  <td className="py-2.5 px-4 text-muted-foreground">
+                                    {student.roll_number || "—"}
+                                  </td>
+                                  <td className="py-2.5 px-4 text-muted-foreground font-mono">
+                                    {(student as any).academic_year || "—"}
+                                  </td>
+                                  <td className="py-2.5 px-4 text-center">
+                                    {rc ? (
+                                      <span
+                                        className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                                          rc.result_status === "Fail"
+                                            ? "bg-rose-50 text-rose-700"
+                                            : "bg-emerald-50 text-emerald-800"
+                                        }`}
+                                      >
+                                        {rc.result_status} ({rc.percentage}%)
+                                      </span>
+                                    ) : (
+                                      <span className="text-muted-foreground italic text-[10px]">
+                                        No Card
+                                      </span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
                         </tbody>
                       </table>
                     </div>
@@ -4400,10 +5294,16 @@ export function AchievementsPage() {
                 <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl p-6 shadow-xs">
                   <div className="mb-4">
                     <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">
-                      {isParent ? "Child Performance Transcripts" : isStudent ? "My Performance Report Card" : "Student Report Cards Roster"}
+                      {isParent
+                        ? "Child Performance Transcripts"
+                        : isStudent
+                          ? "My Performance Report Card"
+                          : "Student Report Cards Roster"}
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      {isParent ? "Select child and download official term evaluation transcripts." : "Academic grades list, marks integration details, and status indices."}
+                      {isParent
+                        ? "Select child and download official term evaluation transcripts."
+                        : "Academic grades list, marks integration details, and status indices."}
                     </p>
                   </div>
 
@@ -4412,9 +5312,16 @@ export function AchievementsPage() {
                     if (isParent) {
                       displayStudents = parentChildren;
                     } else if (isStudent) {
-                      displayStudents = students.filter(s => s.id === user?.id || s.roll_number?.includes("101") || s.full_name?.toLowerCase().includes("arav"));
+                      displayStudents = students.filter(
+                        (s) =>
+                          s.id === user?.id ||
+                          s.roll_number?.includes("101") ||
+                          s.full_name?.toLowerCase().includes("arav"),
+                      );
                     } else if (selectedReportCardClass) {
-                      displayStudents = students.filter(s => s.class_id === selectedReportCardClass);
+                      displayStudents = students.filter(
+                        (s) => s.class_id === selectedReportCardClass,
+                      );
                     }
 
                     if (displayStudents.length === 0) {
@@ -4422,7 +5329,9 @@ export function AchievementsPage() {
                         <div className="text-center py-12 text-muted-foreground">
                           <BookOpen className="size-8 mx-auto mb-2 opacity-50" />
                           <p className="font-semibold">No students found</p>
-                          <p className="text-xs">Select another class or ensure students are assigned to classes.</p>
+                          <p className="text-xs">
+                            Select another class or ensure students are assigned to classes.
+                          </p>
                         </div>
                       );
                     }
@@ -4446,17 +5355,31 @@ export function AchievementsPage() {
                           <tbody>
                             {displayStudents.map((stud) => {
                               const card = reportCards.find(
-                                rc => rc.student_id === stud.id && 
-                                rc.exam_type === selectedReportCardExam && 
-                                rc.academic_year === academicYear
+                                (rc) =>
+                                  rc.student_id === stud.id &&
+                                  rc.exam_type === selectedReportCardExam &&
+                                  rc.academic_year === academicYear,
                               );
 
-                              if ((isParent || isStudent) && (!card || card.status !== "published")) {
+                              if (
+                                (isParent || isStudent) &&
+                                (!card || card.status !== "published")
+                              ) {
                                 return (
-                                  <tr key={stud.id} className="border-b border-slate-50 dark:border-slate-800/50">
-                                    <td className="py-3 px-3 font-semibold text-slate-700 dark:text-slate-300">{stud.full_name}</td>
-                                    <td className="py-3 px-3 text-muted-foreground">{stud.roll_number || "—"}</td>
-                                    <td colSpan={7} className="py-3 px-3 text-center text-xs text-muted-foreground italic">
+                                  <tr
+                                    key={stud.id}
+                                    className="border-b border-slate-50 dark:border-slate-800/50"
+                                  >
+                                    <td className="py-3 px-3 font-semibold text-slate-700 dark:text-slate-300">
+                                      {stud.full_name}
+                                    </td>
+                                    <td className="py-3 px-3 text-muted-foreground">
+                                      {stud.roll_number || "—"}
+                                    </td>
+                                    <td
+                                      colSpan={7}
+                                      className="py-3 px-3 text-center text-xs text-muted-foreground italic"
+                                    >
                                       Report Card is not yet published by school administration.
                                     </td>
                                   </tr>
@@ -4464,20 +5387,29 @@ export function AchievementsPage() {
                               }
 
                               return (
-                                <tr key={stud.id} className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                                <tr
+                                  key={stud.id}
+                                  className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"
+                                >
                                   <td className="py-3 px-3 font-semibold text-slate-700 dark:text-slate-300">
                                     <div className="flex items-center gap-2">
                                       <div className="size-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-xs overflow-hidden">
                                         {stud.photo_url ? (
-                                          <img src={stud.photo_url} alt="" className="size-full object-cover" />
+                                          <img
+                                            src={stud.photo_url}
+                                            alt=""
+                                            className="size-full object-cover"
+                                          />
                                         ) : (
-                                          stud.full_name.slice(0,1)
+                                          stud.full_name.slice(0, 1)
                                         )}
                                       </div>
                                       <span>{stud.full_name}</span>
                                     </div>
                                   </td>
-                                  <td className="py-3 px-3 text-muted-foreground">{stud.roll_number || "—"}</td>
+                                  <td className="py-3 px-3 text-muted-foreground">
+                                    {stud.roll_number || "—"}
+                                  </td>
                                   <td className="py-3 px-3 text-center font-medium">
                                     {card ? `${card.total_obtained} / ${card.total_max}` : "—"}
                                   </td>
@@ -4485,32 +5417,55 @@ export function AchievementsPage() {
                                     {card ? `${card.percentage}%` : "—"}
                                   </td>
                                   <td className="py-3 px-3 text-center font-semibold text-brand">
-                                    {card ? (card.total_max > 0 ? (card.percentage / 10).toFixed(2) : "0.00") : "—"}
+                                    {card
+                                      ? card.total_max > 0
+                                        ? (card.percentage / 10).toFixed(2)
+                                        : "0.00"
+                                      : "—"}
                                   </td>
                                   <td className="py-3 px-3 text-center">
                                     {card ? (
                                       <div className="text-[10px]">
-                                        <span className="font-bold text-slate-700 dark:text-slate-300">Class: #{card.class_rank || "—"}</span>
-                                        {card.section_rank && <span className="text-muted-foreground ml-1">Sec: #{card.section_rank}</span>}
+                                        <span className="font-bold text-slate-700 dark:text-slate-300">
+                                          Class: #{card.class_rank || "—"}
+                                        </span>
+                                        {card.section_rank && (
+                                          <span className="text-muted-foreground ml-1">
+                                            Sec: #{card.section_rank}
+                                          </span>
+                                        )}
                                       </div>
-                                    ) : "—"}
+                                    ) : (
+                                      "—"
+                                    )}
                                   </td>
                                   <td className="py-3 px-3 text-center">
                                     {card ? (
-                                      <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                                        card.result_status === "Fail" ? "bg-red-50 text-red-700 border border-red-200 dark:bg-red-955/30 dark:text-red-300 dark:border-red-900/30" :
-                                        card.result_status === "Distinction" || card.result_status === "Merit" ? "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-955/30 dark:text-emerald-300 dark:border-emerald-900/30" :
-                                        "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-955/30 dark:text-blue-300 dark:border-blue-900/30"
-                                      }`}>
+                                      <span
+                                        className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                                          card.result_status === "Fail"
+                                            ? "bg-red-50 text-red-700 border border-red-200 dark:bg-red-955/30 dark:text-red-300 dark:border-red-900/30"
+                                            : card.result_status === "Distinction" ||
+                                                card.result_status === "Merit"
+                                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-955/30 dark:text-emerald-300 dark:border-emerald-900/30"
+                                              : "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-955/30 dark:text-blue-300 dark:border-blue-900/30"
+                                        }`}
+                                      >
                                         {card.result_status}
                                       </span>
-                                    ) : "—"}
+                                    ) : (
+                                      "—"
+                                    )}
                                   </td>
                                   <td className="py-3 px-3 text-center">
                                     {card ? (
-                                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-bold ${
-                                        card.status === "published" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-955/30 dark:text-emerald-300" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                                      }`}>
+                                      <span
+                                        className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-bold ${
+                                          card.status === "published"
+                                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-955/30 dark:text-emerald-300"
+                                            : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                                        }`}
+                                      >
                                         {card.status.toUpperCase()}
                                       </span>
                                     ) : (
@@ -4536,82 +5491,118 @@ export function AchievementsPage() {
                                           <Download className="size-3.5" />
                                         </button>
 
-                                        {isAdminOrTeacher && (simulatedRole !== "teacher" || simulatedTeacherSubject === "All") && (
-                                          <button
-                                            onClick={() => {
-                                              setActiveReportCard(card);
-                                              setRcWorkingDays(card.working_days || 220);
-                                              setRcClassTeacherRemarks(card.class_teacher_remarks || "");
-                                              setRcPrincipalRemarks(card.principal_remarks || "");
-                                              setRcPresentDays({ [stud.id]: card.present_days || 0 });
-                                              
-                                              const remarksMap: Record<string, string> = {};
-                                              if (Array.isArray(card.subject_marks)) {
-                                                card.subject_marks.forEach((sm: any) => {
-                                                  if (sm.subject_id) {
-                                                    remarksMap[sm.subject_id] = sm.remarks || "";
-                                                  }
+                                        {isAdminOrTeacher &&
+                                          (simulatedRole !== "teacher" ||
+                                            simulatedTeacherSubject === "All") && (
+                                            <button
+                                              onClick={() => {
+                                                setActiveReportCard(card);
+                                                setRcWorkingDays(card.working_days || 220);
+                                                setRcClassTeacherRemarks(
+                                                  card.class_teacher_remarks || "",
+                                                );
+                                                setRcPrincipalRemarks(card.principal_remarks || "");
+                                                setRcPresentDays({
+                                                  [stud.id]: card.present_days || 0,
                                                 });
-                                              }
-                                              setRcSubjectRemarks(remarksMap);
-                                            }}
-                                            title="Edit Remarks & Attendance"
-                                            className="p-1 hover:bg-indigo-50 dark:hover:bg-indigo-955/30 text-indigo-600 dark:text-indigo-400 rounded transition-all cursor-pointer"
-                                          >
-                                            <Sliders className="size-3.5" />
-                                          </button>
-                                        )}
 
-                                        {isAdminOrTeacher && (simulatedRole !== "teacher" || simulatedTeacherSubject === "All") && (
-                                          <button
-                                            onClick={async () => {
-                                              const newStatus = card.status === "published" ? "draft" : "published";
-                                              const { error } = await (supabase as any).from("report_cards")
-                                                .update({ status: newStatus })
-                                                .eq("id", card.id);
-                                              
-                                              if (error) {
-                                                toast.error("Status update failed: " + error.message);
-                                              } else {
-                                                toast.success(`Report card status updated to ${newStatus}`);
-                                                void loadData();
-                                              }
-                                            }}
-                                            title={card.status === "published" ? "Unpublish Card" : "Publish Card"}
-                                            className={`p-1 rounded transition-all cursor-pointer ${
-                                              card.status === "published" ? "hover:bg-amber-50 text-amber-600" : "hover:bg-emerald-50 text-emerald-600"
-                                            }`}
-                                          >
-                                            <CheckCircle2 className="size-3.5" />
-                                          </button>
-                                        )}
+                                                const remarksMap: Record<string, string> = {};
+                                                if (Array.isArray(card.subject_marks)) {
+                                                  card.subject_marks.forEach((sm: any) => {
+                                                    if (sm.subject_id) {
+                                                      remarksMap[sm.subject_id] = sm.remarks || "";
+                                                    }
+                                                  });
+                                                }
+                                                setRcSubjectRemarks(remarksMap);
+                                              }}
+                                              title="Edit Remarks & Attendance"
+                                              className="p-1 hover:bg-indigo-50 dark:hover:bg-indigo-955/30 text-indigo-600 dark:text-indigo-400 rounded transition-all cursor-pointer"
+                                            >
+                                              <Sliders className="size-3.5" />
+                                            </button>
+                                          )}
 
-                                        {isAdminOrTeacher && (simulatedRole !== "teacher" || simulatedTeacherSubject === "All") && (
-                                          <button
-                                            onClick={async () => {
-                                              if (confirm("Are you sure you want to delete this report card?")) {
-                                                const { error } = await (supabase as any).from("report_cards")
-                                                  .delete()
+                                        {isAdminOrTeacher &&
+                                          (simulatedRole !== "teacher" ||
+                                            simulatedTeacherSubject === "All") && (
+                                            <button
+                                              onClick={async () => {
+                                                const newStatus =
+                                                  card.status === "published"
+                                                    ? "draft"
+                                                    : "published";
+                                                const { error } = await (supabase as any)
+                                                  .from("report_cards")
+                                                  .update({ status: newStatus })
                                                   .eq("id", card.id);
+
                                                 if (error) {
-                                                  toast.error("Failed to delete card: " + error.message);
+                                                  toast.error(
+                                                    "Status update failed: " + error.message,
+                                                  );
                                                 } else {
-                                                  toast.success("Report card deleted successfully.");
+                                                  toast.success(
+                                                    `Report card status updated to ${newStatus}`,
+                                                  );
                                                   void loadData();
                                                 }
+                                              }}
+                                              title={
+                                                card.status === "published"
+                                                  ? "Unpublish Card"
+                                                  : "Publish Card"
                                               }
-                                            }}
-                                            title="Delete Card"
-                                            className="p-1 hover:bg-rose-50 dark:hover:bg-rose-955/30 text-rose-600 rounded transition-all cursor-pointer"
-                                          >
-                                            <Trash2 className="size-3.5" />
-                                          </button>
-                                        )}
+                                              className={`p-1 rounded transition-all cursor-pointer ${
+                                                card.status === "published"
+                                                  ? "hover:bg-amber-50 text-amber-600"
+                                                  : "hover:bg-emerald-50 text-emerald-600"
+                                              }`}
+                                            >
+                                              <CheckCircle2 className="size-3.5" />
+                                            </button>
+                                          )}
+
+                                        {isAdminOrTeacher &&
+                                          (simulatedRole !== "teacher" ||
+                                            simulatedTeacherSubject === "All") && (
+                                            <button
+                                              onClick={async () => {
+                                                if (
+                                                  confirm(
+                                                    "Are you sure you want to delete this report card?",
+                                                  )
+                                                ) {
+                                                  const { error } = await (supabase as any)
+                                                    .from("report_cards")
+                                                    .delete()
+                                                    .eq("id", card.id);
+                                                  if (error) {
+                                                    toast.error(
+                                                      "Failed to delete card: " + error.message,
+                                                    );
+                                                  } else {
+                                                    toast.success(
+                                                      "Report card deleted successfully.",
+                                                    );
+                                                    void loadData();
+                                                  }
+                                                }
+                                              }}
+                                              title="Delete Card"
+                                              className="p-1 hover:bg-rose-50 dark:hover:bg-rose-955/30 text-rose-600 rounded transition-all cursor-pointer"
+                                            >
+                                              <Trash2 className="size-3.5" />
+                                            </button>
+                                          )}
 
                                         <button
                                           onClick={() => {
                                             const text = `Dear Parent, ${stud.full_name}'s ${selectedReportCardExam} Report Card is available! Marks: ${card.total_obtained}/${card.total_max} (${card.percentage}%). Rank: #${card.class_rank}. Download here: ${window.location.origin}/report-card/${card.id}`;
-                                            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
+                                            window.open(
+                                              `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`,
+                                              "_blank",
+                                            );
                                             toast.success("WhatsApp sharing initiated!");
                                           }}
                                           title="Share via WhatsApp"
@@ -4622,17 +5613,21 @@ export function AchievementsPage() {
 
                                         <button
                                           onClick={async () => {
-                                            toast.info(`Sending official Report Card PDF to ${stud.parent_email || 'parent'}...`);
+                                            toast.info(
+                                              `Sending official Report Card PDF to ${stud.parent_email || "parent"}...`,
+                                            );
                                             await supabase.from("notification_logs").insert({
                                               school_id: schoolId!,
                                               parent_user_id: stud.parent_user_id || adminUserId,
                                               student_id: stud.id,
                                               type: "email",
                                               title: `📧 Report Card Sent: ${stud.full_name}`,
-                                              body: `Official academic transcript PDF for ${stud.full_name} has been emailed to ${stud.parent_email || 'parent'}.`,
-                                              status: "sent"
+                                              body: `Official academic transcript PDF for ${stud.full_name} has been emailed to ${stud.parent_email || "parent"}.`,
+                                              status: "sent",
                                             });
-                                            toast.success(`Email simulated successfully to ${stud.parent_email || 'parent'}`);
+                                            toast.success(
+                                              `Email simulated successfully to ${stud.parent_email || "parent"}`,
+                                            );
                                             void loadData();
                                           }}
                                           title="Email Report Card"
@@ -4642,7 +5637,9 @@ export function AchievementsPage() {
                                         </button>
                                       </div>
                                     ) : (
-                                      isAdminOrTeacher && (simulatedRole !== "teacher" || simulatedTeacherSubject === "All") && (
+                                      isAdminOrTeacher &&
+                                      (simulatedRole !== "teacher" ||
+                                        simulatedTeacherSubject === "All") && (
                                         <button
                                           onClick={async () => {
                                             setIsLoading(true);
@@ -4662,9 +5659,11 @@ export function AchievementsPage() {
                                                 present_days: 200,
                                                 absent_days: 20,
                                                 attendance_percentage: 90.9,
-                                                status: "draft"
+                                                status: "draft",
                                               });
-                                              toast.success(`Draft card generated for ${stud.full_name}`);
+                                              toast.success(
+                                                `Draft card generated for ${stud.full_name}`,
+                                              );
                                               void loadData();
                                             } catch (e: any) {
                                               toast.error("Failed to generate: " + e.message);
@@ -4694,29 +5693,39 @@ export function AchievementsPage() {
             {/* TAB CONTENT: REPORTS */}
             {activeTab === "reports" && isAdminOrTeacher && (
               <div className="space-y-6">
-                
                 {/* Reports Analytics Charts Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  
                   {/* Average Trend */}
                   <div className="bg-white border border-border rounded-2xl p-5 shadow-xs">
                     <h3 className="font-bold text-sm text-slate-800 mb-4 flex items-center gap-1.5">
-                      <TrendingUp className="size-4 text-brand" /> Class Average Exam Performance Trend
+                      <TrendingUp className="size-4 text-brand" /> Class Average Exam Performance
+                      Trend
                     </h3>
-                    {classAveragesData.length === 0 ? <p className="text-xs text-muted-foreground py-10 text-center">No exam trends available</p> : (
+                    {classAveragesData.length === 0 ? (
+                      <p className="text-xs text-muted-foreground py-10 text-center">
+                        No exam trends available
+                      </p>
+                    ) : (
                       <ResponsiveContainer width="100%" height={240}>
                         <AreaChart data={classAveragesData}>
                           <defs>
                             <linearGradient id="colorAve" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--brand))" stopOpacity={0.2}/>
-                              <stop offset="95%" stopColor="hsl(var(--brand))" stopOpacity={0}/>
+                              <stop offset="5%" stopColor="hsl(var(--brand))" stopOpacity={0.2} />
+                              <stop offset="95%" stopColor="hsl(var(--brand))" stopOpacity={0} />
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                           <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                           <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
                           <Tooltip />
-                          <Area type="monotone" dataKey="Class Average %" stroke="hsl(var(--brand))" strokeWidth={2} fillOpacity={1} fill="url(#colorAve)" />
+                          <Area
+                            type="monotone"
+                            dataKey="Class Average %"
+                            stroke="hsl(var(--brand))"
+                            strokeWidth={2}
+                            fillOpacity={1}
+                            fill="url(#colorAve)"
+                          />
                         </AreaChart>
                       </ResponsiveContainer>
                     )}
@@ -4725,7 +5734,8 @@ export function AchievementsPage() {
                   {/* Ranks Grade distribution */}
                   <div className="bg-white border border-border rounded-2xl p-5 shadow-xs">
                     <h3 className="font-bold text-sm text-slate-800 mb-4 flex items-center gap-1.5">
-                      <SlidersHorizontal className="size-4 text-brand" /> Rank Grade & Score Distribution
+                      <SlidersHorizontal className="size-4 text-brand" /> Rank Grade & Score
+                      Distribution
                     </h3>
                     <ResponsiveContainer width="100%" height={240}>
                       <BarChart data={rankingDistributionData}>
@@ -4733,30 +5743,43 @@ export function AchievementsPage() {
                         <XAxis dataKey="range" tick={{ fontSize: 10 }} />
                         <YAxis tick={{ fontSize: 10 }} />
                         <Tooltip />
-                        <Bar dataKey="count" name="Number of Students" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                        <Bar
+                          dataKey="count"
+                          name="Number of Students"
+                          fill="#3b82f6"
+                          radius={[4, 4, 0, 0]}
+                        />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
-
                 </div>
 
                 {/* Analytical Grid table */}
                 <div className="bg-white border border-border rounded-2xl p-6 shadow-xs">
                   <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
                     <div>
-                      <h3 className="font-bold text-lg text-slate-800">School Performance & Ranking Report</h3>
-                      <p className="text-xs text-muted-foreground">Class-wide GPA indicators and performance metrics.</p>
+                      <h3 className="font-bold text-lg text-slate-800">
+                        School Performance & Ranking Report
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        Class-wide GPA indicators and performance metrics.
+                      </p>
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => exportToCSV(filteredRankings.map(r => ({
-                          Rank: r.rank_position,
-                          Student: r.student?.full_name,
-                          RollNumber: r.student?.roll_number,
-                          GPA: r.gpa,
-                          Percentage: r.percentage + "%",
-                          TotalMarks: r.total_marks
-                        })), `performance_report_${academicYear}`)}
+                        onClick={() =>
+                          exportToCSV(
+                            filteredRankings.map((r) => ({
+                              Rank: r.rank_position,
+                              Student: r.student?.full_name,
+                              RollNumber: r.student?.roll_number,
+                              GPA: r.gpa,
+                              Percentage: r.percentage + "%",
+                              TotalMarks: r.total_marks,
+                            })),
+                            `performance_report_${academicYear}`,
+                          )
+                        }
                         className="px-3 py-1.5 border border-border hover:bg-slate-50 transition-colors bg-card text-xs font-semibold rounded-lg flex items-center gap-1"
                       >
                         <FileDown className="size-3.5 text-muted-foreground" /> Export Excel
@@ -4778,19 +5801,32 @@ export function AchievementsPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredRankings.map(r => (
-                          <tr key={r.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                            <td className="py-3 px-2 font-bold text-slate-600">#{r.rank_position}</td>
-                            <td className="py-3 px-2 font-semibold text-slate-700">{r.student?.full_name}</td>
-                            <td className="py-3 px-2 text-muted-foreground">{r.student?.roll_number}</td>
+                        {filteredRankings.map((r) => (
+                          <tr
+                            key={r.id}
+                            className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors"
+                          >
+                            <td className="py-3 px-2 font-bold text-slate-600">
+                              #{r.rank_position}
+                            </td>
+                            <td className="py-3 px-2 font-semibold text-slate-700">
+                              {r.student?.full_name}
+                            </td>
+                            <td className="py-3 px-2 text-muted-foreground">
+                              {r.student?.roll_number}
+                            </td>
                             <td className="py-3 px-2 text-right font-medium">{r.total_marks}</td>
                             <td className="py-3 px-2 text-right font-medium">{r.percentage}%</td>
                             <td className="py-3 px-2 text-right font-bold text-brand">{r.gpa}</td>
                             <td className="py-3 px-2 text-center">
-                              <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                                r.percentage >= 75 ? 'bg-success-soft text-success' : 'bg-warning-soft text-warning'
-                              }`}>
-                                {r.percentage >= 75 ? 'Excellent' : 'Promising'}
+                              <span
+                                className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                                  r.percentage >= 75
+                                    ? "bg-success-soft text-success"
+                                    : "bg-warning-soft text-warning"
+                                }`}
+                              >
+                                {r.percentage >= 75 ? "Excellent" : "Promising"}
                               </span>
                             </td>
                           </tr>
@@ -4799,26 +5835,30 @@ export function AchievementsPage() {
                     </table>
                   </div>
                 </div>
-
               </div>
             )}
 
             {/* TAB CONTENT: ADMIN RULES SETUP */}
             {activeTab === "admin" && isAdminOrTeacher && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start text-foreground">
-                
                 {/* Left: Ranking Rules */}
                 <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-6">
                   <div>
-                    <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">Ranking Engine Rules Config</h3>
-                    <p className="text-xs text-muted-foreground">Adjust calculation criteria and attendance factors for rank reports.</p>
+                    <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">
+                      Ranking Engine Rules Config
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Adjust calculation criteria and attendance factors for rank reports.
+                    </p>
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex flex-col">
-                      <label className="text-xs font-bold text-muted-foreground uppercase">Ranking Calculation Metric</label>
-                      <select 
-                        value={rankingCriteria} 
+                      <label className="text-xs font-bold text-muted-foreground uppercase">
+                        Ranking Calculation Metric
+                      </label>
+                      <select
+                        value={rankingCriteria}
                         onChange={(e) => setRankingCriteria(e.target.value)}
                         className="mt-1 bg-card border border-border dark:border-slate-700 rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none"
                       >
@@ -4830,30 +5870,37 @@ export function AchievementsPage() {
 
                     <div className="flex flex-col">
                       <div className="flex justify-between items-center">
-                        <label className="text-xs font-bold text-muted-foreground uppercase">Attendance weightage modifier</label>
-                        <span className="text-xs font-bold text-brand">{Math.round(attendanceWeightage * 100)}% weight</span>
+                        <label className="text-xs font-bold text-muted-foreground uppercase">
+                          Attendance weightage modifier
+                        </label>
+                        <span className="text-xs font-bold text-brand">
+                          {Math.round(attendanceWeightage * 100)}% weight
+                        </span>
                       </div>
-                      <input 
-                        type="range" 
-                        min="0" 
-                        max="0.5" 
+                      <input
+                        type="range"
+                        min="0"
+                        max="0.5"
                         step="0.05"
-                        value={attendanceWeightage} 
+                        value={attendanceWeightage}
                         onChange={(e) => setAttendanceWeightage(Number(e.target.value))}
                         className="mt-2 w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-brand"
                       />
                       <span className="text-[10px] text-muted-foreground mt-1">
-                        Adds a percentage bonus based on the student's attendance records. Adjust to 0% to calculate strictly on exam marks.
+                        Adds a percentage bonus based on the student's attendance records. Adjust to
+                        0% to calculate strictly on exam marks.
                       </span>
                     </div>
 
                     <div className="flex flex-col">
-                      <label className="text-xs font-bold text-muted-foreground dark:text-slate-400 uppercase">Minimum Attendance Threshold</label>
-                      <input 
-                        type="number" 
-                        min="50" 
+                      <label className="text-xs font-bold text-muted-foreground dark:text-slate-400 uppercase">
+                        Minimum Attendance Threshold
+                      </label>
+                      <input
+                        type="number"
+                        min="50"
                         max="100"
-                        value={attendanceThreshold} 
+                        value={attendanceThreshold}
                         onChange={(e) => setAttendanceThreshold(Number(e.target.value))}
                         className="mt-1 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none text-foreground dark:text-slate-200"
                       />
@@ -4863,35 +5910,42 @@ export function AchievementsPage() {
                     </div>
 
                     <div className="flex flex-col border-t border-slate-100 dark:border-slate-800 pt-4">
-                      <label className="text-xs font-bold text-muted-foreground uppercase">Enabled Award Categories</label>
-                      <span className="text-[10px] text-muted-foreground mt-0.5">Toggle active awards generated by calculations.</span>
+                      <label className="text-xs font-bold text-muted-foreground uppercase">
+                        Enabled Award Categories
+                      </label>
+                      <span className="text-[10px] text-muted-foreground mt-0.5">
+                        Toggle active awards generated by calculations.
+                      </span>
                       <div className="grid grid-cols-2 gap-3 mt-3">
                         {[
-                          { key: 'rank_1', label: '1st Rank Badge' },
-                          { key: 'rank_2', label: '2nd Rank Badge' },
-                          { key: 'rank_3', label: '3rd Rank Badge' },
-                          { key: 'top_10', label: 'Top 10 Students Badge' },
-                          { key: 'subject_topper', label: 'Subject Toppers' },
-                          { key: 'class_topper', label: 'Class Topper' },
-                          { key: 'section_topper', label: 'Section Topper' },
-                          { key: 'school_topper', label: 'School Topper' },
-                          { key: 'attendance_topper', label: 'Attendance Topper' },
-                          { key: 'most_improved', label: 'Most Improved Award' },
-                          { key: 'discipline_award', label: 'Best Discipline Award' },
-                          { key: 'olympiad', label: 'Olympiad Winner' },
-                          { key: 'sports', label: 'Sports Winner' },
-                          { key: 'cultural', label: 'Cultural Winner' },
-                          { key: 'scholarship', label: 'Scholarship Recipient' },
+                          { key: "rank_1", label: "1st Rank Badge" },
+                          { key: "rank_2", label: "2nd Rank Badge" },
+                          { key: "rank_3", label: "3rd Rank Badge" },
+                          { key: "top_10", label: "Top 10 Students Badge" },
+                          { key: "subject_topper", label: "Subject Toppers" },
+                          { key: "class_topper", label: "Class Topper" },
+                          { key: "section_topper", label: "Section Topper" },
+                          { key: "school_topper", label: "School Topper" },
+                          { key: "attendance_topper", label: "Attendance Topper" },
+                          { key: "most_improved", label: "Most Improved Award" },
+                          { key: "discipline_award", label: "Best Discipline Award" },
+                          { key: "olympiad", label: "Olympiad Winner" },
+                          { key: "sports", label: "Sports Winner" },
+                          { key: "cultural", label: "Cultural Winner" },
+                          { key: "scholarship", label: "Scholarship Recipient" },
                         ].map((cat) => (
-                          <label key={cat.key} className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none">
-                            <input 
-                              type="checkbox" 
-                              checked={enabledCategories.includes(cat.key)} 
+                          <label
+                            key={cat.key}
+                            className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={enabledCategories.includes(cat.key)}
                               onChange={(e) => {
                                 if (e.target.checked) {
-                                  setEnabledCategories(prev => [...prev, cat.key]);
+                                  setEnabledCategories((prev) => [...prev, cat.key]);
                                 } else {
-                                  setEnabledCategories(prev => prev.filter(k => k !== cat.key));
+                                  setEnabledCategories((prev) => prev.filter((k) => k !== cat.key));
                                 }
                               }}
                               className="rounded border-border dark:border-slate-700 text-brand focus:ring-brand cursor-pointer"
@@ -4908,21 +5962,28 @@ export function AchievementsPage() {
                       onClick={async () => {
                         setIsLoading(true);
                         try {
-                          const check = await supabase.from("ranking_rules").select("id").eq("school_id", schoolId!).maybeSingle();
+                          const check = await supabase
+                            .from("ranking_rules")
+                            .select("id")
+                            .eq("school_id", schoolId!)
+                            .maybeSingle();
                           if (check.data) {
-                            await supabase.from("ranking_rules").update({
-                              criteria: rankingCriteria,
-                              attendance_weightage: attendanceWeightage,
-                              attendance_threshold: attendanceThreshold,
-                              enabled_categories: enabledCategories
-                            }).eq("school_id", schoolId!);
+                            await supabase
+                              .from("ranking_rules")
+                              .update({
+                                criteria: rankingCriteria,
+                                attendance_weightage: attendanceWeightage,
+                                attendance_threshold: attendanceThreshold,
+                                enabled_categories: enabledCategories,
+                              })
+                              .eq("school_id", schoolId!);
                           } else {
                             await supabase.from("ranking_rules").insert({
                               school_id: schoolId!,
                               criteria: rankingCriteria,
                               attendance_weightage: attendanceWeightage,
                               attendance_threshold: attendanceThreshold,
-                              enabled_categories: enabledCategories
+                              enabled_categories: enabledCategories,
                             });
                           }
 
@@ -4944,32 +6005,47 @@ export function AchievementsPage() {
                 {/* Right: Allocations Dashboard */}
                 <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-6">
                   <div>
-                    <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">Subject & Class Teacher Allocation System</h3>
-                    <p className="text-xs text-muted-foreground">Assign Class Teachers and allocate Subject Teachers to specific subjects and sections.</p>
+                    <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">
+                      Subject & Class Teacher Allocation System
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Assign Class Teachers and allocate Subject Teachers to specific subjects and
+                      sections.
+                    </p>
                   </div>
 
                   {/* Section 1: Class Teacher Form */}
                   <div className="bg-slate-50 dark:bg-slate-800/20 p-4 rounded-xl space-y-3 border border-border dark:border-slate-800">
-                    <span className="text-[10px] font-bold text-indigo-600 uppercase block tracking-wider">1. Assign Class Teacher</span>
+                    <span className="text-[10px] font-bold text-indigo-600 uppercase block tracking-wider">
+                      1. Assign Class Teacher
+                    </span>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex flex-col">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Class / Section</label>
-                        <select 
-                          value={allocClassId} 
-                          onChange={(e) => setAllocClassId(e.target.value)} 
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">
+                          Class / Section
+                        </label>
+                        <select
+                          value={allocClassId}
+                          onChange={(e) => setAllocClassId(e.target.value)}
                           className="mt-1 bg-card border border-border dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:outline-none"
                         >
-                          {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                          {classes.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name}
+                            </option>
+                          ))}
                         </select>
                       </div>
                       <div className="flex flex-col">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Select Teacher</label>
-                        <select 
-                          value={allocTeacherId} 
-                          onChange={(e) => setAllocTeacherId(e.target.value)} 
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">
+                          Select Teacher
+                        </label>
+                        <select
+                          value={allocTeacherId}
+                          onChange={(e) => setAllocTeacherId(e.target.value)}
                           className="mt-1 bg-card border border-border dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:outline-none"
                         >
-                          {(allProfiles || []).map(p => (
+                          {(allProfiles || []).map((p) => (
                             <option key={p.user_id} value={p.user_id}>
                               {p.full_name} ({p.email?.split("@")[0]})
                             </option>
@@ -4977,7 +6053,7 @@ export function AchievementsPage() {
                         </select>
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={handleAssignClassTeacher}
                       className="px-4 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-lg shadow-sm hover:bg-indigo-700 cursor-pointer"
                     >
@@ -4987,36 +6063,52 @@ export function AchievementsPage() {
 
                   {/* Section 2: Subject Allocation Form */}
                   <div className="bg-slate-50 dark:bg-slate-800/20 p-4 rounded-xl space-y-3 border border-border dark:border-slate-800">
-                    <span className="text-[10px] font-bold text-emerald-600 uppercase block tracking-wider">2. Allocate Subject Teacher</span>
+                    <span className="text-[10px] font-bold text-emerald-600 uppercase block tracking-wider">
+                      2. Allocate Subject Teacher
+                    </span>
                     <div className="grid grid-cols-3 gap-3">
                       <div className="flex flex-col">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Class / Section</label>
-                        <select 
-                          value={allocClassId} 
-                          onChange={(e) => setAllocClassId(e.target.value)} 
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">
+                          Class / Section
+                        </label>
+                        <select
+                          value={allocClassId}
+                          onChange={(e) => setAllocClassId(e.target.value)}
                           className="mt-1 bg-card border border-border dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none"
                         >
-                          {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                          {classes.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name}
+                            </option>
+                          ))}
                         </select>
                       </div>
                       <div className="flex flex-col">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Subject</label>
-                        <select 
-                          value={allocSubjectId} 
-                          onChange={(e) => setAllocSubjectId(e.target.value)} 
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">
+                          Subject
+                        </label>
+                        <select
+                          value={allocSubjectId}
+                          onChange={(e) => setAllocSubjectId(e.target.value)}
                           className="mt-1 bg-card border border-border dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none"
                         >
-                          {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                          {subjects.map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.name}
+                            </option>
+                          ))}
                         </select>
                       </div>
                       <div className="flex flex-col">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Teacher</label>
-                        <select 
-                          value={allocTeacherId} 
-                          onChange={(e) => setAllocTeacherId(e.target.value)} 
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">
+                          Teacher
+                        </label>
+                        <select
+                          value={allocTeacherId}
+                          onChange={(e) => setAllocTeacherId(e.target.value)}
                           className="mt-1 bg-card border border-border dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none"
                         >
-                          {(allProfiles || []).map(p => (
+                          {(allProfiles || []).map((p) => (
                             <option key={p.user_id} value={p.user_id}>
                               {p.full_name} ({p.email?.split("@")[0]})
                             </option>
@@ -5024,7 +6116,7 @@ export function AchievementsPage() {
                         </select>
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={handleAllocateSubjectTeacher}
                       className="px-4 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg shadow-sm hover:bg-emerald-700 cursor-pointer"
                     >
@@ -5034,7 +6126,9 @@ export function AchievementsPage() {
 
                   {/* Section 3: Current Allocations Roster */}
                   <div className="space-y-2">
-                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Current Allocations Roster</span>
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
+                      Current Allocations Roster
+                    </span>
                     <div className="max-h-60 overflow-y-auto border border-slate-100 dark:border-slate-805 rounded-xl text-xs">
                       <table className="w-full text-left border-collapse">
                         <thead>
@@ -5047,19 +6141,31 @@ export function AchievementsPage() {
                         </thead>
                         <tbody>
                           {/* Class Teachers List */}
-                          {classes.map(c => {
-                            const classTeacherObj = allProfiles.find(p => p.user_id === c.class_teacher_id);
+                          {classes.map((c) => {
+                            const classTeacherObj = allProfiles.find(
+                              (p) => p.user_id === c.class_teacher_id,
+                            );
                             return (
-                              <tr key={`ct-${c.id}`} className="border-b border-slate-50 dark:border-slate-800/40 hover:bg-slate-50/10">
+                              <tr
+                                key={`ct-${c.id}`}
+                                className="border-b border-slate-50 dark:border-slate-800/40 hover:bg-slate-50/10"
+                              >
                                 <td className="py-2 px-3 font-semibold">{c.name}</td>
-                                <td className="py-2 px-3"><span className="px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 font-bold text-[9px]">Class Teacher</span></td>
-                                <td className="py-2 px-3 font-medium text-slate-700 dark:text-slate-300">{classTeacherObj ? classTeacherObj.full_name : "Unassigned"}</td>
+                                <td className="py-2 px-3">
+                                  <span className="px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 font-bold text-[9px]">
+                                    Class Teacher
+                                  </span>
+                                </td>
+                                <td className="py-2 px-3 font-medium text-slate-700 dark:text-slate-300">
+                                  {classTeacherObj ? classTeacherObj.full_name : "Unassigned"}
+                                </td>
                                 <td className="py-2 px-3 text-right">
                                   {c.class_teacher_id && (
                                     <button
                                       onClick={async () => {
                                         if (confirm(`Remove class teacher from ${c.name}?`)) {
-                                          const { error } = await (supabase as any).from("classes")
+                                          const { error } = await (supabase as any)
+                                            .from("classes")
                                             .update({ class_teacher_id: null })
                                             .eq("id", c.id);
                                           if (error) toast.error(error.message);
@@ -5080,15 +6186,26 @@ export function AchievementsPage() {
                           })}
 
                           {/* Subject Allocations List */}
-                          {subjectAllocations.map(sa => {
-                            const classObj = classes.find(c => c.id === sa.class_id);
-                            const subjObj = subjects.find(s => s.id === sa.subject_id);
-                            const teacherObj = allProfiles.find(p => p.user_id === sa.teacher_id);
+                          {subjectAllocations.map((sa) => {
+                            const classObj = classes.find((c) => c.id === sa.class_id);
+                            const subjObj = subjects.find((s) => s.id === sa.subject_id);
+                            const teacherObj = allProfiles.find((p) => p.user_id === sa.teacher_id);
                             return (
-                              <tr key={`sa-${sa.id}`} className="border-b border-slate-50 dark:border-slate-800/40 hover:bg-slate-50/10">
-                                <td className="py-2 px-3 font-semibold">{classObj ? classObj.name : "Unknown Class"}</td>
-                                <td className="py-2 px-3"><span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-955/20 text-emerald-700 dark:text-emerald-300 font-bold text-[9px]">{subjObj ? subjObj.name : "Unknown Subject"}</span></td>
-                                <td className="py-2 px-3 font-medium text-slate-700 dark:text-slate-300">{teacherObj ? teacherObj.full_name : "Unknown"}</td>
+                              <tr
+                                key={`sa-${sa.id}`}
+                                className="border-b border-slate-50 dark:border-slate-800/40 hover:bg-slate-50/10"
+                              >
+                                <td className="py-2 px-3 font-semibold">
+                                  {classObj ? classObj.name : "Unknown Class"}
+                                </td>
+                                <td className="py-2 px-3">
+                                  <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-955/20 text-emerald-700 dark:text-emerald-300 font-bold text-[9px]">
+                                    {subjObj ? subjObj.name : "Unknown Subject"}
+                                  </span>
+                                </td>
+                                <td className="py-2 px-3 font-medium text-slate-700 dark:text-slate-300">
+                                  {teacherObj ? teacherObj.full_name : "Unknown"}
+                                </td>
                                 <td className="py-2 px-3 text-right">
                                   <button
                                     onClick={() => handleRemoveAllocation(sa.id)}
@@ -5103,7 +6220,12 @@ export function AchievementsPage() {
 
                           {subjectAllocations.length === 0 && (
                             <tr>
-                              <td colSpan={4} className="py-4 text-center text-muted-foreground italic">No subject allocations configured yet.</td>
+                              <td
+                                colSpan={4}
+                                className="py-4 text-center text-muted-foreground italic"
+                              >
+                                No subject allocations configured yet.
+                              </td>
                             </tr>
                           )}
                         </tbody>
@@ -5111,7 +6233,6 @@ export function AchievementsPage() {
                     </div>
                   </div>
                 </div>
-
               </div>
             )}
 
@@ -5123,7 +6244,9 @@ export function AchievementsPage() {
                     {isParent ? "Achievement Alerts & Feed" : "Parent Notification Logs"}
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    {isParent ? "Real-time updates of awards and generated certificates." : "Logs of sent messages regarding rank publication."}
+                    {isParent
+                      ? "Real-time updates of awards and generated certificates."
+                      : "Logs of sent messages regarding rank publication."}
                   </p>
                 </div>
 
@@ -5135,7 +6258,10 @@ export function AchievementsPage() {
                 ) : (
                   <div className="space-y-4">
                     {(isParent ? parentNotificationsList : notifications).map((n) => (
-                      <div key={n.id} className="p-4 rounded-xl border border-slate-50 bg-slate-50/50 flex items-start justify-between gap-4">
+                      <div
+                        key={n.id}
+                        className="p-4 rounded-xl border border-slate-50 bg-slate-50/50 flex items-start justify-between gap-4"
+                      >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             <span className="size-2 rounded-full bg-brand" />
@@ -5155,26 +6281,31 @@ export function AchievementsPage() {
                 )}
               </div>
             )}
-
           </div>
         )}
       </div>
 
       {/* MODAL: REPORT CARD EDITOR */}
       {activeReportCard && (
-        <div className="fixed inset-0 bg-black/45 dark:bg-black/60 flex items-center justify-center p-4 z-[999] overflow-y-auto" onClick={() => setActiveReportCard(null)}>
-          <div 
-            onClick={(e) => e.stopPropagation()} 
+        <div
+          className="fixed inset-0 bg-black/45 dark:bg-black/60 flex items-center justify-center p-4 z-[999] overflow-y-auto"
+          onClick={() => setActiveReportCard(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
             className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-4xl space-y-4 shadow-2xl border border-border dark:border-slate-800 my-8 text-foreground"
           >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div>
-                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">Edit Report Card Details</h3>
+                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">
+                  Edit Report Card Details
+                </h3>
                 <p className="text-xs text-muted-foreground dark:text-slate-400">
-                  Edit attendance record, student remarks, and subject observations for {students.find(s => s.id === activeReportCard.student_id)?.full_name}.
+                  Edit attendance record, student remarks, and subject observations for{" "}
+                  {students.find((s) => s.id === activeReportCard.student_id)?.full_name}.
                 </p>
               </div>
-              <button 
+              <button
                 onClick={() => setActiveReportCard(null)}
                 className="size-7 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 font-semibold"
               >
@@ -5188,8 +6319,10 @@ export function AchievementsPage() {
                 <div className="grid grid-cols-3 gap-4">
                   {/* Working Days */}
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-muted-foreground dark:text-slate-400">Total Working Days</label>
-                    <input 
+                    <label className="text-xs font-bold text-muted-foreground dark:text-slate-400">
+                      Total Working Days
+                    </label>
+                    <input
                       type="number"
                       value={rcWorkingDays}
                       onChange={(e) => {
@@ -5201,56 +6334,79 @@ export function AchievementsPage() {
                   </div>
                   {/* Present Days */}
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-muted-foreground dark:text-slate-400">Days Present</label>
-                    <input 
+                    <label className="text-xs font-bold text-muted-foreground dark:text-slate-400">
+                      Days Present
+                    </label>
+                    <input
                       type="number"
                       value={rcPresentDays[activeReportCard.student_id] || 0}
                       onChange={(e) => {
                         const pd = Math.min(rcWorkingDays, Math.max(0, Number(e.target.value)));
-                        setRcPresentDays(prev => ({ ...prev, [activeReportCard.student_id]: pd }));
+                        setRcPresentDays((prev) => ({
+                          ...prev,
+                          [activeReportCard.student_id]: pd,
+                        }));
                       }}
                       className="mt-1 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200"
                     />
                   </div>
                   {/* Attendance Percentage */}
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-muted-foreground dark:text-slate-400">Attendance %</label>
+                    <label className="text-xs font-bold text-muted-foreground dark:text-slate-400">
+                      Attendance %
+                    </label>
                     <div className="mt-2.5 text-xs font-bold text-emerald-600">
-                      {((rcPresentDays[activeReportCard.student_id] || 0) / rcWorkingDays * 100).toFixed(1)}%
+                      {(
+                        ((rcPresentDays[activeReportCard.student_id] || 0) / rcWorkingDays) *
+                        100
+                      ).toFixed(1)}
+                      %
                     </div>
                   </div>
                 </div>
 
                 {/* Subject remarks */}
                 <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3">
-                  <label className="text-xs font-bold text-muted-foreground dark:text-slate-400 uppercase tracking-wider block">Subject Teacher Observations</label>
+                  <label className="text-xs font-bold text-muted-foreground dark:text-slate-400 uppercase tracking-wider block">
+                    Subject Teacher Observations
+                  </label>
                   <div className="max-h-40 overflow-y-auto space-y-2 pr-1">
-                    {Array.isArray(activeReportCard.subject_marks) && activeReportCard.subject_marks.map((sm: any) => (
-                      <div key={sm.subject_id} className="grid grid-cols-3 gap-2 items-center text-xs">
-                        <span className="font-semibold text-slate-700 dark:text-slate-300 truncate">{sm.subject_name}</span>
-                        <span className="text-muted-foreground text-center">Score: {sm.obtained_marks} / {sm.max_marks} ({sm.grade})</span>
-                        <input 
-                          type="text"
-                          value={rcSubjectRemarks[sm.subject_id] || ""}
-                          placeholder="Observation remark"
-                          onChange={(e) => {
-                            setRcSubjectRemarks(prev => ({
-                              ...prev,
-                              [sm.subject_id]: e.target.value
-                            }));
-                          }}
-                          className="bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded px-2 py-1 text-xs focus:outline-none"
-                        />
-                      </div>
-                    ))}
+                    {Array.isArray(activeReportCard.subject_marks) &&
+                      activeReportCard.subject_marks.map((sm: any) => (
+                        <div
+                          key={sm.subject_id}
+                          className="grid grid-cols-3 gap-2 items-center text-xs"
+                        >
+                          <span className="font-semibold text-slate-700 dark:text-slate-300 truncate">
+                            {sm.subject_name}
+                          </span>
+                          <span className="text-muted-foreground text-center">
+                            Score: {sm.obtained_marks} / {sm.max_marks} ({sm.grade})
+                          </span>
+                          <input
+                            type="text"
+                            value={rcSubjectRemarks[sm.subject_id] || ""}
+                            placeholder="Observation remark"
+                            onChange={(e) => {
+                              setRcSubjectRemarks((prev) => ({
+                                ...prev,
+                                [sm.subject_id]: e.target.value,
+                              }));
+                            }}
+                            className="bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded px-2 py-1 text-xs focus:outline-none"
+                          />
+                        </div>
+                      ))}
                   </div>
                 </div>
 
                 {/* Remarks */}
                 <div className="flex flex-col space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3">
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-muted-foreground dark:text-slate-400">Class Teacher Remarks</label>
-                    <textarea 
+                    <label className="text-xs font-bold text-muted-foreground dark:text-slate-400">
+                      Class Teacher Remarks
+                    </label>
+                    <textarea
                       value={rcClassTeacherRemarks}
                       onChange={(e) => setRcClassTeacherRemarks(e.target.value)}
                       rows={2}
@@ -5259,8 +6415,10 @@ export function AchievementsPage() {
                     />
                   </div>
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-muted-foreground dark:text-slate-400">Principal Remarks</label>
-                    <textarea 
+                    <label className="text-xs font-bold text-muted-foreground dark:text-slate-400">
+                      Principal Remarks
+                    </label>
+                    <textarea
                       value={rcPrincipalRemarks}
                       onChange={(e) => setRcPrincipalRemarks(e.target.value)}
                       rows={2}
@@ -5271,15 +6429,15 @@ export function AchievementsPage() {
                 </div>
 
                 <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-4">
-                  <button 
-                    type="button" 
-                    onClick={() => setActiveReportCard(null)} 
+                  <button
+                    type="button"
+                    onClick={() => setActiveReportCard(null)}
                     className="px-4 py-2 text-xs font-semibold border border-border rounded-lg"
                   >
                     Cancel
                   </button>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     disabled={rcSaving}
                     onClick={async () => {
                       setRcSaving(true);
@@ -5287,13 +6445,13 @@ export function AchievementsPage() {
                         const present = rcPresentDays[activeReportCard.student_id] || 0;
                         const working = rcWorkingDays || 220;
                         const absent = working - present;
-                        const attPct = working > 0 ? (present / working * 100) : 0;
-                        
+                        const attPct = working > 0 ? (present / working) * 100 : 0;
+
                         let updatedSubjectMarks = [];
                         if (Array.isArray(activeReportCard.subject_marks)) {
                           updatedSubjectMarks = activeReportCard.subject_marks.map((sm: any) => ({
                             ...sm,
-                            remarks: rcSubjectRemarks[sm.subject_id] || sm.remarks || ""
+                            remarks: rcSubjectRemarks[sm.subject_id] || sm.remarks || "",
                           }));
                         }
 
@@ -5304,10 +6462,11 @@ export function AchievementsPage() {
                           attendance_percentage: Number(attPct.toFixed(2)),
                           class_teacher_remarks: rcClassTeacherRemarks,
                           principal_remarks: rcPrincipalRemarks,
-                          subject_marks: updatedSubjectMarks
+                          subject_marks: updatedSubjectMarks,
                         };
 
-                        const { error } = await (supabase as any).from("report_cards")
+                        const { error } = await (supabase as any)
+                          .from("report_cards")
                           .update(payload)
                           .eq("id", activeReportCard.id)
                           .eq("school_id", schoolId!);
@@ -5324,7 +6483,7 @@ export function AchievementsPage() {
                       } finally {
                         setRcSaving(false);
                       }
-                    }} 
+                    }}
                     className="px-4 py-2 text-xs font-semibold bg-brand text-white hover:bg-brand/90 transition-colors rounded-lg shadow-sm flex items-center gap-1.5 disabled:opacity-50"
                   >
                     {rcSaving ? "Saving..." : "Save Edits"}
@@ -5334,19 +6493,20 @@ export function AchievementsPage() {
 
               {/* Right Column: Linked Documents & Audit History */}
               <div className="md:col-span-5 space-y-6 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-4 md:pt-0 md:pl-6">
-                
                 {/* Linked Documents Panel */}
                 <div className="space-y-3">
                   <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 pb-1.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-1.5">
                     <Paperclip className="size-4 text-slate-500" /> Linked Documents
                   </h4>
-                  
+
                   {isAdminOrTeacher && (
                     <div className="bg-slate-50 dark:bg-slate-800/30 p-2.5 rounded-lg border border-border dark:border-slate-800 space-y-2">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase block">Upload Document</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">
+                        Upload Document
+                      </span>
                       <div className="flex flex-col gap-1.5">
-                        <select 
-                          value={uploadDocType} 
+                        <select
+                          value={uploadDocType}
                           onChange={(e) => setUploadDocType(e.target.value)}
                           className="bg-card dark:bg-slate-850 border border-border dark:border-slate-700 rounded-md px-2 py-1 text-xs font-semibold focus:outline-none"
                         >
@@ -5361,15 +6521,19 @@ export function AchievementsPage() {
                         <label className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-brand/10 hover:bg-brand/20 text-brand text-xs font-bold rounded-lg border border-brand/20 cursor-pointer transition-colors">
                           <Plus className="size-3.5" />
                           <span>Upload File</span>
-                          <input 
-                            type="file" 
+                          <input
+                            type="file"
                             onChange={(e) => {
                               const file = e.target.files?.[0];
                               if (file) {
-                                void handleUploadDocument(activeReportCard.student_id, uploadDocType, file);
+                                void handleUploadDocument(
+                                  activeReportCard.student_id,
+                                  uploadDocType,
+                                  file,
+                                );
                               }
                             }}
-                            className="hidden" 
+                            className="hidden"
                           />
                         </label>
                       </div>
@@ -5378,18 +6542,27 @@ export function AchievementsPage() {
 
                   <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
                     {studentDocuments.length === 0 ? (
-                      <p className="text-[11px] text-muted-foreground italic text-center py-2">No documents linked.</p>
+                      <p className="text-[11px] text-muted-foreground italic text-center py-2">
+                        No documents linked.
+                      </p>
                     ) : (
                       studentDocuments.map((doc) => (
-                        <div key={doc.id} className="flex items-center justify-between p-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-900/10 text-xs">
+                        <div
+                          key={doc.id}
+                          className="flex items-center justify-between p-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-900/10 text-xs"
+                        >
                           <div className="min-w-0 pr-2">
-                            <span className="font-bold text-slate-800 dark:text-slate-200 block truncate text-[11px]">{doc.document_type}</span>
-                            <span className="text-[9px] text-muted-foreground block truncate">{doc.file_name}</span>
+                            <span className="font-bold text-slate-800 dark:text-slate-200 block truncate text-[11px]">
+                              {doc.document_type}
+                            </span>
+                            <span className="text-[9px] text-muted-foreground block truncate">
+                              {doc.file_name}
+                            </span>
                           </div>
                           <div className="flex gap-1 shrink-0">
-                            <a 
-                              href={doc.file_url} 
-                              target="_blank" 
+                            <a
+                              href={doc.file_url}
+                              target="_blank"
                               rel="noreferrer"
                               className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-650 dark:text-slate-350 rounded transition-all"
                               title="Download"
@@ -5398,7 +6571,9 @@ export function AchievementsPage() {
                             </a>
                             {isAdminOrTeacher && (
                               <button
-                                onClick={() => void handleDeleteDocument(doc.id, activeReportCard.student_id)}
+                                onClick={() =>
+                                  void handleDeleteDocument(doc.id, activeReportCard.student_id)
+                                }
                                 className="p-1 hover:bg-rose-50 dark:hover:bg-rose-955/30 text-rose-600 dark:text-rose-450 rounded transition-all"
                                 title="Delete"
                               >
@@ -5420,20 +6595,30 @@ export function AchievementsPage() {
 
                   <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
                     {reportCardAuditHistory.length === 0 ? (
-                      <p className="text-[11px] text-muted-foreground italic text-center py-2">No history logs.</p>
+                      <p className="text-[11px] text-muted-foreground italic text-center py-2">
+                        No history logs.
+                      </p>
                     ) : (
                       reportCardAuditHistory.map((log) => (
                         <div key={log.id} className="flex gap-2 text-xs">
                           <div className="flex flex-col items-center">
-                            <div className={`size-1.5 rounded-full mt-1.5 shrink-0 ${
-                              log.action === 'Published' ? 'bg-emerald-500' :
-                              log.action === 'Approved' ? 'bg-blue-500' :
-                              log.action === 'Created' ? 'bg-gray-400' : 'bg-amber-500'
-                            }`} />
+                            <div
+                              className={`size-1.5 rounded-full mt-1.5 shrink-0 ${
+                                log.action === "Published"
+                                  ? "bg-emerald-500"
+                                  : log.action === "Approved"
+                                    ? "bg-blue-500"
+                                    : log.action === "Created"
+                                      ? "bg-gray-400"
+                                      : "bg-amber-500"
+                              }`}
+                            />
                             <div className="w-0.5 flex-1 bg-slate-100 dark:bg-slate-800 mt-1" />
                           </div>
                           <div className="pb-2 min-w-0">
-                            <p className="font-bold text-slate-750 dark:text-slate-250 leading-none text-[11px]">{log.action}</p>
+                            <p className="font-bold text-slate-750 dark:text-slate-250 leading-none text-[11px]">
+                              {log.action}
+                            </p>
                             <p className="text-[9px] text-muted-foreground mt-0.5">
                               By {log.performed_by_name}
                             </p>
@@ -5454,15 +6639,22 @@ export function AchievementsPage() {
 
       {/* MODAL: REPORT CARD GENERATOR */}
       {reportCardStudent && (
-        <div className="fixed inset-0 bg-black/45 dark:bg-black/60 flex items-center justify-center p-4 z-[999] overflow-y-auto" onClick={() => setReportCardStudent(null)}>
-          <div 
-            onClick={(e) => e.stopPropagation()} 
+        <div
+          className="fixed inset-0 bg-black/45 dark:bg-black/60 flex items-center justify-center p-4 z-[999] overflow-y-auto"
+          onClick={() => setReportCardStudent(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
             className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-6xl space-y-4 shadow-2xl border border-border dark:border-slate-800 my-8 text-foreground"
           >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 print:hidden">
               <div>
-                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">Academic Report Card</h3>
-                <p className="text-xs text-muted-foreground dark:text-slate-400">Official transcript and principal evaluation certificate.</p>
+                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">
+                  Academic Report Card
+                </h3>
+                <p className="text-xs text-muted-foreground dark:text-slate-400">
+                  Official transcript and principal evaluation certificate.
+                </p>
               </div>
               <div className="flex gap-2">
                 <button
@@ -5479,7 +6671,7 @@ export function AchievementsPage() {
                 >
                   <Printer className="size-3.5" /> Print Version
                 </button>
-                <button 
+                <button
                   onClick={() => setReportCardStudent(null)}
                   className="size-7 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 font-semibold cursor-pointer"
                 >
@@ -5491,73 +6683,128 @@ export function AchievementsPage() {
             {loadingReportCard ? (
               <div className="py-20 text-center space-y-2">
                 <RefreshCw className="size-8 animate-spin text-brand mx-auto" />
-                <p className="text-xs text-muted-foreground">Compiling academic history and grades...</p>
+                <p className="text-xs text-muted-foreground">
+                  Compiling academic history and grades...
+                </p>
               </div>
             ) : reportCardData ? (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
                 {/* Left Column: Report Card Print Area (span 8) */}
                 <div className="lg:col-span-8 overflow-x-auto">
-                  <div className="min-w-[650px] border border-border dark:border-slate-800 rounded-xl p-6 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 relative overflow-hidden" id="report-card-print-area">
-                    
+                  <div
+                    className="min-w-[650px] border border-border dark:border-slate-800 rounded-xl p-6 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 relative overflow-hidden"
+                    id="report-card-print-area"
+                  >
                     {/* Decorative border frame */}
                     <div className="absolute inset-2 border-2 border-double border-slate-200 dark:border-slate-800 rounded-lg pointer-events-none" />
 
                     {/* Print area container */}
                     <div className="p-4 space-y-6 relative z-10" id="report-card-canvas">
-                      
                       {/* Faint graduation cap background watermark */}
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5 select-none z-0">
                         <GraduationCap className="size-80" />
                       </div>
-                      
+
                       {/* Header: School Logo & Details */}
                       <div className="flex items-center justify-between border-b-2 border-slate-800 pb-4 relative z-10">
                         <div className="flex items-center gap-3">
                           <div className="size-16 rounded-xl bg-slate-50 border border-border flex items-center justify-center overflow-hidden p-1 shrink-0">
                             {school?.logo_url ? (
-                              <img src={school.logo_url} alt="Logo" className="size-full object-contain" crossOrigin="anonymous" />
+                              <img
+                                src={school.logo_url}
+                                alt="Logo"
+                                className="size-full object-contain"
+                                crossOrigin="anonymous"
+                              />
                             ) : (
                               <GraduationCap className="size-10 text-brand" />
                             )}
                           </div>
                           <div className="text-left space-y-0.5">
-                            <h2 className="text-xl font-serif font-black tracking-wide text-slate-800 dark:text-slate-100">{school?.name || schoolDisplayName || "School"}</h2>
-                            <p className="text-[10px] text-muted-foreground leading-normal max-w-sm">{school?.address || "School Evaluation Center"}</p>
-                            <p className="text-[8px] font-mono text-slate-500">Tel: {school?.phone_number || "ERP Admin"} | Email: {school?.email || "support@school.com"}</p>
+                            <h2 className="text-xl font-serif font-black tracking-wide text-slate-800 dark:text-slate-100">
+                              {school?.name || schoolDisplayName || "School"}
+                            </h2>
+                            <p className="text-[10px] text-muted-foreground leading-normal max-w-sm">
+                              {school?.address || "School Evaluation Center"}
+                            </p>
+                            <p className="text-[8px] font-mono text-slate-500">
+                              Tel: {school?.phone_number || "ERP Admin"} | Email:{" "}
+                              {school?.email || "support@school.com"}
+                            </p>
                           </div>
                         </div>
                         <div className="text-right space-y-1">
                           <span className="bg-brand/10 text-brand text-[9px] uppercase font-bold px-2 py-0.5 rounded">
                             OFFICIAL TRANSCRIPT
                           </span>
-                          <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300">Term Evaluation Report</h4>
-                          <p className="text-[9px] font-mono text-muted-foreground">Session: {academicYear}</p>
+                          <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                            Term Evaluation Report
+                          </h4>
+                          <p className="text-[9px] font-mono text-muted-foreground">
+                            Session: {academicYear}
+                          </p>
                         </div>
                       </div>
 
                       {/* Student Profile Info */}
                       <div className="grid grid-cols-3 gap-4 bg-slate-50/50 dark:bg-slate-900/30 p-4 rounded-lg border border-slate-100 dark:border-slate-800 text-xs relative z-10">
                         <div className="space-y-1.5 col-span-2">
-                          <div><span className="opacity-60 block text-[9px]">STUDENT NAME</span> <span className="font-bold text-slate-800 dark:text-slate-200 text-sm">{reportCardStudent.full_name}</span></div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div><span className="opacity-60 block text-[9px]">ROLL NUMBER</span> <span className="font-semibold">{reportCardStudent.roll_number || "—"}</span></div>
-                            <div><span className="opacity-60 block text-[9px]">CLASS & SECTION</span> <span className="font-semibold">{reportCardStudent.classes?.name || "Student"} {reportCardStudent.classes?.section ? `(${reportCardStudent.classes.section})` : ""}</span></div>
+                          <div>
+                            <span className="opacity-60 block text-[9px]">STUDENT NAME</span>{" "}
+                            <span className="font-bold text-slate-800 dark:text-slate-200 text-sm">
+                              {reportCardStudent.full_name}
+                            </span>
                           </div>
                           <div className="grid grid-cols-2 gap-2">
-                            <div><span className="opacity-60 block text-[9px]">ADMISSION NUMBER</span> <span className="font-mono">{reportCardStudent.admission_number || reportCardStudent.id.slice(0, 8).toUpperCase()}</span></div>
-                            <div><span className="opacity-60 block text-[9px]">PARENT DETAILS</span> <span className="font-semibold">{reportCardStudent.parent_name || "—"} ({reportCardStudent.parent_phone || "—"})</span></div>
+                            <div>
+                              <span className="opacity-60 block text-[9px]">ROLL NUMBER</span>{" "}
+                              <span className="font-semibold">
+                                {reportCardStudent.roll_number || "—"}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="opacity-60 block text-[9px]">CLASS & SECTION</span>{" "}
+                              <span className="font-semibold">
+                                {reportCardStudent.classes?.name || "Student"}{" "}
+                                {reportCardStudent.classes?.section
+                                  ? `(${reportCardStudent.classes.section})`
+                                  : ""}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <span className="opacity-60 block text-[9px]">ADMISSION NUMBER</span>{" "}
+                              <span className="font-mono">
+                                {reportCardStudent.admission_number ||
+                                  reportCardStudent.id.slice(0, 8).toUpperCase()}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="opacity-60 block text-[9px]">PARENT DETAILS</span>{" "}
+                              <span className="font-semibold">
+                                {reportCardStudent.parent_name || "—"} (
+                                {reportCardStudent.parent_phone || "—"})
+                              </span>
+                            </div>
                           </div>
                           <div>
                             <span className="opacity-60 block text-[9px]">PARENT EMAIL</span>
-                            <span className="font-semibold">{reportCardStudent.parent_email || "—"}</span>
+                            <span className="font-semibold">
+                              {reportCardStudent.parent_email || "—"}
+                            </span>
                           </div>
                         </div>
 
                         <div className="flex justify-end">
                           <div className="size-20 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center shadow-inner shrink-0">
                             {reportCardStudent.photo_url ? (
-                              <img src={reportCardStudent.photo_url} alt="" className="size-full object-cover" crossOrigin="anonymous" />
+                              <img
+                                src={reportCardStudent.photo_url}
+                                alt=""
+                                className="size-full object-cover"
+                                crossOrigin="anonymous"
+                              />
                             ) : (
                               <User className="size-10 text-slate-400" />
                             )}
@@ -5579,25 +6826,42 @@ export function AchievementsPage() {
                           </thead>
                           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {reportCardData.subjectsMarks.map((sm, index) => (
-                              <tr key={index} className="hover:bg-slate-50/20 dark:hover:bg-slate-800/10">
-                                <td className="py-2 px-4 font-bold text-slate-700 dark:text-slate-300">{sm.subjectName}</td>
-                                <td className="py-2 px-4 text-center text-muted-foreground">{sm.max}</td>
-                                <td className="py-2 px-4 text-center font-semibold text-slate-750 dark:text-slate-255">{sm.obtained}</td>
+                              <tr
+                                key={index}
+                                className="hover:bg-slate-50/20 dark:hover:bg-slate-800/10"
+                              >
+                                <td className="py-2 px-4 font-bold text-slate-700 dark:text-slate-300">
+                                  {sm.subjectName}
+                                </td>
+                                <td className="py-2 px-4 text-center text-muted-foreground">
+                                  {sm.max}
+                                </td>
+                                <td className="py-2 px-4 text-center font-semibold text-slate-750 dark:text-slate-255">
+                                  {sm.obtained}
+                                </td>
                                 <td className="py-2 px-4 text-center">
-                                  <span className={`inline-block px-2 py-0.5 rounded font-bold text-[10px] ${
-                                    sm.grade === "A+" || sm.grade === "A" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" :
-                                    sm.grade === "B" || sm.grade === "C" ? "bg-indigo-50 text-indigo-800 border border-indigo-200" :
-                                    "bg-amber-50 text-amber-800 border border-amber-200"
-                                  }`}>
+                                  <span
+                                    className={`inline-block px-2 py-0.5 rounded font-bold text-[10px] ${
+                                      sm.grade === "A+" || sm.grade === "A"
+                                        ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                                        : sm.grade === "B" || sm.grade === "C"
+                                          ? "bg-indigo-50 text-indigo-800 border border-indigo-200"
+                                          : "bg-amber-50 text-amber-800 border border-amber-200"
+                                    }`}
+                                  >
                                     {sm.grade}
                                   </span>
                                 </td>
-                                <td className="py-2 px-4 text-slate-650 dark:text-slate-400 italic text-[11px]">{sm.remarks || "—"}</td>
+                                <td className="py-2 px-4 text-slate-650 dark:text-slate-400 italic text-[11px]">
+                                  {sm.remarks || "—"}
+                                </td>
                               </tr>
                             ))}
                             {reportCardData.subjectsMarks.length === 0 && (
                               <tr>
-                                <td colSpan={5} className="py-8 text-center text-muted-foreground">No marks input found for this term.</td>
+                                <td colSpan={5} className="py-8 text-center text-muted-foreground">
+                                  No marks input found for this term.
+                                </td>
                               </tr>
                             )}
                           </tbody>
@@ -5608,42 +6872,74 @@ export function AchievementsPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
                         {/* Academic Performance Summary */}
                         <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50/30 dark:bg-slate-900/10 space-y-3">
-                          <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block text-left">Academic Metrics</span>
+                          <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block text-left">
+                            Academic Metrics
+                          </span>
                           <div className="grid grid-cols-3 gap-2 text-center text-xs">
                             <div>
-                              <span className="text-[8px] uppercase tracking-wider block opacity-70">Total Marks</span>
-                              <span className="font-extrabold text-sm block">{reportCardData.totalObtained} / {reportCardData.totalMax}</span>
+                              <span className="text-[8px] uppercase tracking-wider block opacity-70">
+                                Total Marks
+                              </span>
+                              <span className="font-extrabold text-sm block">
+                                {reportCardData.totalObtained} / {reportCardData.totalMax}
+                              </span>
                             </div>
                             <div>
-                              <span className="text-[8px] uppercase tracking-wider block opacity-70">Percentage</span>
-                              <span className="font-extrabold text-sm text-brand block">{reportCardData.overallPercentage}%</span>
+                              <span className="text-[8px] uppercase tracking-wider block opacity-70">
+                                Percentage
+                              </span>
+                              <span className="font-extrabold text-sm text-brand block">
+                                {reportCardData.overallPercentage}%
+                              </span>
                             </div>
                             <div>
-                              <span className="text-[8px] uppercase tracking-wider block opacity-70">Class Rank</span>
-                              <span className="font-extrabold text-sm text-slate-700 dark:text-slate-300 block">#{reportCardData.rank}</span>
+                              <span className="text-[8px] uppercase tracking-wider block opacity-70">
+                                Class Rank
+                              </span>
+                              <span className="font-extrabold text-sm text-slate-700 dark:text-slate-300 block">
+                                #{reportCardData.rank}
+                              </span>
                             </div>
                           </div>
                         </div>
 
                         {/* Attendance Summary */}
                         <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50/30 dark:bg-slate-900/10 space-y-3">
-                          <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block text-left">Attendance Summary</span>
+                          <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block text-left">
+                            Attendance Summary
+                          </span>
                           <div className="grid grid-cols-4 gap-1 text-center text-xs">
                             <div>
-                              <span className="text-[8px] uppercase tracking-wider block opacity-70">Working Days</span>
-                              <span className="font-extrabold text-xs block">{reportCardData.workingDays || 220}</span>
+                              <span className="text-[8px] uppercase tracking-wider block opacity-70">
+                                Working Days
+                              </span>
+                              <span className="font-extrabold text-xs block">
+                                {reportCardData.workingDays || 220}
+                              </span>
                             </div>
                             <div>
-                              <span className="text-[8px] uppercase tracking-wider block opacity-70">Present Days</span>
-                              <span className="font-extrabold text-xs text-emerald-600 block">{reportCardData.presentDays ?? 200}</span>
+                              <span className="text-[8px] uppercase tracking-wider block opacity-70">
+                                Present Days
+                              </span>
+                              <span className="font-extrabold text-xs text-emerald-600 block">
+                                {reportCardData.presentDays ?? 200}
+                              </span>
                             </div>
                             <div>
-                              <span className="text-[8px] uppercase tracking-wider block opacity-70">Absent Days</span>
-                              <span className="font-extrabold text-xs text-rose-600 block">{reportCardData.absentDays ?? 20}</span>
+                              <span className="text-[8px] uppercase tracking-wider block opacity-70">
+                                Absent Days
+                              </span>
+                              <span className="font-extrabold text-xs text-rose-600 block">
+                                {reportCardData.absentDays ?? 20}
+                              </span>
                             </div>
                             <div>
-                              <span className="text-[8px] uppercase tracking-wider block opacity-70">Attendance %</span>
-                              <span className="font-extrabold text-xs text-indigo-650 block">{reportCardData.attendancePercentage}%</span>
+                              <span className="text-[8px] uppercase tracking-wider block opacity-70">
+                                Attendance %
+                              </span>
+                              <span className="font-extrabold text-xs text-indigo-650 block">
+                                {reportCardData.attendancePercentage}%
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -5652,12 +6948,23 @@ export function AchievementsPage() {
                       {/* Teacher Remarks Grid */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-xs bg-slate-50/50 dark:bg-slate-900/20 relative z-10">
                         <div className="space-y-1 text-left">
-                          <span className="text-[10px] font-bold text-slate-850 dark:text-slate-200 uppercase tracking-wider block">Class Teacher Remarks</span>
-                          <p className="italic text-slate-650 dark:text-slate-400">"{reportCardData.classTeacherRemarks || reportCardData.latestRemark}"</p>
+                          <span className="text-[10px] font-bold text-slate-850 dark:text-slate-200 uppercase tracking-wider block">
+                            Class Teacher Remarks
+                          </span>
+                          <p className="italic text-slate-650 dark:text-slate-400">
+                            "{reportCardData.classTeacherRemarks || reportCardData.latestRemark}"
+                          </p>
                         </div>
                         <div className="space-y-1 text-left">
-                          <span className="text-[10px] font-bold text-slate-850 dark:text-slate-200 uppercase tracking-wider block">Principal Remarks</span>
-                          <p className="italic text-slate-650 dark:text-slate-400">"{reportCardData.principalRemarks || 'Exhibits commendable scholastic dedication.'}"</p>
+                          <span className="text-[10px] font-bold text-slate-850 dark:text-slate-200 uppercase tracking-wider block">
+                            Principal Remarks
+                          </span>
+                          <p className="italic text-slate-650 dark:text-slate-400">
+                            "
+                            {reportCardData.principalRemarks ||
+                              "Exhibits commendable scholastic dedication."}
+                            "
+                          </p>
                         </div>
                       </div>
 
@@ -5666,58 +6973,75 @@ export function AchievementsPage() {
                         {/* Class Teacher Signature */}
                         <div className="text-center space-y-1 w-28 flex flex-col items-center">
                           <div className="h-8 border-b border-slate-300 w-full flex items-end justify-center">
-                            <span className="font-serif italic text-indigo-500 font-semibold text-[10px]">Class Teacher</span>
+                            <span className="font-serif italic text-indigo-500 font-semibold text-[10px]">
+                              Class Teacher
+                            </span>
                           </div>
-                          <span className="text-[8px] uppercase font-bold tracking-wider opacity-70">Class Teacher Signature</span>
+                          <span className="text-[8px] uppercase font-bold tracking-wider opacity-70">
+                            Class Teacher Signature
+                          </span>
                         </div>
 
                         {/* QR Verification Code */}
                         <div className="text-center space-y-1 flex flex-col items-center">
                           <div className="size-11 p-0.5 bg-white border border-slate-200 rounded flex items-center justify-center">
-                            <img 
-                              src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=VERIFY-${reportCardStudent.full_name}-${academicYear}-${selectedReportCardExam}`} 
-                              alt="QR Code" 
-                              className="size-10" 
+                            <img
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=VERIFY-${reportCardStudent.full_name}-${academicYear}-${selectedReportCardExam}`}
+                              alt="QR Code"
+                              className="size-10"
                               crossOrigin="anonymous"
                             />
                           </div>
-                          <span className="text-[7px] font-mono text-muted-foreground block uppercase">QR Verification</span>
+                          <span className="text-[7px] font-mono text-muted-foreground block uppercase">
+                            QR Verification
+                          </span>
                         </div>
 
                         {/* Principal Signature */}
                         <div className="text-center space-y-1 w-28 flex flex-col items-center">
                           <div className="h-8 w-full flex items-end justify-center relative">
                             {school?.principal_signature_url ? (
-                              <img src={school.principal_signature_url} alt="Principal Sig" className="max-h-full max-w-full object-contain filter grayscale select-none" crossOrigin="anonymous" />
+                              <img
+                                src={school.principal_signature_url}
+                                alt="Principal Sig"
+                                className="max-h-full max-w-full object-contain filter grayscale select-none"
+                                crossOrigin="anonymous"
+                              />
                             ) : (
-                              <span className="font-serif italic text-amber-600 font-bold text-xs tracking-wide">Nirosha Reddy</span>
+                              <span className="font-serif italic text-amber-600 font-bold text-xs tracking-wide">
+                                Nirosha Reddy
+                              </span>
                             )}
                           </div>
                           <div className="h-[1px] bg-slate-300 w-full" />
-                          <span className="text-[8px] uppercase font-bold tracking-wider opacity-70 block">School Principal</span>
-                          <span className="text-[8px] font-semibold text-amber-700 block truncate max-w-[120px]">{school?.principal_name || "Nirosha Reddy"}</span>
+                          <span className="text-[8px] uppercase font-bold tracking-wider opacity-70 block">
+                            School Principal
+                          </span>
+                          <span className="text-[8px] font-semibold text-amber-700 block truncate max-w-[120px]">
+                            {school?.principal_name || "Nirosha Reddy"}
+                          </span>
                         </div>
                       </div>
-
                     </div>
                   </div>
                 </div>
 
                 {/* Right Column: Docs & Audit Sidebar (span 4) */}
                 <div className="lg:col-span-4 space-y-6 print:hidden border-t lg:border-t-0 lg:border-l border-slate-150 dark:border-slate-800 pt-4 lg:pt-0 lg:pl-6">
-                  
                   {/* Linked Documents Panel */}
                   <div className="space-y-3">
                     <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 pb-1.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-1.5">
                       <Paperclip className="size-4 text-slate-500" /> Linked Documents
                     </h4>
-                    
+
                     {isAdminOrTeacher && (
                       <div className="bg-slate-50 dark:bg-slate-800/30 p-2.5 rounded-lg border border-border dark:border-slate-800 space-y-2">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase block">Upload Document</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase block">
+                          Upload Document
+                        </span>
                         <div className="flex flex-col gap-1.5">
-                          <select 
-                            value={uploadDocType} 
+                          <select
+                            value={uploadDocType}
                             onChange={(e) => setUploadDocType(e.target.value)}
                             className="bg-card dark:bg-slate-850 border border-border dark:border-slate-700 rounded-md px-2 py-1 text-xs font-semibold focus:outline-none"
                           >
@@ -5732,15 +7056,19 @@ export function AchievementsPage() {
                           <label className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-brand/10 hover:bg-brand/20 text-brand text-xs font-bold rounded-lg border border-brand/20 cursor-pointer transition-colors">
                             <Plus className="size-3.5" />
                             <span>Upload File</span>
-                            <input 
-                              type="file" 
+                            <input
+                              type="file"
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                  void handleUploadDocument(reportCardStudent.id, uploadDocType, file);
+                                  void handleUploadDocument(
+                                    reportCardStudent.id,
+                                    uploadDocType,
+                                    file,
+                                  );
                                 }
                               }}
-                              className="hidden" 
+                              className="hidden"
                             />
                           </label>
                         </div>
@@ -5749,18 +7077,27 @@ export function AchievementsPage() {
 
                     <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
                       {studentDocuments.length === 0 ? (
-                        <p className="text-[11px] text-muted-foreground italic text-center py-2">No documents linked.</p>
+                        <p className="text-[11px] text-muted-foreground italic text-center py-2">
+                          No documents linked.
+                        </p>
                       ) : (
                         studentDocuments.map((doc) => (
-                          <div key={doc.id} className="flex items-center justify-between p-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-900/10 text-xs">
+                          <div
+                            key={doc.id}
+                            className="flex items-center justify-between p-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-900/10 text-xs"
+                          >
                             <div className="min-w-0 pr-2">
-                              <span className="font-bold text-slate-800 dark:text-slate-200 block truncate text-[11px]">{doc.document_type}</span>
-                              <span className="text-[9px] text-muted-foreground block truncate">{doc.file_name}</span>
+                              <span className="font-bold text-slate-800 dark:text-slate-200 block truncate text-[11px]">
+                                {doc.document_type}
+                              </span>
+                              <span className="text-[9px] text-muted-foreground block truncate">
+                                {doc.file_name}
+                              </span>
                             </div>
                             <div className="flex gap-1 shrink-0">
-                              <a 
-                                href={doc.file_url} 
-                                target="_blank" 
+                              <a
+                                href={doc.file_url}
+                                target="_blank"
                                 rel="noreferrer"
                                 className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-650 dark:text-slate-350 rounded transition-all"
                                 title="Download"
@@ -5769,7 +7106,9 @@ export function AchievementsPage() {
                               </a>
                               {isAdminOrTeacher && (
                                 <button
-                                  onClick={() => void handleDeleteDocument(doc.id, reportCardStudent.id)}
+                                  onClick={() =>
+                                    void handleDeleteDocument(doc.id, reportCardStudent.id)
+                                  }
                                   className="p-1 hover:bg-rose-50 dark:hover:bg-rose-955/30 text-rose-600 dark:text-rose-450 rounded transition-all"
                                   title="Delete"
                                 >
@@ -5791,20 +7130,30 @@ export function AchievementsPage() {
 
                     <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
                       {reportCardAuditHistory.length === 0 ? (
-                        <p className="text-[11px] text-muted-foreground italic text-center py-2">No history logs.</p>
+                        <p className="text-[11px] text-muted-foreground italic text-center py-2">
+                          No history logs.
+                        </p>
                       ) : (
                         reportCardAuditHistory.map((log) => (
                           <div key={log.id} className="flex gap-2 text-xs">
                             <div className="flex flex-col items-center">
-                              <div className={`size-1.5 rounded-full mt-1.5 shrink-0 ${
-                                log.action === 'Published' ? 'bg-emerald-500' :
-                                log.action === 'Approved' ? 'bg-blue-500' :
-                                log.action === 'Created' ? 'bg-gray-400' : 'bg-amber-500'
-                              }`} />
+                              <div
+                                className={`size-1.5 rounded-full mt-1.5 shrink-0 ${
+                                  log.action === "Published"
+                                    ? "bg-emerald-500"
+                                    : log.action === "Approved"
+                                      ? "bg-blue-500"
+                                      : log.action === "Created"
+                                        ? "bg-gray-400"
+                                        : "bg-amber-500"
+                                }`}
+                              />
                               <div className="w-0.5 flex-1 bg-slate-100 dark:bg-slate-800 mt-1" />
                             </div>
                             <div className="pb-2 min-w-0">
-                              <p className="font-bold text-slate-750 dark:text-slate-250 leading-none text-[11px]">{log.action}</p>
+                              <p className="font-bold text-slate-750 dark:text-slate-250 leading-none text-[11px]">
+                                {log.action}
+                              </p>
                               <p className="text-[9px] text-muted-foreground mt-0.5">
                                 By {log.performed_by_name}
                               </p>
@@ -5817,14 +7166,13 @@ export function AchievementsPage() {
                       )}
                     </div>
                   </div>
-
                 </div>
-
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground text-center py-10">Failed to display report card template.</p>
+              <p className="text-xs text-muted-foreground text-center py-10">
+                Failed to display report card template.
+              </p>
             )}
-
           </div>
         </div>
       )}
@@ -5832,8 +7180,8 @@ export function AchievementsPage() {
       {/* Off-screen hidden report card rendering container for PDF generation */}
       {hiddenRenderStudent && hiddenRenderData && (
         <div style={{ position: "absolute", left: "-9999px", top: "-9999px", width: "800px" }}>
-          <div 
-            className="min-w-[650px] border border-border dark:border-slate-800 rounded-xl p-6 bg-white text-slate-900 relative overflow-hidden" 
+          <div
+            className="min-w-[650px] border border-border dark:border-slate-800 rounded-xl p-6 bg-white text-slate-900 relative overflow-hidden"
             id="hidden-report-card-print-area"
           >
             {/* Decorative border frame */}
@@ -5841,26 +7189,37 @@ export function AchievementsPage() {
 
             {/* Print area container */}
             <div className="p-4 space-y-6 relative z-10">
-              
               {/* Faint graduation cap background watermark */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5 select-none z-0">
                 <GraduationCap className="size-80" />
               </div>
-              
+
               {/* Header: School Logo & Details */}
               <div className="flex items-center justify-between border-b-2 border-slate-800 pb-4 relative z-10">
                 <div className="flex items-center gap-3">
                   <div className="size-16 rounded-xl bg-slate-50 border border-border flex items-center justify-center overflow-hidden p-1 shrink-0">
                     {school?.logo_url ? (
-                      <img src={school.logo_url} alt="Logo" className="size-full object-contain" crossOrigin="anonymous" />
+                      <img
+                        src={school.logo_url}
+                        alt="Logo"
+                        className="size-full object-contain"
+                        crossOrigin="anonymous"
+                      />
                     ) : (
                       <GraduationCap className="size-10 text-brand" />
                     )}
                   </div>
                   <div className="text-left space-y-0.5">
-                    <h2 className="text-xl font-serif font-black tracking-wide text-slate-800">{school?.name || schoolDisplayName || "School"}</h2>
-                    <p className="text-[10px] text-muted-foreground leading-normal max-w-sm">{school?.address || "School Evaluation Center"}</p>
-                    <p className="text-[8px] font-mono text-slate-505">Tel: {school?.phone_number || "ERP Admin"} | Email: {school?.email || "support@school.com"}</p>
+                    <h2 className="text-xl font-serif font-black tracking-wide text-slate-800">
+                      {school?.name || schoolDisplayName || "School"}
+                    </h2>
+                    <p className="text-[10px] text-muted-foreground leading-normal max-w-sm">
+                      {school?.address || "School Evaluation Center"}
+                    </p>
+                    <p className="text-[8px] font-mono text-slate-505">
+                      Tel: {school?.phone_number || "ERP Admin"} | Email:{" "}
+                      {school?.email || "support@school.com"}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right space-y-1">
@@ -5868,21 +7227,53 @@ export function AchievementsPage() {
                     OFFICIAL TRANSCRIPT
                   </span>
                   <h4 className="text-xs font-bold text-slate-700">Term Evaluation Report</h4>
-                  <p className="text-[9px] font-mono text-muted-foreground">Session: {academicYear}</p>
+                  <p className="text-[9px] font-mono text-muted-foreground">
+                    Session: {academicYear}
+                  </p>
                 </div>
               </div>
 
               {/* Student Profile Info */}
               <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-105 text-xs relative z-10">
                 <div className="space-y-1.5 col-span-2">
-                  <div><span className="opacity-60 block text-[9px]">STUDENT NAME</span> <span className="font-bold text-slate-800 text-sm">{hiddenRenderStudent.full_name}</span></div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div><span className="opacity-60 block text-[9px]">ROLL NUMBER</span> <span className="font-semibold">{hiddenRenderStudent.roll_number || "—"}</span></div>
-                    <div><span className="opacity-60 block text-[9px]">CLASS & SECTION</span> <span className="font-semibold">{hiddenRenderStudent.classes?.name || "Student"} {hiddenRenderStudent.classes?.section ? `(${hiddenRenderStudent.classes.section})` : ""}</span></div>
+                  <div>
+                    <span className="opacity-60 block text-[9px]">STUDENT NAME</span>{" "}
+                    <span className="font-bold text-slate-800 text-sm">
+                      {hiddenRenderStudent.full_name}
+                    </span>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><span className="opacity-60 block text-[9px]">ADMISSION NUMBER</span> <span className="font-mono">{hiddenRenderStudent.admission_number || hiddenRenderStudent.id.slice(0, 8).toUpperCase()}</span></div>
-                    <div><span className="opacity-60 block text-[9px]">PARENT DETAILS</span> <span className="font-semibold">{hiddenRenderStudent.parent_name || "—"} ({hiddenRenderStudent.parent_phone || "—"})</span></div>
+                    <div>
+                      <span className="opacity-60 block text-[9px]">ROLL NUMBER</span>{" "}
+                      <span className="font-semibold">
+                        {hiddenRenderStudent.roll_number || "—"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="opacity-60 block text-[9px]">CLASS & SECTION</span>{" "}
+                      <span className="font-semibold">
+                        {hiddenRenderStudent.classes?.name || "Student"}{" "}
+                        {hiddenRenderStudent.classes?.section
+                          ? `(${hiddenRenderStudent.classes.section})`
+                          : ""}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="opacity-60 block text-[9px]">ADMISSION NUMBER</span>{" "}
+                      <span className="font-mono">
+                        {hiddenRenderStudent.admission_number ||
+                          hiddenRenderStudent.id.slice(0, 8).toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="opacity-60 block text-[9px]">PARENT DETAILS</span>{" "}
+                      <span className="font-semibold">
+                        {hiddenRenderStudent.parent_name || "—"} (
+                        {hiddenRenderStudent.parent_phone || "—"})
+                      </span>
+                    </div>
                   </div>
                   <div>
                     <span className="opacity-60 block text-[9px]">PARENT EMAIL</span>
@@ -5893,7 +7284,12 @@ export function AchievementsPage() {
                 <div className="flex justify-end">
                   <div className="size-20 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center shadow-inner shrink-0">
                     {hiddenRenderStudent.photo_url ? (
-                      <img src={hiddenRenderStudent.photo_url} alt="" className="size-full object-cover" crossOrigin="anonymous" />
+                      <img
+                        src={hiddenRenderStudent.photo_url}
+                        alt=""
+                        className="size-full object-cover"
+                        crossOrigin="anonymous"
+                      />
                     ) : (
                       <User className="size-10 text-slate-400" />
                     )}
@@ -5918,22 +7314,32 @@ export function AchievementsPage() {
                       <tr key={index} className="hover:bg-slate-50/20">
                         <td className="py-2 px-4 font-bold text-slate-700">{sm.subjectName}</td>
                         <td className="py-2 px-4 text-center text-muted-foreground">{sm.max}</td>
-                        <td className="py-2 px-4 text-center font-semibold text-slate-750">{sm.obtained}</td>
+                        <td className="py-2 px-4 text-center font-semibold text-slate-750">
+                          {sm.obtained}
+                        </td>
                         <td className="py-2 px-4 text-center">
-                          <span className={`inline-block px-2 py-0.5 rounded font-bold text-[10px] ${
-                            sm.grade === "A+" || sm.grade === "A" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" :
-                            sm.grade === "B" || sm.grade === "C" ? "bg-indigo-50 text-indigo-800 border border-indigo-200" :
-                            "bg-amber-50 text-amber-800 border border-amber-200"
-                          }`}>
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded font-bold text-[10px] ${
+                              sm.grade === "A+" || sm.grade === "A"
+                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                                : sm.grade === "B" || sm.grade === "C"
+                                  ? "bg-indigo-50 text-indigo-800 border border-indigo-200"
+                                  : "bg-amber-50 text-amber-800 border border-amber-200"
+                            }`}
+                          >
                             {sm.grade}
                           </span>
                         </td>
-                        <td className="py-2 px-4 text-slate-650 italic text-[11px]">{sm.remarks || "—"}</td>
+                        <td className="py-2 px-4 text-slate-650 italic text-[11px]">
+                          {sm.remarks || "—"}
+                        </td>
                       </tr>
                     ))}
                     {hiddenRenderData.subjectsMarks.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="py-8 text-center text-muted-foreground">No marks input found for this term.</td>
+                        <td colSpan={5} className="py-8 text-center text-muted-foreground">
+                          No marks input found for this term.
+                        </td>
                       </tr>
                     )}
                   </tbody>
@@ -5944,42 +7350,74 @@ export function AchievementsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
                 {/* Academic Performance Summary */}
                 <div className="border border-slate-200 rounded-xl p-4 bg-slate-50/30 space-y-3">
-                  <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider block text-left">Academic Metrics</span>
+                  <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider block text-left">
+                    Academic Metrics
+                  </span>
                   <div className="grid grid-cols-3 gap-2 text-center text-xs">
                     <div>
-                      <span className="text-[8px] uppercase tracking-wider block opacity-70">Total Marks</span>
-                      <span className="font-extrabold text-sm block">{hiddenRenderData.totalObtained} / {hiddenRenderData.totalMax}</span>
+                      <span className="text-[8px] uppercase tracking-wider block opacity-70">
+                        Total Marks
+                      </span>
+                      <span className="font-extrabold text-sm block">
+                        {hiddenRenderData.totalObtained} / {hiddenRenderData.totalMax}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-[8px] uppercase tracking-wider block opacity-70">Percentage</span>
-                      <span className="font-extrabold text-sm text-brand block">{hiddenRenderData.overallPercentage}%</span>
+                      <span className="text-[8px] uppercase tracking-wider block opacity-70">
+                        Percentage
+                      </span>
+                      <span className="font-extrabold text-sm text-brand block">
+                        {hiddenRenderData.overallPercentage}%
+                      </span>
                     </div>
                     <div>
-                      <span className="text-[8px] uppercase tracking-wider block opacity-70">Class Rank</span>
-                      <span className="font-extrabold text-sm text-slate-700 block">#{hiddenRenderData.rank}</span>
+                      <span className="text-[8px] uppercase tracking-wider block opacity-70">
+                        Class Rank
+                      </span>
+                      <span className="font-extrabold text-sm text-slate-700 block">
+                        #{hiddenRenderData.rank}
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Attendance Summary */}
                 <div className="border border-slate-200 rounded-xl p-4 bg-slate-50/30 space-y-3">
-                  <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider block text-left">Attendance Summary</span>
+                  <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider block text-left">
+                    Attendance Summary
+                  </span>
                   <div className="grid grid-cols-4 gap-1 text-center text-xs">
                     <div>
-                      <span className="text-[8px] uppercase tracking-wider block opacity-70">Working Days</span>
-                      <span className="font-extrabold text-xs block">{hiddenRenderData.workingDays || 220}</span>
+                      <span className="text-[8px] uppercase tracking-wider block opacity-70">
+                        Working Days
+                      </span>
+                      <span className="font-extrabold text-xs block">
+                        {hiddenRenderData.workingDays || 220}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-[8px] uppercase tracking-wider block opacity-70">Present Days</span>
-                      <span className="font-extrabold text-xs text-emerald-600 block">{hiddenRenderData.presentDays ?? 200}</span>
+                      <span className="text-[8px] uppercase tracking-wider block opacity-70">
+                        Present Days
+                      </span>
+                      <span className="font-extrabold text-xs text-emerald-600 block">
+                        {hiddenRenderData.presentDays ?? 200}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-[8px] uppercase tracking-wider block opacity-70">Absent Days</span>
-                      <span className="font-extrabold text-xs text-rose-600 block">{hiddenRenderData.absentDays ?? 20}</span>
+                      <span className="text-[8px] uppercase tracking-wider block opacity-70">
+                        Absent Days
+                      </span>
+                      <span className="font-extrabold text-xs text-rose-600 block">
+                        {hiddenRenderData.absentDays ?? 20}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-[8px] uppercase tracking-wider block opacity-70">Attendance %</span>
-                      <span className="font-extrabold text-xs text-indigo-650 block">{hiddenRenderData.attendancePercentage}%</span>
+                      <span className="text-[8px] uppercase tracking-wider block opacity-70">
+                        Attendance %
+                      </span>
+                      <span className="font-extrabold text-xs text-indigo-650 block">
+                        {hiddenRenderData.attendancePercentage}%
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -5988,12 +7426,23 @@ export function AchievementsPage() {
               {/* Teacher Remarks Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-slate-200 rounded-xl p-4 text-xs bg-slate-50/50 relative z-10">
                 <div className="space-y-1 text-left">
-                  <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider block">Class Teacher Remarks</span>
-                  <p className="italic text-slate-650">"{hiddenRenderData.classTeacherRemarks || hiddenRenderData.latestRemark}"</p>
+                  <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider block">
+                    Class Teacher Remarks
+                  </span>
+                  <p className="italic text-slate-650">
+                    "{hiddenRenderData.classTeacherRemarks || hiddenRenderData.latestRemark}"
+                  </p>
                 </div>
                 <div className="space-y-1 text-left">
-                  <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider block">Principal Remarks</span>
-                  <p className="italic text-slate-650">"{hiddenRenderData.principalRemarks || 'Exhibits commendable scholastic dedication.'}"</p>
+                  <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider block">
+                    Principal Remarks
+                  </span>
+                  <p className="italic text-slate-650">
+                    "
+                    {hiddenRenderData.principalRemarks ||
+                      "Exhibits commendable scholastic dedication."}
+                    "
+                  </p>
                 </div>
               </div>
 
@@ -6002,39 +7451,55 @@ export function AchievementsPage() {
                 {/* Class Teacher Signature */}
                 <div className="text-center space-y-1 w-28 flex flex-col items-center">
                   <div className="h-8 border-b border-slate-300 w-full flex items-end justify-center">
-                    <span className="font-serif italic text-indigo-500 font-semibold text-[10px]">Class Teacher</span>
+                    <span className="font-serif italic text-indigo-500 font-semibold text-[10px]">
+                      Class Teacher
+                    </span>
                   </div>
-                  <span className="text-[8px] uppercase font-bold tracking-wider opacity-70">Class Teacher Signature</span>
+                  <span className="text-[8px] uppercase font-bold tracking-wider opacity-70">
+                    Class Teacher Signature
+                  </span>
                 </div>
 
                 {/* QR Verification Code */}
                 <div className="text-center space-y-1 flex flex-col items-center">
                   <div className="size-11 p-0.5 bg-white border border-slate-200 rounded flex items-center justify-center">
-                    <img 
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=VERIFY-${hiddenRenderStudent.full_name}-${academicYear}-${selectedReportCardExam}`} 
-                      alt="QR Code" 
-                      className="size-10" 
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=VERIFY-${hiddenRenderStudent.full_name}-${academicYear}-${selectedReportCardExam}`}
+                      alt="QR Code"
+                      className="size-10"
                       crossOrigin="anonymous"
                     />
                   </div>
-                  <span className="text-[7px] font-mono text-muted-foreground block uppercase">QR Verification</span>
+                  <span className="text-[7px] font-mono text-muted-foreground block uppercase">
+                    QR Verification
+                  </span>
                 </div>
 
                 {/* Principal Signature */}
                 <div className="text-center space-y-1 w-28 flex flex-col items-center">
                   <div className="h-8 w-full flex items-end justify-center relative">
                     {school?.principal_signature_url ? (
-                      <img src={school.principal_signature_url} alt="Principal Sig" className="max-h-full max-w-full object-contain filter grayscale select-none" crossOrigin="anonymous" />
+                      <img
+                        src={school.principal_signature_url}
+                        alt="Principal Sig"
+                        className="max-h-full max-w-full object-contain filter grayscale select-none"
+                        crossOrigin="anonymous"
+                      />
                     ) : (
-                      <span className="font-serif italic text-amber-600 font-bold text-xs tracking-wide">Nirosha Reddy</span>
+                      <span className="font-serif italic text-amber-600 font-bold text-xs tracking-wide">
+                        Nirosha Reddy
+                      </span>
                     )}
                   </div>
                   <div className="h-[1px] bg-slate-300 w-full" />
-                  <span className="text-[8px] uppercase font-bold tracking-wider opacity-70 block">School Principal</span>
-                  <span className="text-[8px] font-semibold text-amber-700 block truncate max-w-[120px]">{school?.principal_name || "Nirosha Reddy"}</span>
+                  <span className="text-[8px] uppercase font-bold tracking-wider opacity-70 block">
+                    School Principal
+                  </span>
+                  <span className="text-[8px] font-semibold text-amber-700 block truncate max-w-[120px]">
+                    {school?.principal_name || "Nirosha Reddy"}
+                  </span>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
@@ -6044,13 +7509,23 @@ export function AchievementsPage() {
 }
 
 // Subcomponent: Tab Button
-function TabButton({ active, onClick, label, icon }: { active: boolean; onClick: () => void; label: string; icon: React.ReactNode }) {
+function TabButton({
+  active,
+  onClick,
+  label,
+  icon,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  icon: React.ReactNode;
+}) {
   return (
     <button
       onClick={onClick}
       className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-        active 
-          ? "bg-brand text-white shadow-sm" 
+        active
+          ? "bg-brand text-white shadow-sm"
           : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200"
       }`}
     >
@@ -6070,10 +7545,10 @@ function PodiumCard({
   title,
   icon,
   onPreviewPoster,
-  onPreviewCert
+  onPreviewCert,
 }: {
   rank: number;
-  theme: 'gold' | 'silver' | 'bronze';
+  theme: "gold" | "silver" | "bronze";
   topper: any;
   bgClass: string;
   borderClass: string;
@@ -6083,7 +7558,9 @@ function PodiumCard({
   onPreviewCert: (topper: any) => void;
 }) {
   return (
-    <div className={`rounded-2xl border text-white p-6 relative overflow-hidden flex flex-col justify-between min-h-[200px] shadow-md ${bgClass} ${borderClass}`}>
+    <div
+      className={`rounded-2xl border text-white p-6 relative overflow-hidden flex flex-col justify-between min-h-[200px] shadow-md ${bgClass} ${borderClass}`}
+    >
       <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 opacity-15 pointer-events-none">
         {icon}
       </div>
@@ -6101,11 +7578,13 @@ function PodiumCard({
             </p>
           )}
         </div>
-        
+
         {topper ? (
           <div className="flex gap-4">
             <div className="text-center">
-              <span className="text-[9px] uppercase tracking-wider block opacity-75">Percentage</span>
+              <span className="text-[9px] uppercase tracking-wider block opacity-75">
+                Percentage
+              </span>
               <span className="font-extrabold text-sm">{topper.percentage}%</span>
             </div>
             <div className="text-center">
@@ -6139,12 +7618,24 @@ function PodiumCard({
 }
 
 // Subcomponent: Poster theme selection button
-function ThemeButton({ active, onClick, label, colorClass }: { active: boolean; onClick: () => void; label: string; colorClass: string }) {
+function ThemeButton({
+  active,
+  onClick,
+  label,
+  colorClass,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  colorClass: string;
+}) {
   return (
     <button
       onClick={onClick}
       className={`p-2 rounded-xl border text-[10px] font-bold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
-        active ? 'border-brand ring-1 ring-brand bg-brand-soft/20 text-brand' : 'border-slate-100 hover:border-slate-200 text-slate-600 bg-slate-50/20'
+        active
+          ? "border-brand ring-1 ring-brand bg-brand-soft/20 text-brand"
+          : "border-slate-100 hover:border-slate-200 text-slate-600 bg-slate-50/20"
       }`}
     >
       <div className={`size-4 rounded-full ${colorClass}`} />
@@ -6154,14 +7645,24 @@ function ThemeButton({ active, onClick, label, colorClass }: { active: boolean; 
 }
 
 // Subcomponent: Poster size selection button
-function SizeButton({ active, onClick, label, dimensions }: { active: boolean; onClick: () => void; label: string; dimensions: string }) {
+function SizeButton({
+  active,
+  onClick,
+  label,
+  dimensions,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  dimensions: string;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={`p-2 border rounded-xl flex flex-col items-center justify-center gap-0.5 text-center transition cursor-pointer ${
-        active 
-          ? "border-brand ring-1 ring-brand bg-brand-soft/20 text-brand font-bold" 
+        active
+          ? "border-brand ring-1 ring-brand bg-brand-soft/20 text-brand font-bold"
           : "border-slate-100 hover:border-slate-200 text-slate-500 hover:text-slate-800 bg-slate-50/20"
       }`}
     >
@@ -6173,35 +7674,35 @@ function SizeButton({ active, onClick, label, dimensions }: { active: boolean; o
 
 // Hall of fame helper themes
 function fameCardTheme(cat: string) {
-  if (cat === 'rank_1') {
+  if (cat === "rank_1") {
     return {
-      cardBg: 'bg-gradient-to-br from-yellow-50/80 via-white to-amber-50/60',
-      border: 'border-yellow-200 hover:border-yellow-300',
-      badgeClass: 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      cardBg: "bg-gradient-to-br from-yellow-50/80 via-white to-amber-50/60",
+      border: "border-yellow-200 hover:border-yellow-300",
+      badgeClass: "bg-yellow-100 text-yellow-800 border-yellow-200",
     };
-  } else if (cat === 'rank_2') {
+  } else if (cat === "rank_2") {
     return {
-      cardBg: 'bg-gradient-to-br from-slate-50/80 via-white to-slate-50/60',
-      border: 'border-slate-200 hover:border-slate-300',
-      badgeClass: 'bg-slate-100 text-slate-800 border-slate-200'
+      cardBg: "bg-gradient-to-br from-slate-50/80 via-white to-slate-50/60",
+      border: "border-slate-200 hover:border-slate-300",
+      badgeClass: "bg-slate-100 text-slate-800 border-slate-200",
     };
-  } else if (cat === 'rank_3') {
+  } else if (cat === "rank_3") {
     return {
-      cardBg: 'bg-gradient-to-br from-amber-50/40 via-white to-amber-50/30',
-      border: 'border-amber-200 hover:border-amber-300',
-      badgeClass: 'bg-amber-100 text-amber-800 border-amber-200'
+      cardBg: "bg-gradient-to-br from-amber-50/40 via-white to-amber-50/30",
+      border: "border-amber-200 hover:border-amber-300",
+      badgeClass: "bg-amber-100 text-amber-800 border-amber-200",
     };
-  } else if (cat === 'attendance_topper') {
+  } else if (cat === "attendance_topper") {
     return {
-      cardBg: 'bg-gradient-to-br from-emerald-50/40 via-white to-emerald-50/30',
-      border: 'border-emerald-200 hover:border-emerald-300',
-      badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200'
+      cardBg: "bg-gradient-to-br from-emerald-50/40 via-white to-emerald-50/30",
+      border: "border-emerald-200 hover:border-emerald-300",
+      badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200",
     };
   } else {
     return {
-      cardBg: 'bg-gradient-to-br from-indigo-50/40 via-white to-indigo-50/30',
-      border: 'border-indigo-200 hover:border-indigo-300',
-      badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200'
+      cardBg: "bg-gradient-to-br from-indigo-50/40 via-white to-indigo-50/30",
+      border: "border-indigo-200 hover:border-indigo-300",
+      badgeClass: "bg-indigo-100 text-indigo-800 border-indigo-200",
     };
   }
 }
@@ -6209,15 +7710,15 @@ function fameCardTheme(cat: string) {
 // Badge labels translations
 function badgeLabel(cat: string) {
   const map: Record<string, string> = {
-    rank_1: 'Gold Rank Topper',
-    rank_2: 'Silver Rank #2',
-    rank_3: 'Bronze Rank #3',
-    top_10: 'Top 10 Scholar',
-    subject_topper: 'Subject Topper',
-    attendance_topper: 'Attendance Champion',
-    discipline_award: 'Best Discipline Award'
+    rank_1: "Gold Rank Topper",
+    rank_2: "Silver Rank #2",
+    rank_3: "Bronze Rank #3",
+    top_10: "Top 10 Scholar",
+    subject_topper: "Subject Topper",
+    attendance_topper: "Attendance Champion",
+    discipline_award: "Best Discipline Award",
   };
-  return map[cat] || cat.toUpperCase().replace('_', ' ');
+  return map[cat] || cat.toUpperCase().replace("_", " ");
 }
 
 // Profile label helper

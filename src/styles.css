@@ -122,8 +122,13 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html, body { height: 100%; }
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body {
+    height: 100%;
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -138,16 +143,27 @@
     background: #ffffff !important;
     color: #000000 !important;
   }
-  aside, header, nav, button, input, select, .print\:hidden, [role="tablist"], .no-print {
+  aside,
+  header,
+  nav,
+  button,
+  input,
+  select,
+  .print\:hidden,
+  [role="tablist"],
+  .no-print {
     display: none !important;
   }
-  main, .flex-1, div {
+  main,
+  .flex-1,
+  div {
     margin: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
     box-shadow: none !important;
   }
-  .bg-card, .bg-white {
+  .bg-card,
+  .bg-white {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
@@ -156,4 +172,3 @@
     display: block !important;
   }
 }
-

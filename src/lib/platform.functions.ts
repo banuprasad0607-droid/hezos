@@ -46,13 +46,12 @@ export const provisionSchool = createServerFn({ method: "POST" })
 
     // 1. Create or look up auth user (admin)
     let adminUserId: string | null = null;
-    const { data: createdUser, error: createErr } =
-      await supabaseAdmin.auth.admin.createUser({
-        email: data.admin.email,
-        password: data.admin.password,
-        email_confirm: true,
-        user_metadata: { full_name: data.admin.full_name },
-      });
+    const { data: createdUser, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+      email: data.admin.email,
+      password: data.admin.password,
+      email_confirm: true,
+      user_metadata: { full_name: data.admin.full_name },
+    });
     if (createErr && !/already.*registered|exists/i.test(createErr.message)) {
       throw new Error(createErr.message);
     }
@@ -65,8 +64,8 @@ export const provisionSchool = createServerFn({ method: "POST" })
         perPage: 200,
       });
       adminUserId =
-        list?.users.find((u) => u.email?.toLowerCase() === data.admin.email.toLowerCase())
-          ?.id ?? null;
+        list?.users.find((u) => u.email?.toLowerCase() === data.admin.email.toLowerCase())?.id ??
+        null;
     }
     if (!adminUserId) throw new Error("Could not create or locate admin user");
 
@@ -92,10 +91,12 @@ export const provisionSchool = createServerFn({ method: "POST" })
     if (schoolErr) throw new Error(schoolErr.message);
 
     // Store the temp admin password in the restricted credentials table
-    await supabaseAdmin.from("school_credentials").upsert(
-      { school_id: schoolId, temp_password: data.admin.password },
-      { onConflict: "school_id" }
-    );
+    await supabaseAdmin
+      .from("school_credentials")
+      .upsert(
+        { school_id: schoolId, temp_password: data.admin.password },
+        { onConflict: "school_id" },
+      );
 
     // 3. Ensure profile + assign school + admin role
     await supabaseAdmin.from("profiles").upsert(
@@ -105,18 +106,23 @@ export const provisionSchool = createServerFn({ method: "POST" })
         email: data.admin.email,
         school_id: schoolId,
       },
-      { onConflict: "user_id" }
+      { onConflict: "user_id" },
     );
     await supabaseAdmin
       .from("user_roles")
       .upsert(
         { user_id: adminUserId, school_id: schoolId, role: "admin" as never },
-        { onConflict: "user_id,school_id,role" }
+        { onConflict: "user_id,school_id,role" },
       );
 
     // 4. Subscription record
     const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 14 days trial
-    const billingDays = data.school.billing_cycle === 'yearly' ? 365 : data.school.billing_cycle === 'quarterly' ? 90 : 30;
+    const billingDays =
+      data.school.billing_cycle === "yearly"
+        ? 365
+        : data.school.billing_cycle === "quarterly"
+          ? 90
+          : 30;
     const currentPeriodEnd = new Date(trialEnd.getTime() + billingDays * 24 * 60 * 60 * 1000);
 
     await supabaseAdmin.from("subscriptions").insert({
@@ -203,13 +209,13 @@ export const provisionTeacher = createServerFn({ method: "POST" })
         email: data.email,
         school_id: schoolId,
       },
-      { onConflict: "user_id" }
+      { onConflict: "user_id" },
     );
     await supabaseAdmin
       .from("user_roles")
       .upsert(
         { user_id: teacherId, school_id: schoolId, role: "teacher" as never },
-        { onConflict: "user_id,school_id,role" }
+        { onConflict: "user_id,school_id,role" },
       );
 
     // Log a record in teacher_invitations as accepted, store temp password for admin to share
@@ -298,7 +304,7 @@ export const resetAdminPassword = createServerFn({ method: "POST" })
       .from("school_credentials")
       .upsert(
         { school_id: data.schoolId, temp_password: newPassword },
-        { onConflict: "school_id" }
+        { onConflict: "school_id" },
       );
     if (updateErr) throw new Error(updateErr.message);
 
@@ -346,8 +352,8 @@ export const provisionStudent = createServerFn({ method: "POST" })
       .select("role")
       .eq("user_id", context.userId)
       .eq("school_id", schoolId);
-    const isStaff = (roles ?? []).some((r: { role: string }) =>
-      r.role === "admin" || r.role === "teacher"
+    const isStaff = (roles ?? []).some(
+      (r: { role: string }) => r.role === "admin" || r.role === "teacher",
     );
     if (!isStaff) throw new Error("Only school staff can add students");
 
@@ -381,13 +387,13 @@ export const provisionStudent = createServerFn({ method: "POST" })
             email: p.email,
             school_id: schoolId,
           },
-          { onConflict: "user_id" }
+          { onConflict: "user_id" },
         );
         await supabaseAdmin
           .from("user_roles")
           .upsert(
             { user_id: parentUserId, school_id: schoolId, role: "parent" as never },
-            { onConflict: "user_id,school_id,role" }
+            { onConflict: "user_id,school_id,role" },
           );
       }
     } else if (p.email) {
@@ -443,7 +449,6 @@ export const bootstrapOwnSchool = createServerFn({ method: "POST" })
     const ip = getClientIp();
     enforceRateLimit(`bootstrap:ip:${ip}`, 2, 60 * 60 * 1000);
     enforceRateLimit(`bootstrap:user:${userId}`, 2, 60 * 60 * 1000);
-
 
     // Caller must not already belong to a school
     const { data: existingProfile } = await supabaseAdmin
@@ -525,4 +530,3 @@ export const resetPasswordEmailServer = createServerFn({ method: "POST" })
 
     return { success: true };
   });
-

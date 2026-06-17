@@ -7,7 +7,11 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "HEZO SCHOOL — Daily operations for Indian schools" },
-      { name: "description", content: "Attendance, homework, teacher remarks and a Parent Daily Digest. Built for schools with 100–2000 students." },
+      {
+        name: "description",
+        content:
+          "Attendance, homework, teacher remarks and a Parent Daily Digest. Built for schools with 100–2000 students.",
+      },
     ],
   }),
   component: Landing,
@@ -30,12 +34,24 @@ function Landing() {
       <header className="border-b border-border bg-card">
         <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="size-8 bg-brand rounded-lg flex items-center justify-center font-bold text-brand-foreground">H</div>
+            <div className="size-8 bg-brand rounded-lg flex items-center justify-center font-bold text-brand-foreground">
+              H
+            </div>
             <span className="font-semibold tracking-tight">HEZO SCHOOL</span>
           </div>
           <div className="flex gap-2">
-            <Link to="/login" className="px-4 py-1.5 text-sm font-medium text-foreground hover:bg-accent rounded-md">Sign in</Link>
-            <Link to="/signup" className="px-4 py-1.5 text-sm font-medium bg-primary text-primary-foreground rounded-md shadow-sm hover:opacity-90">Start free</Link>
+            <Link
+              to="/login"
+              className="px-4 py-1.5 text-sm font-medium text-foreground hover:bg-accent rounded-md"
+            >
+              Sign in
+            </Link>
+            <Link
+              to="/signup"
+              className="px-4 py-1.5 text-sm font-medium bg-primary text-primary-foreground rounded-md shadow-sm hover:opacity-90"
+            >
+              Start free
+            </Link>
           </div>
         </div>
       </header>
@@ -49,13 +65,20 @@ function Landing() {
             The school operations tool your teachers will actually open every morning.
           </h1>
           <p className="text-lg text-muted-foreground mt-6 max-w-2xl text-pretty">
-            Mark attendance in one tap. Send homework with a PDF. Add a remark and the parent knows by evening — automatically, in the Parent Daily Digest.
+            Mark attendance in one tap. Send homework with a PDF. Add a remark and the parent knows
+            by evening — automatically, in the Parent Daily Digest.
           </p>
           <div className="mt-8 flex gap-3">
-            <Link to="/signup" className="px-5 py-2.5 text-sm font-semibold bg-primary text-primary-foreground rounded-lg shadow-sm hover:opacity-90">
+            <Link
+              to="/signup"
+              className="px-5 py-2.5 text-sm font-semibold bg-primary text-primary-foreground rounded-lg shadow-sm hover:opacity-90"
+            >
               Set up your school
             </Link>
-            <Link to="/login" className="px-5 py-2.5 text-sm font-semibold border border-border rounded-lg hover:bg-accent">
+            <Link
+              to="/login"
+              className="px-5 py-2.5 text-sm font-semibold border border-border rounded-lg hover:bg-accent"
+            >
               Sign in
             </Link>
           </div>
@@ -63,10 +86,26 @@ function Landing() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-20">
           {[
-            { icon: CalendarCheck, title: "Attendance", body: "One-tap Present / Absent / Late / Half Day. Realtime." },
-            { icon: BookOpen, title: "Homework", body: "Upload PDFs or images. Parents see them instantly." },
-            { icon: MessageSquare, title: "Remarks", body: "Academic, behaviour, appreciation. Reaches parents." },
-            { icon: GraduationCap, title: "Daily Digest", body: "Every parent gets one clean summary each evening." },
+            {
+              icon: CalendarCheck,
+              title: "Attendance",
+              body: "One-tap Present / Absent / Late / Half Day. Realtime.",
+            },
+            {
+              icon: BookOpen,
+              title: "Homework",
+              body: "Upload PDFs or images. Parents see them instantly.",
+            },
+            {
+              icon: MessageSquare,
+              title: "Remarks",
+              body: "Academic, behaviour, appreciation. Reaches parents.",
+            },
+            {
+              icon: GraduationCap,
+              title: "Daily Digest",
+              body: "Every parent gets one clean summary each evening.",
+            },
           ].map((f) => (
             <div key={f.title} className="bg-card border border-border rounded-xl p-5">
               <f.icon className="size-5 text-brand" />

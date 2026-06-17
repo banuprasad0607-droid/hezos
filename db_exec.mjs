@@ -1,15 +1,15 @@
-import pg from 'pg';
-import fs from 'fs';
+import pg from "pg";
+import fs from "fs";
 
 const { Client } = pg;
 
 const client = new Client({
-  host: 'db.crypicuosxqquudpgosi.supabase.co',
+  host: "db.crypicuosxqquudpgosi.supabase.co",
   port: 5432,
-  database: 'postgres',
-  user: 'postgres',
-  password: 'bANU@NIRO3009',
-  ssl: { rejectUnauthorized: false }
+  database: "postgres",
+  user: "postgres",
+  password: "bANU@NIRO3009",
+  ssl: { rejectUnauthorized: false },
 });
 
 async function run() {
@@ -23,8 +23,8 @@ async function run() {
     await client.connect();
     console.log("Connected to PostgreSQL.");
 
-    const sql = fs.readFileSync(sqlFile, 'utf8');
-    
+    const sql = fs.readFileSync(sqlFile, "utf8");
+
     console.log(`Executing SQL from ${sqlFile}...`);
     await client.query("BEGIN;");
     await client.query(sql);

@@ -3,22 +3,23 @@
 // Applies production SQL via Supabase's built-in pg_net / raw SQL execution
 // Uses the service_role key which has full database permissions
 
-const SUPABASE_URL = 'https://crypicuosxqquudpgosi.supabase.co';
-const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNyeXBpY3Vvc3hxcXV1ZHBnb3NpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDIyODU0NSwiZXhwIjoyMDk1ODA0NTQ1fQ.WBHduzvpxjjuWzPrwQWxU__akZc0Gj1sFpkMBeOcpXw';
+const SUPABASE_URL = "https://crypicuosxqquudpgosi.supabase.co";
+const SERVICE_ROLE_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNyeXBpY3Vvc3hxcXV1ZHBnb3NpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDIyODU0NSwiZXhwIjoyMDk1ODA0NTQ1fQ.WBHduzvpxjjuWzPrwQWxU__akZc0Gj1sFpkMBeOcpXw";
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
-  auth: { persistSession: false }
+  auth: { persistSession: false },
 });
 
 // Test connectivity first
-const { data: testData, error: testErr } = await supabase.from('schools').select('id').limit(1);
+const { data: testData, error: testErr } = await supabase.from("schools").select("id").limit(1);
 if (testErr) {
-  console.error('❌ Connection failed:', testErr.message);
+  console.error("❌ Connection failed:", testErr.message);
   process.exit(1);
 }
-console.log('✅ Connected to Supabase. Schools table accessible.');
+console.log("✅ Connected to Supabase. Schools table accessible.");
 console.log(`   Found at least ${testData.length} school(s).\n`);
 
 // Index creation queries — using Supabase's rpc if available
@@ -45,15 +46,15 @@ ORDER BY tablename, policyname
 
 // Use the pgmeta endpoint if available (Supabase exposes this)
 const headers = {
-  'apikey': SERVICE_ROLE_KEY,
-  'Authorization': `Bearer ${SERVICE_ROLE_KEY}`,
-  'Content-Type': 'application/json'
+  apikey: SERVICE_ROLE_KEY,
+  Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+  "Content-Type": "application/json",
 };
 
 // Try /rest/v1 with a raw SQL via the pg_catalog approach
 async function execSQL(sql, label) {
   // Method 1: Try via RPC
-  const { data, error } = await supabase.rpc('exec_sql', { query: sql });
+  const { data, error } = await supabase.rpc("exec_sql", { query: sql });
   if (!error) {
     console.log(`  ✅ ${label}`);
     return true;
@@ -61,42 +62,42 @@ async function execSQL(sql, label) {
 
   // Method 2: Try via pg/query endpoint (sometimes available)
   const res = await fetch(`${SUPABASE_URL}/pg/query`, {
-    method: 'POST',
+    method: "POST",
     headers,
-    body: JSON.stringify({ query: sql })
+    body: JSON.stringify({ query: sql }),
   });
   if (res.ok) {
     console.log(`  ✅ ${label}`);
     return true;
   }
-  
+
   console.log(`  ⚠️  ${label} — requires manual SQL execution`);
   return false;
 }
 
-console.log('📋 Checking current database state...\n');
+console.log("📋 Checking current database state...\n");
 
 // Report on indexes
 const { data: indexes } = await supabase
-  .from('pg_indexes' as any)
-  .select('indexname, tablename')
-  .in('tablename', ['fee_invoices', 'fee_structures', 'fee_payments', 'rankings', 'awards'])
+  .from("pg_indexes")
+  .select("indexname, tablename")
+  .in("tablename", ["fee_invoices", "fee_structures", "fee_payments", "rankings", "awards"])
   .limit(50);
 
 if (indexes) {
   console.log(`Found ${indexes.length} existing performance indexes on key tables.\n`);
 }
 
-// Report on RLS policies  
+// Report on RLS policies
 const { data: policies } = await supabase
-  .from('pg_policies' as any)
-  .select('policyname, tablename')
-  .in('tablename', ['schools', 'students', 'profiles'])
+  .from("pg_policies")
+  .select("policyname, tablename")
+  .in("tablename", ["schools", "students", "profiles"])
   .limit(50);
 
 if (policies) {
-  console.log('Current RLS policies:');
-  policies.forEach(p => console.log(`  - ${p.tablename}: ${p.policyname}`));
+  console.log("Current RLS policies:");
+  policies.forEach((p) => console.log(`  - ${p.tablename}: ${p.policyname}`));
 }
 
 console.log(`

@@ -30,7 +30,10 @@ export async function notifyParentsOfClass(classId: string, args: NotifyArgs) {
     .select("parent_user_id")
     .eq("class_id", classId)
     .not("parent_user_id", "is", null);
-  await notifyUsers((data ?? []).map((s) => s.parent_user_id as string), args);
+  await notifyUsers(
+    (data ?? []).map((s) => s.parent_user_id as string),
+    args,
+  );
 }
 
 export async function notifyParentsOfSchool(schoolId: string, args: NotifyArgs) {
@@ -39,7 +42,10 @@ export async function notifyParentsOfSchool(schoolId: string, args: NotifyArgs) 
     .select("parent_user_id")
     .eq("school_id", schoolId)
     .not("parent_user_id", "is", null);
-  await notifyUsers((data ?? []).map((s) => s.parent_user_id as string), args);
+  await notifyUsers(
+    (data ?? []).map((s) => s.parent_user_id as string),
+    args,
+  );
 }
 
 export async function notifyParentOfStudent(studentId: string, args: NotifyArgs) {

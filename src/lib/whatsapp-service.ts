@@ -72,7 +72,10 @@ export const whatsappService = {
     return data as WhatsAppSettings | null;
   },
 
-  async saveSettings(schoolId: string, settings: Partial<WhatsAppSettings>): Promise<WhatsAppSettings> {
+  async saveSettings(
+    schoolId: string,
+    settings: Partial<WhatsAppSettings>,
+  ): Promise<WhatsAppSettings> {
     const { data, error } = await supabase
       .from("whatsapp_settings")
       .upsert({
@@ -99,7 +102,10 @@ export const whatsappService = {
     return (data || []) as WhatsAppTemplate[];
   },
 
-  async createTemplate(schoolId: string, template: Omit<WhatsAppTemplate, "school_id">): Promise<WhatsAppTemplate> {
+  async createTemplate(
+    schoolId: string,
+    template: Omit<WhatsAppTemplate, "school_id">,
+  ): Promise<WhatsAppTemplate> {
     const { data, error } = await supabase
       .from("whatsapp_templates")
       .insert({
@@ -125,7 +131,13 @@ export const whatsappService = {
     return (data || []) as WhatsAppCampaign[];
   },
 
-  async createCampaign(schoolId: string, campaign: Omit<WhatsAppCampaign, "school_id" | "status" | "sent_count" | "delivered_count" | "read_count" | "failed_count">): Promise<WhatsAppCampaign> {
+  async createCampaign(
+    schoolId: string,
+    campaign: Omit<
+      WhatsAppCampaign,
+      "school_id" | "status" | "sent_count" | "delivered_count" | "read_count" | "failed_count"
+    >,
+  ): Promise<WhatsAppCampaign> {
     const { data, error } = await supabase
       .from("whatsapp_campaigns")
       .insert({
@@ -144,10 +156,12 @@ export const whatsappService = {
   async getConversations(schoolId: string): Promise<any[]> {
     const { data, error } = await supabase
       .from("whatsapp_conversations")
-      .select(`
+      .select(
+        `
         *,
         assigned_to:profiles!whatsapp_conversations_assigned_to_user_id_fkey(full_name, designation)
-      `)
+      `,
+      )
       .eq("school_id", schoolId)
       .order("last_message_at", { ascending: false });
 
@@ -158,10 +172,12 @@ export const whatsappService = {
   async getMessages(schoolId: string, conversationId: string): Promise<any[]> {
     const { data, error } = await supabase
       .from("whatsapp_messages")
-      .select(`
+      .select(
+        `
         *,
         sender:profiles!whatsapp_messages_sender_user_id_fkey(full_name)
-      `)
+      `,
+      )
       .eq("school_id", schoolId)
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
@@ -182,7 +198,10 @@ export const whatsappService = {
     if (error) throw error;
   },
 
-  async updateConversationStatus(conversationId: string, status: "open" | "in_progress" | "resolved" | "closed"): Promise<void> {
+  async updateConversationStatus(
+    conversationId: string,
+    status: "open" | "in_progress" | "resolved" | "closed",
+  ): Promise<void> {
     const { error } = await supabase
       .from("whatsapp_conversations")
       .update({
@@ -202,7 +221,7 @@ export const whatsappService = {
     variables: string[],
     studentId: string | null = null,
     parentUserId: string | null = null,
-    campaignId: string | null = null
+    campaignId: string | null = null,
   ): Promise<WhatsAppLog> {
     // A. Fetch template details
     const { data: template, error: tempError } = await supabase
@@ -221,11 +240,11 @@ export const whatsappService = {
 
     // C. Fetch credentials
     const settings = await this.getSettings(schoolId);
-    
+
     // D. Simulate sending via API
     const isSuccess = Math.random() > 0.05; // 95% delivery success simulation
     const provMsgId = "msg_" + Math.random().toString(36).substring(2, 15);
-    
+
     const logData: Omit<WhatsAppLog, "id"> = {
       school_id: schoolId,
       campaign_id: campaignId,
@@ -261,7 +280,7 @@ export const whatsappService = {
         parentUserId,
         body,
         "outbound",
-        provMsgId
+        provMsgId,
       );
     }
 
@@ -278,7 +297,7 @@ export const whatsappService = {
     direction: "inbound" | "outbound",
     providerMsgId: string,
     senderUserId: string | null = null,
-    aiReplied = false
+    aiReplied = false,
   ): Promise<any> {
     // 1. Upsert Conversation
     const { data: conv, error: convError } = await supabase
@@ -294,7 +313,7 @@ export const whatsappService = {
           unread_count: direction === "inbound" ? 1 : 0, // mock increments by 1 on inbound
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "school_id,parent_phone" }
+        { onConflict: "school_id,parent_phone" },
       )
       .select("*")
       .single();
@@ -327,7 +346,7 @@ export const whatsappService = {
     schoolId: string,
     conversationId: string,
     body: string,
-    senderUserId: string
+    senderUserId: string,
   ): Promise<any> {
     const { data: conv } = await supabase
       .from("whatsapp_conversations")
@@ -348,7 +367,7 @@ export const whatsappService = {
       body,
       "outbound",
       provMsgId,
-      senderUserId
+      senderUserId,
     );
 
     // Reset unread count since staff just interacted
@@ -365,7 +384,7 @@ export const whatsappService = {
     schoolId: string,
     parentPhone: string,
     parentName: string,
-    messageBody: string
+    messageBody: string,
   ): Promise<any> {
     // A. Link to parent_user_id if possible
     const { data: stud } = await supabase
@@ -386,7 +405,7 @@ export const whatsappService = {
       parentUserId,
       messageBody,
       "inbound",
-      providerMsgId
+      providerMsgId,
     );
 
     // C. Trigger AI response if active
@@ -402,7 +421,7 @@ export const whatsappService = {
         "outbound",
         aiMsgId,
         null, // No sender user id (sent by AI)
-        true  // AI Replied = true
+        true, // AI Replied = true
       );
     }
 
@@ -410,7 +429,11 @@ export const whatsappService = {
   },
 
   // 8. AI assistant keyword matching engine
-  async getAiResponse(schoolId: string, query: string, student: any | null): Promise<string | null> {
+  async getAiResponse(
+    schoolId: string,
+    query: string,
+    student: any | null,
+  ): Promise<string | null> {
     const text = query.toLowerCase();
 
     // Context check: If no student matches, we reply with timings
@@ -431,7 +454,8 @@ export const whatsappService = {
         .limit(5);
 
       const totalDays = att?.length || 0;
-      const presentDays = att?.filter((a: any) => a.status === "present" || a.status === "late").length || 0;
+      const presentDays =
+        att?.filter((a: any) => a.status === "present" || a.status === "late").length || 0;
       const rate = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 92; // default fallback
 
       const lastAbsent = att?.find((a: any) => a.status === "absent");
@@ -462,13 +486,23 @@ export const whatsappService = {
     }
 
     // C. Fee Query
-    if (text.includes("fee") || text.includes("due") || text.includes("pending") || text.includes("payment")) {
+    if (
+      text.includes("fee") ||
+      text.includes("due") ||
+      text.includes("pending") ||
+      text.includes("payment")
+    ) {
       // Mock fee details based on standard metrics
       return `Fee status for ${student.full_name}: Outstanding amount is ₹4,500 (Quarter 2 Tuition Fee). Due date: June 30, 2026. Pay instantly using: http://localhost:8080/parent?pay=true`;
     }
 
     // D. Exam Schedules
-    if (text.includes("exam") || text.includes("schedule") || text.includes("test") || text.includes("date")) {
+    if (
+      text.includes("exam") ||
+      text.includes("schedule") ||
+      text.includes("test") ||
+      text.includes("date")
+    ) {
       if (!student.class_id) return "No exam schedules published yet.";
       const { data: ex } = await supabase
         .from("exams")
@@ -485,7 +519,12 @@ export const whatsappService = {
     }
 
     // E. School timings
-    if (text.includes("time") || text.includes("timing") || text.includes("hour") || text.includes("timing")) {
+    if (
+      text.includes("time") ||
+      text.includes("timing") ||
+      text.includes("hour") ||
+      text.includes("timing")
+    ) {
       return "Hezo School hours are 8:30 AM to 3:30 PM, Monday through Friday. Saturdays are half-days (8:30 AM to 12:30 PM).";
     }
 
@@ -510,15 +549,19 @@ export const whatsappService = {
       .eq("school_id", schoolId);
 
     const totalSent = logs?.length || 0;
-    const delivered = logs?.filter((l: any) => l.status === "delivered" || l.status === "read").length || 0;
+    const delivered =
+      logs?.filter((l: any) => l.status === "delivered" || l.status === "read").length || 0;
     const read = logs?.filter((l: any) => l.status === "read").length || 0;
     const failed = logs?.filter((l: any) => l.status === "failed").length || 0;
 
     const inbound = messages?.filter((m: any) => m.direction === "inbound").length || 0;
-    const aiAnswered = messages?.filter((m: any) => m.direction === "outbound" && m.ai_replied).length || 0;
+    const aiAnswered =
+      messages?.filter((m: any) => m.direction === "outbound" && m.ai_replied).length || 0;
 
     const openCount = conversations?.filter((c: any) => c.status === "open").length || 0;
-    const resolvedCount = conversations?.filter((c: any) => c.status === "resolved" || c.status === "closed").length || 0;
+    const resolvedCount =
+      conversations?.filter((c: any) => c.status === "resolved" || c.status === "closed").length ||
+      0;
     const totalConv = conversations?.length || 0;
 
     return {
@@ -532,5 +575,5 @@ export const whatsappService = {
       resolutionRate: totalConv > 0 ? Math.round((resolvedCount / totalConv) * 100) : 88,
       avgResponseTimeMin: 4.5,
     };
-  }
+  },
 };

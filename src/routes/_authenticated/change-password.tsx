@@ -45,9 +45,7 @@ function ChangePasswordPage() {
             </div>
             <div>
               <h2 className="font-semibold">Update your password</h2>
-              <p className="text-xs text-muted-foreground">
-                Use at least 8 characters.
-              </p>
+              <p className="text-xs text-muted-foreground">Use at least 8 characters.</p>
             </div>
           </div>
 

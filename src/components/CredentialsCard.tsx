@@ -38,7 +38,8 @@ export function CredentialsCard({ schoolId }: { schoolId: string }) {
   };
 
   const reset = async () => {
-    if (!confirm("Generate a new temporary password? The admin will need to use this to sign in.")) return;
+    if (!confirm("Generate a new temporary password? The admin will need to use this to sign in."))
+      return;
     setResetting(true);
     try {
       const res = await doReset({ data: { schoolId } });

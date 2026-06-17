@@ -61,14 +61,34 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "HEZO SCHOOL — Daily school operations" },
-      { name: "description", content: "Attendance, homework, teacher remarks and a Parent Daily Digest — built for Indian schools." },
+      {
+        name: "description",
+        content:
+          "Attendance, homework, teacher remarks and a Parent Daily Digest — built for Indian schools.",
+      },
       { property: "og:title", content: "HEZO SCHOOL — Daily school operations" },
-      { property: "og:description", content: "Attendance, homework, teacher remarks and a Parent Daily Digest — built for Indian schools." },
+      {
+        property: "og:description",
+        content:
+          "Attendance, homework, teacher remarks and a Parent Daily Digest — built for Indian schools.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:title", content: "HEZO SCHOOL — Daily school operations" },
-      { name: "twitter:description", content: "Attendance, homework, teacher remarks and a Parent Daily Digest — built for Indian schools." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6bc13b80-45c0-4a8f-8bc2-cdf74edc9267/id-preview-d077aa99--0014a056-074e-4284-843d-2caf00c15828.lovable.app-1780137494189.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6bc13b80-45c0-4a8f-8bc2-cdf74edc9267/id-preview-d077aa99--0014a056-074e-4284-843d-2caf00c15828.lovable.app-1780137494189.png" },
+      {
+        name: "twitter:description",
+        content:
+          "Attendance, homework, teacher remarks and a Parent Daily Digest — built for Indian schools.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6bc13b80-45c0-4a8f-8bc2-cdf74edc9267/id-preview-d077aa99--0014a056-074e-4284-843d-2caf00c15828.lovable.app-1780137494189.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6bc13b80-45c0-4a8f-8bc2-cdf74edc9267/id-preview-d077aa99--0014a056-074e-4284-843d-2caf00c15828.lovable.app-1780137494189.png",
+      },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],

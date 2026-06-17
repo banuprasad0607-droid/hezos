@@ -28,7 +28,13 @@ export const Route = createFileRoute("/_authenticated/fees")({
 });
 
 type ClassRow = { id: string; name: string };
-type StudentRow = { id: string; full_name: string; class_id: string | null; parent_user_id?: string | null; emergency_contact?: string | null };
+type StudentRow = {
+  id: string;
+  full_name: string;
+  class_id: string | null;
+  parent_user_id?: string | null;
+  emergency_contact?: string | null;
+};
 type Structure = {
   id: string;
   name: string;
@@ -66,7 +72,13 @@ type Payment = {
 type Tab = "overview" | "structures" | "invoices" | "payments";
 
 function FeesPage() {
-  const { currentSchoolId: effectiveSchoolId, currentSchool, roles, user, loading: tenantLoading } = useTenant();
+  const {
+    currentSchoolId: effectiveSchoolId,
+    currentSchool,
+    roles,
+    user,
+    loading: tenantLoading,
+  } = useTenant();
   const isAdmin = roles.includes("admin") || roles.includes("super_admin");
   usePageTitle("Fees");
   const displaySchoolName = currentSchool?.name ?? "School";
@@ -75,7 +87,7 @@ function FeesPage() {
   const [classes, setClasses] = useState<ClassRow[]>([]);
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [structures, setStructures] = useState<Structure[]>([]);
-  
+
   // Total totals for KPIs (loaded on init)
   const [kpiInvoices, setKpiInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,10 +97,28 @@ function FeesPage() {
     setLoading(true);
     try {
       const [c, s, fs, fi] = await Promise.all([
-        supabase.from("classes").select("id, name").eq("school_id", effectiveSchoolId).is("deleted_at", null).order("name"),
-        supabase.from("students").select("id, full_name, class_id, parent_user_id, emergency_contact").eq("school_id", effectiveSchoolId).is("deleted_at", null).order("full_name"),
-        supabase.from("fee_structures").select("*").eq("school_id", effectiveSchoolId).order("created_at", { ascending: false }),
-        supabase.from("fee_invoices").select("amount_due, amount_paid, status, due_date").eq("school_id", effectiveSchoolId).is("deleted_at", null),
+        supabase
+          .from("classes")
+          .select("id, name")
+          .eq("school_id", effectiveSchoolId)
+          .is("deleted_at", null)
+          .order("name"),
+        supabase
+          .from("students")
+          .select("id, full_name, class_id, parent_user_id, emergency_contact")
+          .eq("school_id", effectiveSchoolId)
+          .is("deleted_at", null)
+          .order("full_name"),
+        supabase
+          .from("fee_structures")
+          .select("*")
+          .eq("school_id", effectiveSchoolId)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("fee_invoices")
+          .select("amount_due, amount_paid, status, due_date")
+          .eq("school_id", effectiveSchoolId)
+          .is("deleted_at", null),
       ]);
       setClasses(c.data ?? []);
       setStudents(s.data ?? []);
@@ -116,67 +146,40 @@ function FeesPage() {
   }, [kpiInvoices]);
 
   const studentName = (id: string) => students.find((s) => s.id === id)?.full_name ?? "—";
-  const className = (id: string | null) => (id ? classes.find((c) => c.id === id)?.name ?? "—" : "All classes");
+  const className = (id: string | null) =>
+    id ? (classes.find((c) => c.id === id)?.name ?? "—") : "All classes";
 
   if (!isAdmin) {
     if (tenantLoading) {
-
       if (tenantLoading) {
-
-
         return (
-
-
           <div className="flex-1 flex items-center justify-center p-8 bg-background min-h-screen">
-
-
             <div className="text-center space-y-4">
-
-
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto"></div>
 
-
               <p className="text-sm text-muted-foreground">Loading...</p>
-
-
             </div>
-
-
           </div>
-
-
         );
-
-
       }
 
-
-
       return (
-
-
         <div className="flex-1 flex items-center justify-center p-8 bg-background min-h-screen">
-
           <div className="text-center space-y-4">
-
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto"></div>
 
             <p className="text-sm text-muted-foreground">Loading...</p>
-
           </div>
-
         </div>
-
       );
-
     }
 
-
     return (
-
       <>
         <PageHeader title="Fees" breadcrumb="Restricted" />
-        <div className="p-8 text-sm text-muted-foreground bg-background text-foreground">Admin access required.</div>
+        <div className="p-8 text-sm text-muted-foreground bg-background text-foreground">
+          Admin access required.
+        </div>
       </>
     );
   }
@@ -190,7 +193,12 @@ function FeesPage() {
           <Kpi icon={CircleDollarSign} label="Billed" value={fmt(kpis.billed)} />
           <Kpi icon={CheckCircle2} label="Collected" value={fmt(kpis.collected)} tone="success" />
           <Kpi icon={TrendingUp} label="Outstanding" value={fmt(kpis.outstanding)} tone="brand" />
-          <Kpi icon={AlertCircle} label="Overdue invoices" value={String(kpis.overdue)} tone="danger" />
+          <Kpi
+            icon={AlertCircle}
+            label="Overdue invoices"
+            value={String(kpis.overdue)}
+            tone="danger"
+          />
         </div>
 
         {/* Tabs */}
@@ -211,7 +219,9 @@ function FeesPage() {
         </div>
 
         {loading ? (
-          <div className="p-12 text-sm text-muted-foreground text-center">Syncing dashboard statistics...</div>
+          <div className="p-12 text-sm text-muted-foreground text-center">
+            Syncing dashboard statistics...
+          </div>
         ) : tab === "overview" ? (
           <OverviewTab schoolId={effectiveSchoolId!} studentName={studentName} />
         ) : tab === "structures" ? (
@@ -260,8 +270,20 @@ function OverviewTab({
   useEffect(() => {
     const fetchOverview = async () => {
       const [fi, fp] = await Promise.all([
-        supabase.from("fee_invoices").select("*").eq("school_id", schoolId).is("deleted_at", null).order("created_at", { ascending: false }).limit(8),
-        supabase.from("fee_payments").select("*, fee_invoices(student_id)").eq("school_id", schoolId).is("deleted_at", null).order("created_at", { ascending: false }).limit(8),
+        supabase
+          .from("fee_invoices")
+          .select("*")
+          .eq("school_id", schoolId)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false })
+          .limit(8),
+        supabase
+          .from("fee_payments")
+          .select("*, fee_invoices(student_id)")
+          .eq("school_id", schoolId)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false })
+          .limit(8),
       ]);
       setInvoices((fi.data ?? []) as Invoice[]);
       setPayments((fp.data ?? []) as unknown as Payment[]);
@@ -277,7 +299,10 @@ function OverviewTab({
         ) : (
           <ul className="divide-y divide-border">
             {invoices.map((i) => (
-              <li key={i.id} className="px-5 py-3 flex items-center justify-between hover:bg-secondary/20 transition-colors">
+              <li
+                key={i.id}
+                className="px-5 py-3 flex items-center justify-between hover:bg-secondary/20 transition-colors"
+              >
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate text-foreground">{i.title}</p>
                   <p className="text-xs text-muted-foreground">
@@ -285,7 +310,9 @@ function OverviewTab({
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-foreground">{fmt(Number(i.amount_due))}</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {fmt(Number(i.amount_due))}
+                  </p>
                   <StatusBadge status={i.status} />
                 </div>
               </li>
@@ -301,7 +328,10 @@ function OverviewTab({
             {payments.map((p) => {
               const studentId = p.fee_invoices?.student_id || "";
               return (
-                <li key={p.id} className="px-5 py-3 flex items-center justify-between hover:bg-secondary/20 transition-colors">
+                <li
+                  key={p.id}
+                  className="px-5 py-3 flex items-center justify-between hover:bg-secondary/20 transition-colors"
+                >
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate text-foreground">
                       {studentId ? studentName(studentId) : "—"}
@@ -364,7 +394,11 @@ function StructuresTab({
 
   const remove = async (id: string) => {
     if (!confirm("Delete this fee structure?")) return;
-    const { error } = await supabase.from("fee_structures").delete().eq("id", id).eq("school_id", schoolId);
+    const { error } = await supabase
+      .from("fee_structures")
+      .delete()
+      .eq("id", id)
+      .eq("school_id", schoolId);
     if (error) return toast.error(error.message);
     toast.success("Deleted");
     onChanged();
@@ -372,7 +406,10 @@ function StructuresTab({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
-      <form onSubmit={submit} className="bg-card border border-border rounded-xl p-5 space-y-3 h-fit text-card-foreground shadow-xs">
+      <form
+        onSubmit={submit}
+        className="bg-card border border-border rounded-xl p-5 space-y-3 h-fit text-card-foreground shadow-xs"
+      >
         <div className="flex items-center gap-2">
           <Layers className="size-4 text-brand" />
           <h2 className="text-sm font-semibold text-foreground">New fee structure</h2>
@@ -388,7 +425,11 @@ function StructuresTab({
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Category">
-            <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputCls}>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className={inputCls}
+            >
               <option value="tuition">Tuition</option>
               <option value="transport">Transport</option>
               <option value="exam">Exam</option>
@@ -396,7 +437,11 @@ function StructuresTab({
             </select>
           </Field>
           <Field label="Frequency">
-            <select value={frequency} onChange={(e) => setFrequency(e.target.value)} className={inputCls}>
+            <select
+              value={frequency}
+              onChange={(e) => setFrequency(e.target.value)}
+              className={inputCls}
+            >
               <option value="monthly">Monthly</option>
               <option value="quarterly">Quarterly</option>
               <option value="yearly">Yearly</option>
@@ -417,7 +462,11 @@ function StructuresTab({
             />
           </Field>
           <Field label="Class (optional)">
-            <select value={classId} onChange={(e) => setClassId(e.target.value)} className={inputCls}>
+            <select
+              value={classId}
+              onChange={(e) => setClassId(e.target.value)}
+              className={inputCls}
+            >
               <option value="">All classes</option>
               {classes.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -456,16 +505,23 @@ function StructuresTab({
             </thead>
             <tbody>
               {structures.map((s) => (
-                <tr key={s.id} className="border-t border-border hover:bg-secondary/20 transition-colors">
+                <tr
+                  key={s.id}
+                  className="border-t border-border hover:bg-secondary/20 transition-colors"
+                >
                   <Td className="font-medium text-foreground">{s.name}</Td>
                   <Td className="text-muted-foreground">
                     {s.class_id
-                      ? classes.find((c) => c.id === s.class_id)?.name ?? "—"
+                      ? (classes.find((c) => c.id === s.class_id)?.name ?? "—")
                       : "All classes"}
                   </Td>
                   <Td className="capitalize text-muted-foreground">{s.category}</Td>
-                  <Td className="capitalize text-muted-foreground">{s.frequency.replace("_", " ")}</Td>
-                  <Td className="text-right font-semibold text-foreground">{fmt(Number(s.amount))}</Td>
+                  <Td className="capitalize text-muted-foreground">
+                    {s.frequency.replace("_", " ")}
+                  </Td>
+                  <Td className="text-right font-semibold text-foreground">
+                    {fmt(Number(s.amount))}
+                  </Td>
                   <Td className="text-right">
                     <button
                       onClick={() => remove(s.id)}
@@ -540,12 +596,12 @@ function InvoicesTab({
       if (statusFilter !== "all") {
         query = query.eq("status", statusFilter);
       }
-      
+
       const targetClass = classFilter;
       if (targetClass) {
         query = query.eq("students.class_id", targetClass);
       }
-      
+
       if (debouncedQ.trim()) {
         query = query.ilike("students.full_name", `%${debouncedQ.trim()}%`);
       }
@@ -561,8 +617,8 @@ function InvoicesTab({
       setLocalInvoices(
         ((data ?? []) as any[]).map((i) => ({
           ...i,
-          students: Array.isArray(i.students) ? i.students[0] ?? null : i.students
-        })) as Invoice[]
+          students: Array.isArray(i.students) ? (i.students[0] ?? null) : i.students,
+        })) as Invoice[],
       );
       setTotalCount(count ?? 0);
     } catch (err: any) {
@@ -599,12 +655,12 @@ function InvoicesTab({
     setGenerating(false);
     if (error) return toast.error(error.message);
     toast.success(`Generated ${rows.length} invoice${rows.length === 1 ? "" : "s"}`);
-    
+
     // Trigger WhatsApp fee alerts to parents of these students
     void (async () => {
       try {
         const templates = await whatsappService.getTemplates(schoolId!);
-        const template = templates.find(t => t.name === "fee_due_reminder");
+        const template = templates.find((t) => t.name === "fee_due_reminder");
         if (template) {
           for (const s of eligible) {
             const phone = s.emergency_contact || "+91 90000 00000";
@@ -617,7 +673,7 @@ function InvoicesTab({
               template.id!,
               [amtStr, s.full_name, dueDate || "June 30, 2026", payUrl],
               s.id,
-              s.parent_user_id
+              s.parent_user_id,
             );
           }
           toast.success("WhatsApp fee reminders dispatched to parents.");
@@ -633,16 +689,16 @@ function InvoicesTab({
 
   const remove = async (id: string) => {
     if (!confirm("Delete this invoice? This will move it to the Recycle Bin.")) return;
-    
+
     // Soft delete invoice
     const { error } = await (supabase as any)
       .from("fee_invoices")
       .update({ deleted_at: new Date().toISOString() })
       .eq("id", id)
       .eq("school_id", schoolId);
-      
+
     if (error) return toast.error(error.message);
-    
+
     // Soft delete related payments
     await (supabase as any)
       .from("fee_payments")
@@ -662,10 +718,18 @@ function InvoicesTab({
       .select("title, period, amount_due, amount_paid, status, due_date, students(full_name)")
       .eq("school_id", schoolId)
       .is("deleted_at", null);
-      
+
     if (error || !data) return toast.error("Export query failed.");
-    
-    const headers = ["Student", "Title", "Period", "Due Date", "Amount Due", "Amount Paid", "Status"];
+
+    const headers = [
+      "Student",
+      "Title",
+      "Period",
+      "Due Date",
+      "Amount Due",
+      "Amount Paid",
+      "Status",
+    ];
     const rows = data.map((i: any) => [
       i.students?.full_name || "—",
       i.title,
@@ -673,9 +737,9 @@ function InvoicesTab({
       i.due_date || "—",
       i.amount_due,
       i.amount_paid,
-      i.status
+      i.status,
     ]);
-    
+
     if (format === "csv") exportToCSV("Fee_Invoices", headers, rows);
     else if (format === "excel") exportToExcel("Fee_Invoices", headers, rows);
     else if (format === "pdf") exportToPDF("Fee_Invoices", "Fee Invoices Roster", headers, rows);
@@ -689,7 +753,12 @@ function InvoicesTab({
         className="bg-card border border-border rounded-xl p-5 grid grid-cols-1 md:grid-cols-5 gap-3 items-end text-card-foreground shadow-xs"
       >
         <Field label="Fee structure">
-          <select value={structureId} onChange={(e) => setStructureId(e.target.value)} className={inputCls} required>
+          <select
+            value={structureId}
+            onChange={(e) => setStructureId(e.target.value)}
+            className={inputCls}
+            required
+          >
             <option value="">— select —</option>
             {structures.map((s) => (
               <option key={s.id} value={s.id}>
@@ -708,10 +777,19 @@ function InvoicesTab({
           />
         </Field>
         <Field label="Due date">
-          <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={inputCls} />
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className={inputCls}
+          />
         </Field>
         <Field label="Class (override)">
-          <select value={classFilter} onChange={(e) => setClassFilter(e.target.value)} className={inputCls}>
+          <select
+            value={classFilter}
+            onChange={(e) => setClassFilter(e.target.value)}
+            className={inputCls}
+          >
             <option value="">From structure</option>
             {classes.map((c) => (
               <option key={c.id} value={c.id}>
@@ -732,7 +810,7 @@ function InvoicesTab({
       <div className="bg-card border border-border rounded-xl overflow-hidden shadow-xs text-card-foreground">
         <div className="px-5 py-3 border-b border-border flex flex-wrap items-center justify-between gap-3 bg-secondary/10">
           <h2 className="text-sm font-semibold text-foreground">Invoices ({totalCount})</h2>
-          
+
           <div className="flex gap-2 items-center flex-wrap">
             <div className="relative w-44">
               <Search className="size-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -743,10 +821,13 @@ function InvoicesTab({
                 className="w-full pl-8 pr-2 py-1 text-xs border border-border rounded-md bg-background text-foreground outline-none"
               />
             </div>
-            
+
             <select
               value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(0);
+              }}
               className="text-xs border border-border rounded-md px-2 py-1 bg-background text-foreground outline-none"
             >
               <option value="all">All statuses</option>
@@ -754,15 +835,30 @@ function InvoicesTab({
               <option value="partial">Partial</option>
               <option value="paid">Paid</option>
             </select>
-            
+
             <div className="flex gap-1 border border-border rounded-md overflow-hidden bg-background">
-              <button onClick={() => handleExport("csv")} className="p-1 hover:bg-secondary text-[10px] font-bold px-2 border-r border-border transition-colors">CSV</button>
-              <button onClick={() => handleExport("excel")} className="p-1 hover:bg-secondary text-[10px] font-bold px-2 border-r border-border transition-colors">XLS</button>
-              <button onClick={() => handleExport("pdf")} className="p-1 hover:bg-secondary text-[10px] font-bold px-2 transition-colors">PDF</button>
+              <button
+                onClick={() => handleExport("csv")}
+                className="p-1 hover:bg-secondary text-[10px] font-bold px-2 border-r border-border transition-colors"
+              >
+                CSV
+              </button>
+              <button
+                onClick={() => handleExport("excel")}
+                className="p-1 hover:bg-secondary text-[10px] font-bold px-2 border-r border-border transition-colors"
+              >
+                XLS
+              </button>
+              <button
+                onClick={() => handleExport("pdf")}
+                className="p-1 hover:bg-secondary text-[10px] font-bold px-2 transition-colors"
+              >
+                PDF
+              </button>
             </div>
           </div>
         </div>
-        
+
         {fetching && localInvoices.length === 0 ? (
           <div className="text-center py-12 text-sm text-muted-foreground">Loading invoices...</div>
         ) : localInvoices.length === 0 ? (
@@ -785,14 +881,20 @@ function InvoicesTab({
               <tbody>
                 {localInvoices.map((i) => {
                   const balance = Number(i.amount_due) - Number(i.amount_paid);
-                  const overdue = i.status !== "paid" && i.due_date && new Date(i.due_date) < new Date();
+                  const overdue =
+                    i.status !== "paid" && i.due_date && new Date(i.due_date) < new Date();
                   const sName = i.students?.full_name || studentName(i.student_id);
                   return (
-                    <tr key={i.id} className="border-t border-border hover:bg-secondary/20 transition-colors">
+                    <tr
+                      key={i.id}
+                      className="border-t border-border hover:bg-secondary/20 transition-colors"
+                    >
                       <Td className="font-medium text-foreground">{sName}</Td>
                       <Td className="text-foreground">{i.title}</Td>
                       <Td className="text-muted-foreground">{i.period}</Td>
-                      <Td className={overdue ? "text-danger font-medium" : "text-muted-foreground"}>{i.due_date ?? "—"}</Td>
+                      <Td className={overdue ? "text-danger font-medium" : "text-muted-foreground"}>
+                        {i.due_date ?? "—"}
+                      </Td>
                       <Td className="text-right text-foreground">{fmt(Number(i.amount_due))}</Td>
                       <Td className="text-right text-foreground">
                         {fmt(Number(i.amount_paid))}
@@ -820,23 +922,24 @@ function InvoicesTab({
             </table>
           </div>
         )}
-        
+
         {/* Pagination controls */}
         <div className="flex items-center justify-between p-4 bg-secondary/10 border-t border-border text-foreground">
           <p className="text-xs text-muted-foreground">
-            Showing {totalCount > 0 ? page * pageSize + 1 : 0} to {Math.min((page + 1) * pageSize, totalCount)} of {totalCount} invoices
+            Showing {totalCount > 0 ? page * pageSize + 1 : 0} to{" "}
+            {Math.min((page + 1) * pageSize, totalCount)} of {totalCount} invoices
           </p>
           <div className="flex gap-2">
             <button
               disabled={page === 0}
-              onClick={() => setPage(p => p - 1)}
+              onClick={() => setPage((p) => p - 1)}
               className="px-3 py-1 text-xs font-semibold border border-border bg-card text-card-foreground rounded-md disabled:opacity-50 cursor-pointer hover:bg-secondary"
             >
               Previous
             </button>
             <button
               disabled={(page + 1) * pageSize >= totalCount}
-              onClick={() => setPage(p => p + 1)}
+              onClick={() => setPage((p) => p + 1)}
               className="px-3 py-1 text-xs font-semibold border border-border bg-card text-card-foreground rounded-md disabled:opacity-50 cursor-pointer hover:bg-secondary"
             >
               Next
@@ -899,12 +1002,12 @@ function PaymentsTab({
       .eq("school_id", schoolId)
       .is("deleted_at", null)
       .or("status.eq.pending,status.eq.partial");
-    
+
     setOpenInvoices(
       ((data ?? []) as any[]).map((i) => ({
         ...i,
-        students: Array.isArray(i.students) ? i.students[0] ?? null : i.students
-      })) as Invoice[]
+        students: Array.isArray(i.students) ? (i.students[0] ?? null) : i.students,
+      })) as Invoice[],
     );
   };
 
@@ -913,7 +1016,9 @@ function PaymentsTab({
     try {
       let query = supabase
         .from("fee_payments")
-        .select("*, fee_invoices!inner(student_id, title, students!inner(full_name))", { count: "exact" })
+        .select("*, fee_invoices!inner(student_id, title, students!inner(full_name))", {
+          count: "exact",
+        })
         .eq("school_id", schoolId)
         .is("deleted_at", null);
 
@@ -950,7 +1055,7 @@ function PaymentsTab({
     if (!amt || amt <= 0) return toast.error("Enter a valid amount");
     if (amt > balance + 0.001) return toast.error(`Amount exceeds balance of ${fmt(balance)}`);
     setSaving(true);
-    
+
     const { data: payRow, error: payErr } = await supabase
       .from("fee_payments")
       .insert({
@@ -963,23 +1068,23 @@ function PaymentsTab({
       })
       .select()
       .single();
-      
+
     if (payErr) {
       setSaving(false);
       return toast.error(payErr.message);
     }
-    
+
     const newPaid = Number(selected.amount_paid) + amt;
     const newStatus = newPaid >= Number(selected.amount_due) - 0.001 ? "paid" : "partial";
-    
+
     const { error: updErr } = await supabase
       .from("fee_invoices")
       .update({ amount_paid: newPaid, status: newStatus })
       .eq("id", selected.id);
-      
+
     setSaving(false);
     if (updErr) return toast.error(updErr.message);
-    
+
     toast.success("Payment recorded");
     setAmount("");
     setReference("");
@@ -991,7 +1096,10 @@ function PaymentsTab({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
-      <form onSubmit={submit} className="bg-card border border-border rounded-xl p-5 space-y-3 h-fit text-card-foreground shadow-xs">
+      <form
+        onSubmit={submit}
+        className="bg-card border border-border rounded-xl p-5 space-y-3 h-fit text-card-foreground shadow-xs"
+      >
         <div className="flex items-center gap-2">
           <Receipt className="size-4 text-brand" />
           <h2 className="text-sm font-semibold text-foreground">Record payment</h2>
@@ -1067,7 +1175,7 @@ function PaymentsTab({
       <div className="bg-card border border-border rounded-xl overflow-hidden shadow-xs text-card-foreground">
         <div className="px-5 py-3 border-b border-border flex items-center justify-between bg-secondary/10 flex-wrap gap-2">
           <h2 className="text-sm font-semibold text-foreground">Recent payments ({totalCount})</h2>
-          
+
           <div className="relative w-44">
             <Search className="size-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -1078,7 +1186,7 @@ function PaymentsTab({
             />
           </div>
         </div>
-        
+
         {fetching && localPayments.length === 0 ? (
           <div className="text-center py-12 text-sm text-muted-foreground">Loading payments...</div>
         ) : localPayments.length === 0 ? (
@@ -1098,14 +1206,21 @@ function PaymentsTab({
               </thead>
               <tbody>
                 {localPayments.map((p) => {
-                  const sName = p.fee_invoices?.students?.full_name || (p.fee_invoices ? studentName(p.fee_invoices.student_id) : "—");
+                  const sName =
+                    p.fee_invoices?.students?.full_name ||
+                    (p.fee_invoices ? studentName(p.fee_invoices.student_id) : "—");
                   return (
-                    <tr key={p.id} className="border-t border-border hover:bg-secondary/20 transition-colors">
+                    <tr
+                      key={p.id}
+                      className="border-t border-border hover:bg-secondary/20 transition-colors"
+                    >
                       <Td className="text-muted-foreground">{p.paid_on}</Td>
                       <Td className="font-medium text-foreground">{sName}</Td>
                       <Td className="capitalize text-muted-foreground">{p.method}</Td>
                       <Td className="text-muted-foreground">{p.reference ?? "—"}</Td>
-                      <Td className="text-right font-semibold text-foreground">{fmt(Number(p.amount))}</Td>
+                      <Td className="text-right font-semibold text-foreground">
+                        {fmt(Number(p.amount))}
+                      </Td>
                       <Td className="text-right">
                         <button
                           onClick={() => setReceipt(p)}
@@ -1121,23 +1236,24 @@ function PaymentsTab({
             </table>
           </div>
         )}
-        
+
         {/* Pagination controls */}
         <div className="flex items-center justify-between p-4 bg-secondary/10 border-t border-border text-foreground">
           <p className="text-xs text-muted-foreground">
-            Showing {totalCount > 0 ? page * pageSize + 1 : 0} to {Math.min((page + 1) * pageSize, totalCount)} of {totalCount} payments
+            Showing {totalCount > 0 ? page * pageSize + 1 : 0} to{" "}
+            {Math.min((page + 1) * pageSize, totalCount)} of {totalCount} payments
           </p>
           <div className="flex gap-2">
             <button
               disabled={page === 0}
-              onClick={() => setPage(p => p - 1)}
+              onClick={() => setPage((p) => p - 1)}
               className="px-3 py-1 text-xs font-semibold border border-border bg-card text-card-foreground rounded-md disabled:opacity-50 cursor-pointer hover:bg-secondary"
             >
               Previous
             </button>
             <button
               disabled={(page + 1) * pageSize >= totalCount}
-              onClick={() => setPage(p => p + 1)}
+              onClick={() => setPage((p) => p + 1)}
               className="px-3 py-1 text-xs font-semibold border border-border bg-card text-card-foreground rounded-md disabled:opacity-50 cursor-pointer hover:bg-secondary"
             >
               Next
@@ -1180,7 +1296,10 @@ function ReceiptModal({
       <div className="bg-card text-card-foreground rounded-xl w-full max-w-md shadow-xl print:shadow-none print:rounded-none">
         <div className="flex items-center justify-between px-5 py-3 border-b border-border print:hidden">
           <h3 className="font-semibold text-sm">Payment receipt</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground cursor-pointer">
+          <button
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground cursor-pointer"
+          >
             <X className="size-4" />
           </button>
         </div>
@@ -1204,10 +1323,7 @@ function ReceiptModal({
           {invoice && (
             <>
               <Row k="Total due" v={fmt(Number(invoice.amount_due))} />
-              <Row
-                k="Balance"
-                v={fmt(Number(invoice.amount_due) - Number(invoice.amount_paid))}
-              />
+              <Row k="Balance" v={fmt(Number(invoice.amount_due) - Number(invoice.amount_paid))} />
             </>
           )}
         </div>
@@ -1279,10 +1395,10 @@ function Kpi({
     tone === "success"
       ? "text-success"
       : tone === "danger"
-      ? "text-danger"
-      : tone === "brand"
-      ? "text-brand"
-      : "text-foreground";
+        ? "text-danger"
+        : tone === "brand"
+          ? "text-brand"
+          : "text-foreground";
   return (
     <div className="bg-card border border-border rounded-xl p-5 text-card-foreground shadow-xs">
       <div className="flex items-center justify-between">
@@ -1328,7 +1444,9 @@ function Row({ k, v, bold }: { k: string; v: string; bold?: boolean }) {
   return (
     <div className="flex items-center justify-between text-foreground">
       <span className="text-muted-foreground">{k}</span>
-      <span className={bold ? "font-bold text-foreground" : "font-medium text-foreground"}>{v}</span>
+      <span className={bold ? "font-bold text-foreground" : "font-medium text-foreground"}>
+        {v}
+      </span>
     </div>
   );
 }

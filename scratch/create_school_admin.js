@@ -1,10 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
-import crypto from 'crypto';
+import { createClient } from "@supabase/supabase-js";
+import crypto from "crypto";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 async function run() {
   const timestamp = Date.now();
@@ -14,7 +11,7 @@ async function run() {
   const schoolName = `QA School ${timestamp}`;
   const schoolCode = `QA-${timestamp.toString().slice(-4)}`;
 
-  console.log('Creating QA School Admin...');
+  console.log("Creating QA School Admin...");
   console.log(`Email: ${email}`);
   console.log(`Password: ${password}`);
 
@@ -24,7 +21,7 @@ async function run() {
       email,
       password,
       email_confirm: true,
-      user_metadata: { full_name: fullName }
+      user_metadata: { full_name: fullName },
     });
 
     if (userError) {
@@ -37,15 +34,15 @@ async function run() {
     // 2. Create school (omitting generated columns: school_name, school_code, and admin_id)
     const schoolId = crypto.randomUUID();
     const { data: schoolData, error: schoolError } = await supabase
-      .from('schools')
+      .from("schools")
       .insert({
         id: schoolId,
         name: schoolName,
         code: schoolCode,
-        status: 'active',
-        plan: 'starter',
+        status: "active",
+        plan: "starter",
         owner_id: userId,
-        email: email
+        email: email,
       })
       .select();
 
@@ -57,36 +54,34 @@ async function run() {
 
     // 3. Upsert Profile
     const { data: existingProfile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', userId)
+      .from("profiles")
+      .select("*")
+      .eq("user_id", userId)
       .single();
 
     if (existingProfile) {
-      console.log('Profile already exists (via trigger), updating school_id...');
+      console.log("Profile already exists (via trigger), updating school_id...");
       const { error: profileUpdateError } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({
           school_id: schoolId,
           full_name: fullName,
-          designation: 'School Admin'
+          designation: "School Admin",
         })
-        .eq('user_id', userId);
+        .eq("user_id", userId);
 
       if (profileUpdateError) {
         throw new Error(`Failed to update profile: ${profileUpdateError.message}`);
       }
     } else {
-      console.log('Profile does not exist, inserting profile...');
-      const { error: profileInsertError } = await supabase
-        .from('profiles')
-        .insert({
-          user_id: userId,
-          school_id: schoolId,
-          full_name: fullName,
-          email: email,
-          designation: 'School Admin'
-        });
+      console.log("Profile does not exist, inserting profile...");
+      const { error: profileInsertError } = await supabase.from("profiles").insert({
+        user_id: userId,
+        school_id: schoolId,
+        full_name: fullName,
+        email: email,
+        designation: "School Admin",
+      });
 
       if (profileInsertError) {
         throw new Error(`Failed to insert profile: ${profileInsertError.message}`);
@@ -94,25 +89,22 @@ async function run() {
     }
 
     // 4. Assign Admin Role
-    const { error: roleError } = await supabase
-      .from('user_roles')
-      .insert({
-        user_id: userId,
-        school_id: schoolId,
-        role: 'admin'
-      });
+    const { error: roleError } = await supabase.from("user_roles").insert({
+      user_id: userId,
+      school_id: schoolId,
+      role: "admin",
+    });
 
     if (roleError) {
       throw new Error(`Failed to assign role: ${roleError.message}`);
     }
 
     console.log('Successfully configured role "admin"!');
-    console.log('\n--- CREATED CREDENTIALS ---');
+    console.log("\n--- CREATED CREDENTIALS ---");
     console.log(JSON.stringify({ email, password, schoolId, userId, schoolName }, null, 2));
-    console.log('---------------------------\n');
-
+    console.log("---------------------------\n");
   } catch (error) {
-    console.error('Execution failed:', error.message);
+    console.error("Execution failed:", error.message);
     process.exit(1);
   }
 }

@@ -11,13 +11,15 @@ const nitroPreset = process.env.NITRO_PRESET || (process.env.VERCEL ? "vercel" :
 export default defineConfig({
   nitro: {
     preset: nitroPreset,
-    ...(nitroPreset === "vercel" ? {
-      output: {
-        dir: ".vercel/output",
-        serverDir: ".vercel/output/functions/__nitro.func",
-        publicDir: ".vercel/output/static"
-      }
-    } : {})
+    ...(nitroPreset === "vercel"
+      ? {
+          output: {
+            dir: ".vercel/output",
+            serverDir: ".vercel/output/functions/__nitro.func",
+            publicDir: ".vercel/output/static",
+          },
+        }
+      : {}),
   },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
@@ -40,9 +42,9 @@ export default defineConfig({
                 return "vendor-supabase";
               }
             }
-          }
-        }
-      }
-    }
-  }
+          },
+        },
+      },
+    },
+  },
 });

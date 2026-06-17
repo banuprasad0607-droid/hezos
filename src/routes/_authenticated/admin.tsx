@@ -47,7 +47,13 @@ type Counts = {
 };
 
 function AdminPanel() {
-  const { currentSchoolId: effectiveSchoolId, roles, user, profile, loading: tenantLoading } = useTenant();
+  const {
+    currentSchoolId: effectiveSchoolId,
+    roles,
+    user,
+    profile,
+    loading: tenantLoading,
+  } = useTenant();
   const schoolId = effectiveSchoolId;
   const { refresh } = useAuth();
   usePageTitle("Admin Panel");
@@ -72,25 +78,53 @@ function AdminPanel() {
 
   const loadAll = async () => {
     setLoading(true);
-    const [school, profiles, userRoles, students, classes, invites, announcements, homework, owned] =
-      await Promise.all([
-        supabase.from("schools").select("school_name").eq("id", effectiveSchoolId!).maybeSingle(),
-        supabase.from("profiles").select("user_id, full_name, email").eq("school_id", effectiveSchoolId!),
-        supabase.from("user_roles").select("user_id, role").eq("school_id", effectiveSchoolId!),
-        supabase.from("students").select("id", { count: "exact", head: true }).eq("school_id", effectiveSchoolId!),
-        supabase.from("classes").select("id", { count: "exact", head: true }).eq("school_id", effectiveSchoolId!),
-        supabase
-          .from("teacher_invitations")
-          .select("id", { count: "exact", head: true })
-          .eq("school_id", effectiveSchoolId!)
-          .is("accepted_at", null)
-          .is("revoked_at", null),
-        supabase.from("announcements").select("id", { count: "exact", head: true }).eq("school_id", effectiveSchoolId!),
-        supabase.from("homework").select("id", { count: "exact", head: true }).eq("school_id", effectiveSchoolId!),
-        supabase.from("schools").select("id, school_name").eq("owner_id", user!.id).order("created_at", { ascending: true }),
-      ]);
+    const [
+      school,
+      profiles,
+      userRoles,
+      students,
+      classes,
+      invites,
+      announcements,
+      homework,
+      owned,
+    ] = await Promise.all([
+      supabase.from("schools").select("school_name").eq("id", effectiveSchoolId!).maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("user_id, full_name, email")
+        .eq("school_id", effectiveSchoolId!),
+      supabase.from("user_roles").select("user_id, role").eq("school_id", effectiveSchoolId!),
+      supabase
+        .from("students")
+        .select("id", { count: "exact", head: true })
+        .eq("school_id", effectiveSchoolId!),
+      supabase
+        .from("classes")
+        .select("id", { count: "exact", head: true })
+        .eq("school_id", effectiveSchoolId!),
+      supabase
+        .from("teacher_invitations")
+        .select("id", { count: "exact", head: true })
+        .eq("school_id", effectiveSchoolId!)
+        .is("accepted_at", null)
+        .is("revoked_at", null),
+      supabase
+        .from("announcements")
+        .select("id", { count: "exact", head: true })
+        .eq("school_id", effectiveSchoolId!),
+      supabase
+        .from("homework")
+        .select("id", { count: "exact", head: true })
+        .eq("school_id", effectiveSchoolId!),
+      supabase
+        .from("schools")
+        .select("id, school_name")
+        .eq("owner_id", user!.id)
+        .order("created_at", { ascending: true }),
+    ]);
 
-    setOwnedSchools((owned.data ?? []).map(s => ({ id: s.id, name: s.school_name })));
+    setOwnedSchools((owned.data ?? []).map((s) => ({ id: s.id, name: s.school_name })));
     setSchoolName(school.data?.school_name ?? "");
 
     const rolesByUser = new Map<string, Staff["roles"]>();
@@ -128,7 +162,10 @@ function AdminPanel() {
     if (!schoolId) return;
     setSavingSchool(true);
     // Note: school_name is a generated column (alias of 'name'), so we update 'name'
-    const { error } = await supabase.from("schools").update({ name: schoolName.trim() }).eq("id", schoolId);
+    const { error } = await supabase
+      .from("schools")
+      .update({ name: schoolName.trim() })
+      .eq("id", schoolId);
     setSavingSchool(false);
     if (error) return toast.error(error.message);
     toast.success("School updated");
@@ -174,7 +211,10 @@ function AdminPanel() {
   const switchSchool = async (id: string) => {
     if (!user || id === schoolId) return;
     setSwitchingTo(id);
-    const { error } = await supabase.from("profiles").update({ school_id: id }).eq("user_id", user.id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ school_id: id })
+      .eq("user_id", user.id);
     setSwitchingTo(null);
     if (error) return toast.error(error.message);
     toast.success("Switched school");
@@ -183,7 +223,9 @@ function AdminPanel() {
 
   const grantAdmin = async (uid: string) => {
     if (!schoolId) return;
-    const { error } = await supabase.from("user_roles").insert({ user_id: uid, school_id: schoolId, role: "admin" });
+    const { error } = await supabase
+      .from("user_roles")
+      .insert({ user_id: uid, school_id: schoolId, role: "admin" });
     if (error) return toast.error(error.message);
     toast.success("Admin role granted");
     void loadAll();
@@ -241,15 +283,56 @@ function AdminPanel() {
     );
   }
 
-  const services: { to: string; label: string; icon: typeof Users; count?: number; desc: string }[] = [
-    { to: "/students", label: "Students & Parents", icon: Users, count: counts?.students, desc: "Roster, parent linking" },
-    { to: "/classes", label: "Classes", icon: GraduationCap, count: counts?.classes, desc: "Grades and sections" },
+  const services: {
+    to: string;
+    label: string;
+    icon: typeof Users;
+    count?: number;
+    desc: string;
+  }[] = [
+    {
+      to: "/students",
+      label: "Students & Parents",
+      icon: Users,
+      count: counts?.students,
+      desc: "Roster, parent linking",
+    },
+    {
+      to: "/classes",
+      label: "Classes",
+      icon: GraduationCap,
+      count: counts?.classes,
+      desc: "Grades and sections",
+    },
     { to: "/fees", label: "Fees & Invoices", icon: Wallet, desc: "Structures, invoices, payments" },
-    { to: "/attendance", label: "Attendance", icon: CalendarCheck, desc: "Daily marking & history" },
-    { to: "/homework", label: "Homework", icon: BookOpen, count: counts?.homework, desc: "Assignments & files" },
+    {
+      to: "/attendance",
+      label: "Attendance",
+      icon: CalendarCheck,
+      desc: "Daily marking & history",
+    },
+    {
+      to: "/homework",
+      label: "Homework",
+      icon: BookOpen,
+      count: counts?.homework,
+      desc: "Assignments & files",
+    },
     { to: "/remarks", label: "Remarks", icon: MessageSquare, desc: "Teacher feedback" },
-    { to: "/announcements", label: "Announcements", icon: Megaphone, count: counts?.announcements, desc: "School-wide notices" },
-    { to: "/invitations", label: "Invite Teachers", icon: UserPlus, count: counts?.pendingInvites, desc: "Pending invitations" },
+    {
+      to: "/announcements",
+      label: "Announcements",
+      icon: Megaphone,
+      count: counts?.announcements,
+      desc: "School-wide notices",
+    },
+    {
+      to: "/invitations",
+      label: "Invite Teachers",
+      icon: UserPlus,
+      count: counts?.pendingInvites,
+      desc: "Pending invitations",
+    },
     { to: "/parent", label: "Parent Digest", icon: Shield, desc: "Preview parent view" },
   ];
 
@@ -353,15 +436,16 @@ function AdminPanel() {
               </li>
             )}
           </ul>
-
-
         </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
           <div className="space-y-6">
             {schoolId && <CredentialsCard schoolId={schoolId} />}
             {/* School settings */}
-            <form onSubmit={saveSchool} className="bg-card border border-border rounded-xl p-5 h-fit space-y-4">
+            <form
+              onSubmit={saveSchool}
+              className="bg-card border border-border rounded-xl p-5 h-fit space-y-4"
+            >
               <div className="flex items-center gap-2">
                 <Building2 className="size-4 text-brand" />
                 <h2 className="text-sm font-semibold">School settings</h2>
@@ -407,7 +491,10 @@ function AdminPanel() {
                   const isMe = s.user_id === user?.id;
                   const isAdminRole = s.roles.includes("admin");
                   return (
-                    <li key={s.user_id} className="px-5 py-3 flex items-center justify-between gap-3 flex-wrap">
+                    <li
+                      key={s.user_id}
+                      className="px-5 py-3 flex items-center justify-between gap-3 flex-wrap"
+                    >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="text-sm font-medium truncate">{s.full_name}</p>
@@ -420,14 +507,18 @@ function AdminPanel() {
                             <span
                               key={r}
                               className={`text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${
-                                r === "admin" ? "bg-brand-soft text-brand" : "bg-muted text-muted-foreground"
+                                r === "admin"
+                                  ? "bg-brand-soft text-brand"
+                                  : "bg-muted text-muted-foreground"
                               }`}
                             >
                               {r}
                             </span>
                           ))}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5 truncate">{s.email ?? "—"}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                          {s.email ?? "—"}
+                        </p>
                       </div>
                       <div className="flex items-center gap-2">
                         {isAdminRole ? (
@@ -472,7 +563,11 @@ function Stat({ label, value, tone }: { label: string; value: number | string; t
   return (
     <div className="bg-card border border-border rounded-xl p-5">
       <p className="text-sm font-medium text-muted-foreground">{label}</p>
-      <h3 className={`text-3xl font-bold mt-2 ${tone === "brand" ? "text-brand" : "text-foreground"}`}>{value}</h3>
+      <h3
+        className={`text-3xl font-bold mt-2 ${tone === "brand" ? "text-brand" : "text-foreground"}`}
+      >
+        {value}
+      </h3>
     </div>
   );
 }

@@ -31,19 +31,28 @@ export function ErrorFallback({ error, reset, title, message }: ErrorFallbackPro
       lowerMsg.includes("foreign key") ||
       lowerMsg.includes("database") ||
       lowerMsg.includes("pgrst") ||
-      lowerMsg.includes("code:\"42") ||
-      lowerMsg.includes("code:\"pgrst")
+      lowerMsg.includes('code:"42') ||
+      lowerMsg.includes('code:"pgrst')
     ) {
       return "Unable to load data. Please contact the administrator.";
     }
-    
+
     // Network / fetch errors
-    if (lowerMsg.includes("network") || lowerMsg.includes("fetch") || lowerMsg.includes("failed to fetch")) {
+    if (
+      lowerMsg.includes("network") ||
+      lowerMsg.includes("fetch") ||
+      lowerMsg.includes("failed to fetch")
+    ) {
       return "Network connection issue. Please check your internet and try again.";
     }
-    
+
     // Session / Auth errors
-    if (lowerMsg.includes("permission") || lowerMsg.includes("authorized") || lowerMsg.includes("jwt") || lowerMsg.includes("unauthorized")) {
+    if (
+      lowerMsg.includes("permission") ||
+      lowerMsg.includes("authorized") ||
+      lowerMsg.includes("jwt") ||
+      lowerMsg.includes("unauthorized")
+    ) {
       return "Session expired or permission denied. Please sign in again.";
     }
 
@@ -55,13 +64,9 @@ export function ErrorFallback({ error, reset, title, message }: ErrorFallbackPro
       <div className="size-12 rounded-full bg-danger-soft text-danger flex items-center justify-center mb-4">
         <AlertCircle className="size-6 animate-pulse" />
       </div>
-      <h3 className="font-semibold text-lg text-foreground">
-        {title || "Something went wrong"}
-      </h3>
-      <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-        {getFriendlyMessage()}
-      </p>
-      
+      <h3 className="font-semibold text-lg text-foreground">{title || "Something went wrong"}</h3>
+      <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{getFriendlyMessage()}</p>
+
       <div className="mt-6 flex items-center justify-center gap-3">
         {reset && (
           <button

@@ -1,4 +1,14 @@
-import { Search, Bell, Settings, ChevronLeft, ChevronDown, Building2, X, Sun, Moon } from "lucide-react";
+import {
+  Search,
+  Bell,
+  Settings,
+  ChevronLeft,
+  ChevronDown,
+  Building2,
+  X,
+  Sun,
+  Moon,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useSchoolContext } from "@/lib/school-context";
 import { useTenant } from "@/lib/tenant-context";
@@ -12,7 +22,7 @@ export function Topbar() {
   const navigate = useNavigate();
   const isSuper = roles.includes("super_admin");
   const inSchoolContext = isSuper && activeSchool !== null;
-  
+
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6 shrink-0 text-card-foreground">
       <div className="flex items-center gap-6 flex-1">
@@ -21,14 +31,14 @@ export function Topbar() {
         </button>
         <div className="relative max-w-md w-full">
           <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input 
-            type="text" 
-            placeholder="Search students, classes, teachers..." 
+          <input
+            type="text"
+            placeholder="Search students, classes, teachers..."
             className="w-full pl-9 pr-4 py-2 bg-muted/50 border-none rounded-md text-sm outline-none focus:ring-1 focus:ring-brand/30 transition-shadow text-foreground placeholder:text-muted-foreground"
           />
         </div>
       </div>
-      
+
       <div className="flex items-center gap-4">
         {/* Active School Badge (Super Admin in school context) */}
         {inSchoolContext && (
@@ -52,8 +62,8 @@ export function Topbar() {
         )}
 
         {/* Theme Switcher Button */}
-        <button 
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")} 
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="p-2 text-muted-foreground hover:bg-accent rounded-full transition-colors"
           title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
         >

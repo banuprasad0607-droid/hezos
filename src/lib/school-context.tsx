@@ -32,8 +32,8 @@ function readFromStorage(): ActiveSchool | null {
 }
 
 export function SchoolContextProvider({ children }: { children: ReactNode }) {
-  const [activeSchool, setActiveSchoolState] = useState<ActiveSchool | null>(
-    () => readFromStorage()
+  const [activeSchool, setActiveSchoolState] = useState<ActiveSchool | null>(() =>
+    readFromStorage(),
   );
 
   const enterSchool = useCallback((school: ActiveSchool) => {

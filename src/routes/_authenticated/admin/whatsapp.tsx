@@ -5,7 +5,12 @@ const supabase = rawSupabase as any;
 import { useTenant } from "@/lib/tenant-context";
 import { usePageTitle } from "@/hooks/use-school-name";
 import { PageHeader } from "@/components/PageHeader";
-import { whatsappService, type WhatsAppSettings, type WhatsAppTemplate, type WhatsAppCampaign } from "@/lib/whatsapp-service";
+import {
+  whatsappService,
+  type WhatsAppSettings,
+  type WhatsAppTemplate,
+  type WhatsAppCampaign,
+} from "@/lib/whatsapp-service";
 import { toast } from "sonner";
 import {
   MessageSquare,
@@ -31,7 +36,7 @@ import {
   Calendar,
   BookOpen,
   DollarSign,
-  GraduationCap
+  GraduationCap,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/whatsapp")({
@@ -81,7 +86,9 @@ function WhatsAppManagementPage() {
   const [mockingReply, setMockingReply] = useState(false);
 
   // Filters
-  const [inboxFilter, setInboxFilter] = useState<"all" | "open" | "in_progress" | "resolved" | "my">("all");
+  const [inboxFilter, setInboxFilter] = useState<
+    "all" | "open" | "in_progress" | "resolved" | "my"
+  >("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Campaign Wizard State
@@ -100,7 +107,9 @@ function WhatsAppManagementPage() {
   const [creatingTemp, setCreatingTemp] = useState(false);
 
   // Configuration Form State
-  const [activeProvider, setActiveProvider] = useState<"meta" | "twilio" | "interakt" | "wati">("meta");
+  const [activeProvider, setActiveProvider] = useState<"meta" | "twilio" | "interakt" | "wati">(
+    "meta",
+  );
   const [apiKey, setApiKey] = useState("");
   const [phoneId, setPhoneId] = useState("");
   const [accountId, setAccountId] = useState("");
@@ -213,9 +222,10 @@ function WhatsAppManagementPage() {
           name: "absent_alert",
           category: "UTILITY",
           language: "en",
-          body_text: "Dear Parent, your child {{1}} was marked ABSENT today. Please check the attendance panel or submit a leave request if required.",
+          body_text:
+            "Dear Parent, your child {{1}} was marked ABSENT today. Please check the attendance panel or submit a leave request if required.",
           status: "approved",
-          variables: ["student_name"]
+          variables: ["student_name"],
         },
         {
           name: "homework_alert",
@@ -223,24 +233,26 @@ function WhatsAppManagementPage() {
           language: "en",
           body_text: "New homework assigned for Class {{1}} ({{2}}): {{3}}. Due on {{4}}.",
           status: "approved",
-          variables: ["class_name", "subject", "homework_title", "due_date"]
+          variables: ["class_name", "subject", "homework_title", "due_date"],
         },
         {
           name: "fee_due_reminder",
           category: "UTILITY",
           language: "en",
-          body_text: "Fee Reminder: A pending fee of {{1}} is due for {{2}} by {{3}}. Pay online at {{4}} to avoid late fines.",
+          body_text:
+            "Fee Reminder: A pending fee of {{1}} is due for {{2}} by {{3}}. Pay online at {{4}} to avoid late fines.",
           status: "approved",
-          variables: ["amount", "student_name", "due_date", "payment_link"]
+          variables: ["amount", "student_name", "due_date", "payment_link"],
         },
         {
           name: "exam_result_notification",
           category: "UTILITY",
           language: "en",
-          body_text: "Dear Parent, exam results for {{1}} are published. Total Score: {{2}}%. Please review report cards on the parent dashboard.",
+          body_text:
+            "Dear Parent, exam results for {{1}} are published. Total Score: {{2}}%. Please review report cards on the parent dashboard.",
           status: "approved",
-          variables: ["student_name", "percentage"]
-        }
+          variables: ["student_name", "percentage"],
+        },
       ];
 
       for (const t of mockTemplates) {
@@ -252,10 +264,17 @@ function WhatsAppManagementPage() {
       if (firstStudent) {
         const phone = "+91 98765 43210";
         const name = "Sanjay Kumar (Parent)";
-        await whatsappService.mockInboundMessage(schoolId, phone, name, "Hi, is Rohan present today?");
+        await whatsappService.mockInboundMessage(
+          schoolId,
+          phone,
+          name,
+          "Hi, is Rohan present today?",
+        );
       }
 
-      toast.success("Successfully seeded default WhatsApp templates and configured Sandbox settings!");
+      toast.success(
+        "Successfully seeded default WhatsApp templates and configured Sandbox settings!",
+      );
       void loadData();
     } catch (err: any) {
       toast.error("Auto provision failed: " + err.message);
@@ -289,7 +308,7 @@ function WhatsAppManagementPage() {
         schoolId,
         selectedConv.parent_phone,
         selectedConv.parent_name,
-        mockReplyText.trim()
+        mockReplyText.trim(),
       );
       setMockReplyText("");
       // Refresh messages & conversations
@@ -297,9 +316,9 @@ function WhatsAppManagementPage() {
       setMessages(msgs);
       const convs = await whatsappService.getConversations(schoolId);
       setConversations(convs);
-      
+
       // Update selected conversation in state
-      const updatedConv = convs.find(c => c.id === selectedConv.id);
+      const updatedConv = convs.find((c) => c.id === selectedConv.id);
       if (updatedConv) setSelectedConv(updatedConv);
 
       // Refresh stats
@@ -321,7 +340,7 @@ function WhatsAppManagementPage() {
       await whatsappService.assignConversation(selectedConv.id, staffId);
       const convs = await whatsappService.getConversations(schoolId!);
       setConversations(convs);
-      const updated = convs.find(c => c.id === selectedConv.id);
+      const updated = convs.find((c) => c.id === selectedConv.id);
       if (updated) setSelectedConv(updated);
       toast.success("Conversation assignment updated.");
     } catch (err: any) {
@@ -336,7 +355,7 @@ function WhatsAppManagementPage() {
       await whatsappService.updateConversationStatus(selectedConv.id, status);
       const convs = await whatsappService.getConversations(schoolId!);
       setConversations(convs);
-      const updated = convs.find(c => c.id === selectedConv.id);
+      const updated = convs.find((c) => c.id === selectedConv.id);
       if (updated) setSelectedConv(updated);
       toast.success(`Status updated to ${status}.`);
     } catch (err: any) {
@@ -353,12 +372,14 @@ function WhatsAppManagementPage() {
     }
     setCreatingCamp(true);
     try {
-      const template = templates.find(t => t.id === campTemplateId);
+      const template = templates.find((t) => t.id === campTemplateId);
       if (!template) throw new Error("Template not found");
 
       // Validate variable mappings count
       if (campVariables.length < template.variables.length) {
-        toast.error(`Please provide mappings for all template variables (needs ${template.variables.length} values).`);
+        toast.error(
+          `Please provide mappings for all template variables (needs ${template.variables.length} values).`,
+        );
         setCreatingCamp(false);
         return;
       }
@@ -375,11 +396,15 @@ function WhatsAppManagementPage() {
       // 2. Resolve cohort targets
       let targetParents: any[] = [];
       if (campTarget === "all_parents") {
-        targetParents = studentList.filter(s => s.parent_user_id !== null);
+        targetParents = studentList.filter((s) => s.parent_user_id !== null);
       } else if (campTarget === "class") {
-        targetParents = studentList.filter(s => s.class_id === campClassId && s.parent_user_id !== null);
+        targetParents = studentList.filter(
+          (s) => s.class_id === campClassId && s.parent_user_id !== null,
+        );
       } else if (campTarget === "student") {
-        targetParents = studentList.filter(s => s.id === campStudentId && s.parent_user_id !== null);
+        targetParents = studentList.filter(
+          (s) => s.id === campStudentId && s.parent_user_id !== null,
+        );
       }
 
       if (targetParents.length === 0) {
@@ -403,13 +428,14 @@ function WhatsAppManagementPage() {
 
       for (const parent of targetParents) {
         try {
-          const phone = parent.phone_number || "+91 90000 " + Math.floor(10000 + Math.random() * 90000);
-          
+          const phone =
+            parent.phone_number || "+91 90000 " + Math.floor(10000 + Math.random() * 90000);
+
           // Map dynamic variables (e.g. mapping Rohan for child name)
-          const resolvedVars = campVariables.map(v => {
+          const resolvedVars = campVariables.map((v) => {
             if (v === "{student_name}") return parent.full_name;
             if (v === "{class_name}") {
-              const cls = classesList.find(c => c.id === parent.class_id);
+              const cls = classesList.find((c) => c.id === parent.class_id);
               return cls ? cls.name : "Class 1";
             }
             if (v === "{due_date}") return "June 30, 2026";
@@ -423,7 +449,7 @@ function WhatsAppManagementPage() {
             resolvedVars,
             parent.id,
             parent.parent_user_id,
-            camp.id!
+            camp.id!,
           );
           sentCount++;
           readCount += Math.random() > 0.4 ? 1 : 0;
@@ -485,13 +511,15 @@ function WhatsAppManagementPage() {
     }
     setTestingConnection(true);
     try {
-      const template = templates.find(t => t.name === "absent_alert");
+      const template = templates.find((t) => t.name === "absent_alert");
       if (!template) {
         toast.error("Please create templates first to execute test triggers.");
         setTestingConnection(false);
         return;
       }
-      await whatsappService.sendTemplateMessage(schoolId, testPhone.trim(), template.id!, ["Aman Sharma"]);
+      await whatsappService.sendTemplateMessage(schoolId, testPhone.trim(), template.id!, [
+        "Aman Sharma",
+      ]);
       toast.success("Test message dispatched! Check recipient's phone.");
       setTestingConnection(false);
     } catch (err: any) {
@@ -510,7 +538,7 @@ function WhatsAppManagementPage() {
     try {
       // Auto resolve variables count (e.g. counting occurrences of {{1}}, {{2}} in body)
       const matches = newTempBody.match(/\{\{\d+\}\}/g) || [];
-      const variablesCount = Array.from(new Set(matches)).map(m => m.replace(/[\{\}]/g, ""));
+      const variablesCount = Array.from(new Set(matches)).map((m) => m.replace(/[\{\}]/g, ""));
 
       await whatsappService.createTemplate(schoolId, {
         name: newTempName.toLowerCase().trim().replace(/\s+/g, "_"),
@@ -534,8 +562,10 @@ function WhatsAppManagementPage() {
 
   // Filter conversations
   const filteredConversations = useMemo(() => {
-    return conversations.filter(c => {
-      const matchesSearch = c.parent_phone.includes(searchQuery) || (c.parent_name || "").toLowerCase().includes(searchQuery.toLowerCase());
+    return conversations.filter((c) => {
+      const matchesSearch =
+        c.parent_phone.includes(searchQuery) ||
+        (c.parent_name || "").toLowerCase().includes(searchQuery.toLowerCase());
       if (!matchesSearch) return false;
 
       if (inboxFilter === "open") return c.status === "open";
@@ -549,7 +579,7 @@ function WhatsAppManagementPage() {
   // Selected Chat Student Meta Context (Right Panel data)
   const studentContext = useMemo(() => {
     if (!selectedConv || !selectedConv.parent_user_id) return null;
-    return studentList.find(s => s.parent_user_id === selectedConv.parent_user_id) || null;
+    return studentList.find((s) => s.parent_user_id === selectedConv.parent_user_id) || null;
   }, [selectedConv, studentList]);
 
   if (tenantLoading || loading) {
@@ -667,15 +697,25 @@ function WhatsAppManagementPage() {
                           {c.parent_name || c.parent_phone}
                         </span>
                         <span className="text-[10px] text-muted-foreground">
-                          {new Date(c.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(c.last_message_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground truncate">{c.last_message_body}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {c.last_message_body}
+                      </p>
                       <div className="flex justify-between items-center mt-1">
-                        <span className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${
-                          c.status === "open" ? "bg-danger-soft text-danger" :
-                          c.status === "in_progress" ? "bg-warning-soft text-warning" : "bg-success-soft text-success"
-                        }`}>
+                        <span
+                          className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${
+                            c.status === "open"
+                              ? "bg-danger-soft text-danger"
+                              : c.status === "in_progress"
+                                ? "bg-warning-soft text-warning"
+                                : "bg-success-soft text-success"
+                          }`}
+                        >
                           {c.status}
                         </span>
                         {c.unread_count > 0 && (
@@ -697,7 +737,9 @@ function WhatsAppManagementPage() {
                   {/* Chat header */}
                   <div className="p-4 border-b border-border bg-card flex justify-between items-center shrink-0">
                     <div>
-                      <h4 className="font-bold text-sm text-foreground">{selectedConv.parent_name}</h4>
+                      <h4 className="font-bold text-sm text-foreground">
+                        {selectedConv.parent_name}
+                      </h4>
                       <p className="text-xs text-muted-foreground">{selectedConv.parent_phone}</p>
                     </div>
 
@@ -724,8 +766,11 @@ function WhatsAppManagementPage() {
                         value={selectedConv.status}
                         onChange={(e) => handleUpdateStatus(e.target.value as any)}
                         className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg border focus:outline-none ${
-                          selectedConv.status === "open" ? "bg-danger-soft text-danger border-danger/30" :
-                          selectedConv.status === "in_progress" ? "bg-warning-soft text-warning border-warning/30" : "bg-success-soft text-success border-success/30"
+                          selectedConv.status === "open"
+                            ? "bg-danger-soft text-danger border-danger/30"
+                            : selectedConv.status === "in_progress"
+                              ? "bg-warning-soft text-warning border-warning/30"
+                              : "bg-success-soft text-success border-success/30"
                         }`}
                       >
                         <option value="open">Open</option>
@@ -756,16 +801,27 @@ function WhatsAppManagementPage() {
                             <p className="leading-relaxed whitespace-pre-wrap">{m.message_body}</p>
                             <div className="flex justify-between items-center gap-4 text-[9px] mt-1 opacity-70">
                               <span className="font-semibold">
-                                {isOut ? (m.ai_replied ? "🤖 AI Assistant" : m.sender?.full_name || "Office") : "Parent"}
+                                {isOut
+                                  ? m.ai_replied
+                                    ? "🤖 AI Assistant"
+                                    : m.sender?.full_name || "Office"
+                                  : "Parent"}
                               </span>
                               <div className="flex items-center gap-0.5">
                                 <span>
-                                  {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  {new Date(m.created_at).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
                                 </span>
-                                {isOut && (
-                                  m.status === "read" ? <CheckCheck className="size-3 text-success" /> :
-                                  m.status === "delivered" ? <CheckCheck className="size-3 text-muted" /> : <Check className="size-3 text-muted" />
-                                )}
+                                {isOut &&
+                                  (m.status === "read" ? (
+                                    <CheckCheck className="size-3 text-success" />
+                                  ) : m.status === "delivered" ? (
+                                    <CheckCheck className="size-3 text-muted" />
+                                  ) : (
+                                    <Check className="size-3 text-muted" />
+                                  ))}
                               </div>
                             </div>
                           </div>
@@ -824,7 +880,9 @@ function WhatsAppManagementPage() {
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-muted-foreground">
                   <MessageSquare className="size-12 text-muted-foreground/40 mb-3" />
                   <p className="font-semibold text-sm">No conversation selected</p>
-                  <p className="text-xs mt-1">Select a chat from the left panel to begin replying.</p>
+                  <p className="text-xs mt-1">
+                    Select a chat from the left panel to begin replying.
+                  </p>
                 </div>
               )}
             </div>
@@ -834,7 +892,9 @@ function WhatsAppManagementPage() {
               <div className="w-80 border-l border-border flex flex-col shrink-0 p-5 space-y-6 overflow-y-auto">
                 <div className="flex items-center gap-2 border-b border-border pb-3">
                   <Info className="size-4.5 text-muted-foreground" />
-                  <h4 className="font-bold text-xs uppercase tracking-wider text-foreground">Student Context</h4>
+                  <h4 className="font-bold text-xs uppercase tracking-wider text-foreground">
+                    Student Context
+                  </h4>
                 </div>
 
                 {studentContext ? (
@@ -845,8 +905,12 @@ function WhatsAppManagementPage() {
                         {studentContext.full_name.slice(0, 1).toUpperCase()}
                       </div>
                       <div>
-                        <h5 className="font-semibold text-xs text-foreground">{studentContext.full_name}</h5>
-                        <p className="text-[10px] text-muted-foreground">Roll No: {studentContext.roll_number || "—"}</p>
+                        <h5 className="font-semibold text-xs text-foreground">
+                          {studentContext.full_name}
+                        </h5>
+                        <p className="text-[10px] text-muted-foreground">
+                          Roll No: {studentContext.roll_number || "—"}
+                        </p>
                       </div>
                     </div>
 
@@ -855,13 +919,17 @@ function WhatsAppManagementPage() {
                       {/* Attendance */}
                       <div className="bg-secondary/40 border border-border/80 rounded-lg p-3 text-center">
                         <Calendar className="size-4 text-brand mx-auto mb-1" />
-                        <span className="text-[9px] uppercase font-bold tracking-wider text-muted-foreground block">Attendance</span>
+                        <span className="text-[9px] uppercase font-bold tracking-wider text-muted-foreground block">
+                          Attendance
+                        </span>
                         <span className="text-xs font-bold text-foreground">94% (Good)</span>
                       </div>
                       {/* Fees */}
                       <div className="bg-secondary/40 border border-border/80 rounded-lg p-3 text-center">
                         <DollarSign className="size-4 text-danger mx-auto mb-1" />
-                        <span className="text-[9px] uppercase font-bold tracking-wider text-muted-foreground block">Fee Dues</span>
+                        <span className="text-[9px] uppercase font-bold tracking-wider text-muted-foreground block">
+                          Fee Dues
+                        </span>
                         <span className="text-xs font-bold text-danger">₹4,500</span>
                       </div>
                     </div>
@@ -882,7 +950,8 @@ function WhatsAppManagementPage() {
                   </div>
                 ) : (
                   <div className="text-center p-8 text-muted-foreground text-xs italic">
-                    Could not link conversation phone number to an active student profile in database.
+                    Could not link conversation phone number to an active student profile in
+                    database.
                   </div>
                 )}
               </div>
@@ -896,20 +965,49 @@ function WhatsAppManagementPage() {
             {/* Stat Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {[
-                { title: "WhatsApp Sent", value: analytics.sent, desc: "Total broadcasts & responses", icon: Send, color: "text-brand" },
-                { title: "Delivery Success", value: `${Math.round((analytics.delivered / analytics.sent) * 100)}%`, desc: `${analytics.delivered} delivered logs`, icon: CheckCheck, color: "text-success" },
-                { title: "Average Response Time", value: `${analytics.avgResponseTimeMin}m`, desc: "Inbound query resolution", icon: Clock, color: "text-warning" },
-                { title: "AI Assistant Replies", value: analytics.aiAnswered, desc: "Automated auto-responses", icon: Bot, color: "text-brand" },
+                {
+                  title: "WhatsApp Sent",
+                  value: analytics.sent,
+                  desc: "Total broadcasts & responses",
+                  icon: Send,
+                  color: "text-brand",
+                },
+                {
+                  title: "Delivery Success",
+                  value: `${Math.round((analytics.delivered / analytics.sent) * 100)}%`,
+                  desc: `${analytics.delivered} delivered logs`,
+                  icon: CheckCheck,
+                  color: "text-success",
+                },
+                {
+                  title: "Average Response Time",
+                  value: `${analytics.avgResponseTimeMin}m`,
+                  desc: "Inbound query resolution",
+                  icon: Clock,
+                  color: "text-warning",
+                },
+                {
+                  title: "AI Assistant Replies",
+                  value: analytics.aiAnswered,
+                  desc: "Automated auto-responses",
+                  icon: Bot,
+                  color: "text-brand",
+                },
               ].map((c, idx) => {
                 const Icon = c.icon;
                 return (
-                  <div key={idx} className="bg-card border border-border rounded-xl p-5 flex items-center justify-between shadow-sm">
+                  <div
+                    key={idx}
+                    className="bg-card border border-border rounded-xl p-5 flex items-center justify-between shadow-sm"
+                  >
                     <div className="space-y-1.5">
                       <span className="text-xs text-muted-foreground font-medium">{c.title}</span>
                       <p className="text-2xl font-bold text-foreground">{c.value}</p>
                       <span className="text-[10px] text-muted-foreground block">{c.desc}</span>
                     </div>
-                    <div className={`size-10 rounded-full bg-secondary flex items-center justify-center ${c.color}`}>
+                    <div
+                      className={`size-10 rounded-full bg-secondary flex items-center justify-center ${c.color}`}
+                    >
                       <Icon className="size-5" />
                     </div>
                   </div>
@@ -920,28 +1018,42 @@ function WhatsAppManagementPage() {
             {/* Detailed performance stats */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
-                <h4 className="font-bold text-xs uppercase tracking-wider text-foreground">Resolution Performance</h4>
+                <h4 className="font-bold text-xs uppercase tracking-wider text-foreground">
+                  Resolution Performance
+                </h4>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-muted-foreground">Read Rate (Total Opened)</span>
-                    <span className="font-semibold text-foreground">{Math.round((analytics.read / analytics.delivered) * 100)}%</span>
+                    <span className="font-semibold text-foreground">
+                      {Math.round((analytics.read / analytics.delivered) * 100)}%
+                    </span>
                   </div>
                   <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
-                    <div className="bg-brand h-full rounded-full" style={{ width: `${(analytics.read / analytics.delivered) * 100}%` }}></div>
+                    <div
+                      className="bg-brand h-full rounded-full"
+                      style={{ width: `${(analytics.read / analytics.delivered) * 100}%` }}
+                    ></div>
                   </div>
 
                   <div className="flex justify-between items-center text-xs mt-3">
                     <span className="text-muted-foreground">Open Chats Resolution Rate</span>
-                    <span className="font-semibold text-foreground">{analytics.resolutionRate}%</span>
+                    <span className="font-semibold text-foreground">
+                      {analytics.resolutionRate}%
+                    </span>
                   </div>
                   <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
-                    <div className="bg-success h-full rounded-full" style={{ width: `${analytics.resolutionRate}%` }}></div>
+                    <div
+                      className="bg-success h-full rounded-full"
+                      style={{ width: `${analytics.resolutionRate}%` }}
+                    ></div>
                   </div>
                 </div>
               </div>
 
               <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
-                <h4 className="font-bold text-xs uppercase tracking-wider text-foreground font-sans">Common Parent Questions</h4>
+                <h4 className="font-bold text-xs uppercase tracking-wider text-foreground font-sans">
+                  Common Parent Questions
+                </h4>
                 <div className="space-y-2">
                   {[
                     { question: "Attendance Verification (absences checks)", pct: 42 },
@@ -949,7 +1061,10 @@ function WhatsAppManagementPage() {
                     { question: "Class homework schedule questions", pct: 18 },
                     { question: "Exam timetable releases details", pct: 12 },
                   ].map((q, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-xs border-b border-border/40 pb-2">
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between text-xs border-b border-border/40 pb-2"
+                    >
                       <span className="text-muted-foreground truncate">{q.question}</span>
                       <span className="font-semibold text-foreground">{q.pct}%</span>
                     </div>
@@ -965,11 +1080,15 @@ function WhatsAppManagementPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             {/* Create Campaign */}
             <div className="lg:col-span-2 bg-card border border-border rounded-xl p-6 shadow-sm space-y-5">
-              <h4 className="font-bold text-xs uppercase tracking-wider border-b border-border pb-3 text-foreground">Launch New Campaign</h4>
+              <h4 className="font-bold text-xs uppercase tracking-wider border-b border-border pb-3 text-foreground">
+                Launch New Campaign
+              </h4>
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground">Campaign Name</label>
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Campaign Name
+                  </label>
                   <input
                     type="text"
                     placeholder="e.g. Homework alerts class 10"
@@ -981,7 +1100,9 @@ function WhatsAppManagementPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Target Cohort</label>
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      Target Cohort
+                    </label>
                     <select
                       value={campTarget}
                       onChange={(e) => setCampTarget(e.target.value as any)}
@@ -996,15 +1117,19 @@ function WhatsAppManagementPage() {
                   <div>
                     {campTarget === "class" && (
                       <>
-                        <label className="text-xs font-semibold text-muted-foreground font-sans">Choose Class</label>
+                        <label className="text-xs font-semibold text-muted-foreground font-sans">
+                          Choose Class
+                        </label>
                         <select
                           value={campClassId}
                           onChange={(e) => setCampClassId(e.target.value)}
                           className="w-full px-3 py-2 border border-border rounded-lg bg-background text-xs mt-1 text-foreground"
                         >
                           <option value="">Select Class</option>
-                          {classesList.map(c => (
-                            <option key={c.id} value={c.id}>{c.name} {c.section}</option>
+                          {classesList.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name} {c.section}
+                            </option>
                           ))}
                         </select>
                       </>
@@ -1012,15 +1137,19 @@ function WhatsAppManagementPage() {
 
                     {campTarget === "student" && (
                       <>
-                        <label className="text-xs font-semibold text-muted-foreground font-sans">Choose Student</label>
+                        <label className="text-xs font-semibold text-muted-foreground font-sans">
+                          Choose Student
+                        </label>
                         <select
                           value={campStudentId}
                           onChange={(e) => setCampStudentId(e.target.value)}
                           className="w-full px-3 py-2 border border-border rounded-lg bg-background text-xs mt-1 text-foreground"
                         >
                           <option value="">Select Student</option>
-                          {studentList.map(s => (
-                            <option key={s.id} value={s.id}>{s.full_name}</option>
+                          {studentList.map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.full_name}
+                            </option>
                           ))}
                         </select>
                       </>
@@ -1029,38 +1158,46 @@ function WhatsAppManagementPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground">Choose Template</label>
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Choose Template
+                  </label>
                   <select
                     value={campTemplateId}
                     onChange={(e) => setCampTemplateId(e.target.value)}
                     className="w-full px-3 py-2 border border-border rounded-lg bg-background text-xs mt-1 text-foreground"
                   >
                     <option value="">Select Template</option>
-                    {templates.map(t => (
-                      <option key={t.id} value={t.id!}>{t.name} ({t.category})</option>
+                    {templates.map((t) => (
+                      <option key={t.id} value={t.id!}>
+                        {t.name} ({t.category})
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 {/* Dynamic Variables Mapping */}
-                {campTemplateId && templates.find(t => t.id === campTemplateId) && (
+                {campTemplateId && templates.find((t) => t.id === campTemplateId) && (
                   <div className="bg-secondary/40 border border-border/80 rounded-lg p-4 space-y-3">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Variable Mappings</span>
-                    {templates.find(t => t.id === campTemplateId)?.variables.map((v, idx) => (
-                      <div key={idx} className="flex items-center gap-3 text-xs">
-                        <span className="w-12 text-muted-foreground">Variable #{idx + 1}:</span>
-                        <input
-                          type="text"
-                          placeholder={`Value or {student_name} / {class_name}`}
-                          onChange={(e) => {
-                            const copy = [...campVariables];
-                            copy[idx] = e.target.value;
-                            setCampVariables(copy);
-                          }}
-                          className="flex-1 px-3 py-1 border border-border rounded bg-background text-foreground text-xs"
-                        />
-                      </div>
-                    ))}
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                      Variable Mappings
+                    </span>
+                    {templates
+                      .find((t) => t.id === campTemplateId)
+                      ?.variables.map((v, idx) => (
+                        <div key={idx} className="flex items-center gap-3 text-xs">
+                          <span className="w-12 text-muted-foreground">Variable #{idx + 1}:</span>
+                          <input
+                            type="text"
+                            placeholder={`Value or {student_name} / {class_name}`}
+                            onChange={(e) => {
+                              const copy = [...campVariables];
+                              copy[idx] = e.target.value;
+                              setCampVariables(copy);
+                            }}
+                            className="flex-1 px-3 py-1 border border-border rounded bg-background text-foreground text-xs"
+                          />
+                        </div>
+                      ))}
                   </div>
                 )}
 
@@ -1076,23 +1213,40 @@ function WhatsAppManagementPage() {
 
             {/* Campaign Logs History */}
             <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
-              <h4 className="font-bold text-xs uppercase tracking-wider text-foreground font-sans">Recent Campaigns</h4>
+              <h4 className="font-bold text-xs uppercase tracking-wider text-foreground font-sans">
+                Recent Campaigns
+              </h4>
               <div className="space-y-3">
                 {campaigns.length === 0 ? (
-                  <p className="text-center text-muted-foreground text-xs italic py-4">No broadcasts executed yet.</p>
+                  <p className="text-center text-muted-foreground text-xs italic py-4">
+                    No broadcasts executed yet.
+                  </p>
                 ) : (
                   campaigns.map((c) => (
-                    <div key={c.id} className="border border-border/80 rounded-lg p-3 space-y-2 text-xs">
+                    <div
+                      key={c.id}
+                      className="border border-border/80 rounded-lg p-3 space-y-2 text-xs"
+                    >
                       <div className="flex justify-between items-center">
                         <span className="font-bold text-foreground">{c.name}</span>
-                        <span className="text-[9px] uppercase font-bold tracking-wider text-success">{c.status}</span>
+                        <span className="text-[9px] uppercase font-bold tracking-wider text-success">
+                          {c.status}
+                        </span>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-muted-foreground text-[10px]">
                         <span>Target: {c.target_type}</span>
                         <span>Total: {c.total_messages} msgs</span>
                       </div>
                       <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                        <div className="bg-success h-full rounded-full" style={{ width: c.total_messages > 0 ? `${(c.sent_count / c.total_messages) * 100}%` : '100%' }}></div>
+                        <div
+                          className="bg-success h-full rounded-full"
+                          style={{
+                            width:
+                              c.total_messages > 0
+                                ? `${(c.sent_count / c.total_messages) * 100}%`
+                                : "100%",
+                          }}
+                        ></div>
                       </div>
                     </div>
                   ))
@@ -1107,11 +1261,15 @@ function WhatsAppManagementPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             {/* Create Template */}
             <div className="bg-card border border-border rounded-xl p-6 shadow-sm space-y-4">
-              <h4 className="font-bold text-xs uppercase tracking-wider border-b border-border pb-3 text-foreground font-sans">Request New Template</h4>
+              <h4 className="font-bold text-xs uppercase tracking-wider border-b border-border pb-3 text-foreground font-sans">
+                Request New Template
+              </h4>
 
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground font-sans">Template Name</label>
+                  <label className="text-xs font-semibold text-muted-foreground font-sans">
+                    Template Name
+                  </label>
                   <input
                     type="text"
                     placeholder="e.g. class_alert"
@@ -1122,7 +1280,9 @@ function WhatsAppManagementPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground font-sans">Category</label>
+                  <label className="text-xs font-semibold text-muted-foreground font-sans">
+                    Category
+                  </label>
                   <select
                     value={newTempCat}
                     onChange={(e) => setNewTempCat(e.target.value as any)}
@@ -1134,7 +1294,9 @@ function WhatsAppManagementPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground font-sans">Body Text</label>
+                  <label className="text-xs font-semibold text-muted-foreground font-sans">
+                    Body Text
+                  </label>
                   <textarea
                     rows={4}
                     placeholder="Dear Parent, your child {{1}} has been assigned {{2}}."
@@ -1143,7 +1305,15 @@ function WhatsAppManagementPage() {
                     className="w-full px-3 py-2 border border-border rounded-lg bg-background text-xs mt-1 text-foreground"
                   />
                   <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
-                    Use placeholders starting from <code className="bg-secondary px-1 py-0.5 rounded font-mono font-bold">{"{{1}}"}</code>, <code className="bg-secondary px-1 py-0.5 rounded font-mono font-bold">{"{{2}}"}</code>, etc.
+                    Use placeholders starting from{" "}
+                    <code className="bg-secondary px-1 py-0.5 rounded font-mono font-bold">
+                      {"{{1}}"}
+                    </code>
+                    ,{" "}
+                    <code className="bg-secondary px-1 py-0.5 rounded font-mono font-bold">
+                      {"{{2}}"}
+                    </code>
+                    , etc.
                   </p>
                 </div>
 
@@ -1159,24 +1329,37 @@ function WhatsAppManagementPage() {
 
             {/* Template Catalog */}
             <div className="lg:col-span-2 bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
-              <h4 className="font-bold text-xs uppercase tracking-wider border-b border-border pb-3 text-foreground font-sans">Approved Templates</h4>
+              <h4 className="font-bold text-xs uppercase tracking-wider border-b border-border pb-3 text-foreground font-sans">
+                Approved Templates
+              </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {templates.length === 0 ? (
-                  <p className="text-muted-foreground text-xs italic p-4 text-center col-span-2">No templates registered.</p>
+                  <p className="text-muted-foreground text-xs italic p-4 text-center col-span-2">
+                    No templates registered.
+                  </p>
                 ) : (
                   templates.map((t) => (
-                    <div key={t.id} className="border border-border/80 rounded-xl p-4 flex flex-col justify-between gap-4 text-xs bg-secondary/10">
+                    <div
+                      key={t.id}
+                      className="border border-border/80 rounded-xl p-4 flex flex-col justify-between gap-4 text-xs bg-secondary/10"
+                    >
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
                           <span className="font-bold text-foreground">{t.name}</span>
-                          <span className="text-[9px] uppercase font-bold tracking-wider bg-success-soft text-success px-1.5 py-0.5 rounded">{t.status}</span>
+                          <span className="text-[9px] uppercase font-bold tracking-wider bg-success-soft text-success px-1.5 py-0.5 rounded">
+                            {t.status}
+                          </span>
                         </div>
-                        <p className="text-muted-foreground text-[11px] leading-relaxed italic">"{t.body_text}"</p>
+                        <p className="text-muted-foreground text-[11px] leading-relaxed italic">
+                          "{t.body_text}"
+                        </p>
                       </div>
                       <div className="flex justify-between text-[10px] text-muted-foreground border-t border-border/40 pt-2">
                         <span>Variables: {t.variables.join(", ") || "none"}</span>
-                        <span className="uppercase font-semibold text-[8px] tracking-wider">{t.category}</span>
+                        <span className="uppercase font-semibold text-[8px] tracking-wider">
+                          {t.category}
+                        </span>
                       </div>
                     </div>
                   ))
@@ -1191,11 +1374,15 @@ function WhatsAppManagementPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
             {/* Configure Credentials */}
             <div className="bg-card border border-border rounded-xl p-6 shadow-sm space-y-5">
-              <h4 className="font-bold text-xs uppercase tracking-wider border-b border-border pb-3 text-foreground font-sans">Provider Credentials</h4>
+              <h4 className="font-bold text-xs uppercase tracking-wider border-b border-border pb-3 text-foreground font-sans">
+                Provider Credentials
+              </h4>
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground font-sans">WhatsApp API Provider</label>
+                  <label className="text-xs font-semibold text-muted-foreground font-sans">
+                    WhatsApp API Provider
+                  </label>
                   <select
                     value={activeProvider}
                     onChange={(e) => setActiveProvider(e.target.value as any)}
@@ -1209,7 +1396,9 @@ function WhatsAppManagementPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground font-sans">API Authorization Bearer Key</label>
+                  <label className="text-xs font-semibold text-muted-foreground font-sans">
+                    API Authorization Bearer Key
+                  </label>
                   <input
                     type="password"
                     placeholder="Enter API key / Auth token"
@@ -1222,7 +1411,9 @@ function WhatsAppManagementPage() {
                 {activeProvider === "meta" && (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-semibold text-muted-foreground font-sans">Phone Number ID</label>
+                      <label className="text-xs font-semibold text-muted-foreground font-sans">
+                        Phone Number ID
+                      </label>
                       <input
                         type="text"
                         placeholder="e.g. 105658822"
@@ -1232,7 +1423,9 @@ function WhatsAppManagementPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-muted-foreground font-sans">WhatsApp Business ID</label>
+                      <label className="text-xs font-semibold text-muted-foreground font-sans">
+                        WhatsApp Business ID
+                      </label>
                       <input
                         type="text"
                         placeholder="e.g. 10986548"
@@ -1246,7 +1439,9 @@ function WhatsAppManagementPage() {
 
                 {activeProvider === "twilio" && (
                   <div>
-                    <label className="text-xs font-semibold text-muted-foreground font-sans">Twilio Sender Number</label>
+                    <label className="text-xs font-semibold text-muted-foreground font-sans">
+                      Twilio Sender Number
+                    </label>
                     <input
                       type="text"
                       placeholder="e.g. whatsapp:+14155238886"
@@ -1265,7 +1460,10 @@ function WhatsAppManagementPage() {
                     onChange={(e) => setIsWpActive(e.target.checked)}
                     className="size-4 border-border rounded text-primary focus:ring-ring"
                   />
-                  <label htmlFor="is_active_check" className="text-xs font-semibold text-foreground">
+                  <label
+                    htmlFor="is_active_check"
+                    className="text-xs font-semibold text-foreground"
+                  >
                     Enable WhatsApp Integrations Gateway
                   </label>
                 </div>
@@ -1282,14 +1480,19 @@ function WhatsAppManagementPage() {
 
             {/* Test Connection sandbox */}
             <div className="bg-card border border-border rounded-xl p-6 shadow-sm space-y-4">
-              <h4 className="font-bold text-xs uppercase tracking-wider border-b border-border pb-3 text-foreground font-sans">Connection Diagnostic Utility</h4>
+              <h4 className="font-bold text-xs uppercase tracking-wider border-b border-border pb-3 text-foreground font-sans">
+                Connection Diagnostic Utility
+              </h4>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Sends a sandbox absent template notification message to verify webhook bindings and authorization tokens.
+                Sends a sandbox absent template notification message to verify webhook bindings and
+                authorization tokens.
               </p>
 
               <div className="space-y-3 mt-3">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground font-sans">Recipient Mobile Phone</label>
+                  <label className="text-xs font-semibold text-muted-foreground font-sans">
+                    Recipient Mobile Phone
+                  </label>
                   <input
                     type="text"
                     placeholder="e.g. +919876543210"

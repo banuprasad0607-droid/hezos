@@ -59,7 +59,7 @@ function ResetPasswordPage() {
 
     setCompleted(true);
     toast.success("Password reset completed successfully!");
-    
+
     // Automatically sign out after password reset so the user can log in with new password
     await supabase.auth.signOut();
   };
@@ -83,7 +83,8 @@ function ResetPasswordPage() {
         </div>
         <div className="max-w-md">
           <p className="text-2xl font-medium leading-snug text-balance">
-            "Create a strong, unique password to secure your academic details and keep your account safe."
+            "Create a strong, unique password to secure your academic details and keep your account
+            safe."
           </p>
         </div>
         <p className="text-xs text-sidebar-muted">© HEZO SCHOOL</p>
@@ -99,7 +100,8 @@ function ResetPasswordPage() {
               <div>
                 <h1 className="text-xl font-bold">Password reset successful</h1>
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                  Your password has been successfully updated. You can now log back into HEZO School ERP using your new password.
+                  Your password has been successfully updated. You can now log back into HEZO School
+                  ERP using your new password.
                 </p>
               </div>
               <button

@@ -12,7 +12,7 @@ export function SubscriptionBanner() {
 
   useEffect(() => {
     if (!schoolId) return;
-    
+
     // Super admins don't pay for the platform themselves, so hide the banner
     if (isSuper) return;
     // We only care about banners if we are an admin managing the school.
@@ -31,15 +31,21 @@ export function SubscriptionBanner() {
   if (sub.status === "trialing" && sub.trial_end) {
     const trialEnd = new Date(sub.trial_end);
     const now = new Date();
-    const daysLeft = Math.max(0, Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
-    
+    const daysLeft = Math.max(
+      0,
+      Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+    );
+
     return (
       <div className="bg-brand-soft border-b border-brand/20 px-4 py-2 flex items-center justify-center gap-3 text-sm">
         <Clock className="size-4 text-brand" />
         <span className="text-brand-dark font-medium">
           You are on a free trial. {daysLeft} days remaining.
         </span>
-        <Link to="/admin/billing" className="text-xs font-semibold bg-brand text-brand-foreground px-3 py-1 rounded shadow-sm hover:opacity-90">
+        <Link
+          to="/admin/billing"
+          className="text-xs font-semibold bg-brand text-brand-foreground px-3 py-1 rounded shadow-sm hover:opacity-90"
+        >
           Upgrade Now
         </Link>
       </div>
@@ -51,9 +57,13 @@ export function SubscriptionBanner() {
       <div className="bg-danger-soft border-b border-danger/20 px-4 py-2 flex items-center justify-center gap-3 text-sm">
         <AlertCircle className="size-4 text-danger" />
         <span className="text-danger-dark font-medium">
-          Your subscription is {sub.status}. Please update your payment method to restore full access.
+          Your subscription is {sub.status}. Please update your payment method to restore full
+          access.
         </span>
-        <Link to="/admin/billing" className="text-xs font-semibold bg-danger text-danger-foreground px-3 py-1 rounded shadow-sm hover:opacity-90">
+        <Link
+          to="/admin/billing"
+          className="text-xs font-semibold bg-danger text-danger-foreground px-3 py-1 rounded shadow-sm hover:opacity-90"
+        >
           Manage Billing
         </Link>
       </div>

@@ -26,10 +26,12 @@ function PendingAssignmentPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Account Pending</h1>
           <p className="text-sm text-muted-foreground mt-4">
-            Your account has been created, but you haven't been assigned to a school yet. 
-            <br/><br/>
-            <strong>Note:</strong> Only platform Super Admins can create new schools. 
-            If you are a teacher or staff member, please wait for your school administrator to invite you or assign you to a school.
+            Your account has been created, but you haven't been assigned to a school yet.
+            <br />
+            <br />
+            <strong>Note:</strong> Only platform Super Admins can create new schools. If you are a
+            teacher or staff member, please wait for your school administrator to invite you or
+            assign you to a school.
           </p>
         </div>
 

@@ -29,8 +29,12 @@ function LoginPage() {
 
   const loginAttemptFn = useServerFn(loginAttemptServer);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFields>({
-    resolver: zodResolver(loginSchema)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFields>({
+    resolver: zodResolver(loginSchema),
   });
 
   useEffect(() => {
@@ -43,12 +47,14 @@ function LoginPage() {
   const onSubmitForm = async (fields: LoginFields) => {
     setLoading(true);
     try {
-      const res = await loginAttemptFn({ data: { email: fields.email, password: fields.password } });
+      const res = await loginAttemptFn({
+        data: { email: fields.email, password: fields.password },
+      });
       if (!res.session) throw new Error("Authentication failed: No session returned.");
-      
+
       const { error: sessionErr } = await supabase.auth.setSession(res.session);
       if (sessionErr) throw sessionErr;
-      
+
       // Cache school details for dynamic whitelabel on return
       if (res.user) {
         try {
@@ -97,17 +103,24 @@ function LoginPage() {
       <div className="hidden lg:flex bg-sidebar-bg text-sidebar-fg p-12 flex-col justify-between">
         <div className="flex items-center gap-3">
           {cachedSchoolLogo ? (
-            <img src={cachedSchoolLogo} alt="School Logo" className="size-8 rounded-lg object-cover bg-white p-0.5" />
+            <img
+              src={cachedSchoolLogo}
+              alt="School Logo"
+              className="size-8 rounded-lg object-cover bg-white p-0.5"
+            />
           ) : (
             <div className="size-8 bg-brand rounded-lg flex items-center justify-center text-brand-foreground shadow-sm">
               <GraduationCap className="size-5" />
             </div>
           )}
-          <span className="font-semibold tracking-tight uppercase tracking-wider">{cachedSchoolName || "HEZO SCHOOL"}</span>
+          <span className="font-semibold tracking-tight uppercase tracking-wider">
+            {cachedSchoolName || "HEZO SCHOOL"}
+          </span>
         </div>
         <div className="max-w-md">
           <p className="text-2xl font-medium leading-snug text-balance">
-            "Mark attendance, send homework, write one remark — parents are informed by 6 PM. Every day."
+            "Mark attendance, send homework, write one remark — parents are informed by 6 PM. Every
+            day."
           </p>
           <p className="text-sm text-sidebar-muted mt-4">The Parent Daily Digest, automated.</p>
         </div>
@@ -118,7 +131,9 @@ function LoginPage() {
         <form onSubmit={handleSubmit(onSubmitForm)} className="w-full max-w-sm space-y-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">Sign in</h1>
-            <p className="text-sm text-muted-foreground mt-1">Welcome back to {cachedSchoolName || "your school"}.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Welcome back to {cachedSchoolName || "your school"}.
+            </p>
           </div>
 
           <div className="space-y-3">
@@ -137,7 +152,12 @@ function LoginPage() {
             <div>
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-foreground">Password</label>
-                <Link to="/forgot-password" className="text-xs text-brand font-medium hover:underline">Forgot password?</Link>
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-brand font-medium hover:underline"
+                >
+                  Forgot password?
+                </Link>
               </div>
               <input
                 type="password"
@@ -160,7 +180,9 @@ function LoginPage() {
 
           <p className="text-sm text-center text-muted-foreground">
             New here?{" "}
-            <Link to="/signup" className="text-brand font-medium hover:underline">Create your school account</Link>
+            <Link to="/signup" className="text-brand font-medium hover:underline">
+              Create your school account
+            </Link>
           </p>
         </form>
       </div>

@@ -1,7 +1,7 @@
 /**
  * Resizes and compresses an image client-side, converting it to WebP format.
  * Rejects files if they exceed a size threshold after compression.
- * 
+ *
  * @param file Raw input File from input element
  * @param maxDimension Maximum width/height pixel boundary
  * @param quality Compression quality parameter (0.0 to 1.0)
@@ -12,7 +12,7 @@ export async function optimizeImage(
   file: File,
   maxDimension = 800,
   quality = 0.8,
-  maxSizeBytes = 500 * 1024
+  maxSizeBytes = 500 * 1024,
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     // 1. Check if the browser supports FileReader
@@ -69,21 +69,21 @@ export async function optimizeImage(
                     reject(
                       new Error(
                         `Image is too large (${Math.round(
-                          blob.size / 1024
-                        )}KB). Compressed version exceeds maximum allowed size of 500KB.`
-                      )
+                          blob.size / 1024,
+                        )}KB). Compressed version exceeds maximum allowed size of 500KB.`,
+                      ),
                     );
                   }
                 },
                 "image/webp",
-                0.5
+                0.5,
               );
             } else {
               resolve(blob);
             }
           },
           "image/webp",
-          quality
+          quality,
         );
       };
       img.onerror = () => reject(new Error("Could not parse image source."));

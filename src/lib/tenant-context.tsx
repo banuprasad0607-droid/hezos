@@ -19,7 +19,7 @@ const TenantContext = createContext<TenantContextValue | undefined>(undefined);
 export function TenantProvider({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const { activeSchool } = useSchoolContext();
-  
+
   const [profile, setProfile] = useState<any>(null);
   const [roles, setRoles] = useState<string[]>([]);
   const [currentSchool, setCurrentSchool] = useState<any>(null);
@@ -58,7 +58,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
         .eq("user_id", user.id);
 
       if (rolesErr) throw rolesErr;
-      
+
       const roleList = (rolesData || []).map((r: any) => r.role);
       setRoles(roleList);
 
@@ -66,9 +66,8 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
       // If super admin has selected an active school in context, use that.
       // Otherwise, use the school_id from the user's profile.
       const isSuperAdmin = roleList.includes("super_admin");
-      const resolvedSchoolId = (isSuperAdmin && activeSchool?.id) 
-        ? activeSchool.id 
-        : profileData?.school_id || null;
+      const resolvedSchoolId =
+        isSuperAdmin && activeSchool?.id ? activeSchool.id : profileData?.school_id || null;
 
       setCurrentSchoolId(resolvedSchoolId);
 
@@ -87,7 +86,9 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (err: any) {
       console.error("Error in TenantProvider:", err);
-      setError(err instanceof Error ? err : new Error(err.message || "Failed to load tenant context"));
+      setError(
+        err instanceof Error ? err : new Error(err.message || "Failed to load tenant context"),
+      );
     } finally {
       setLoading(false);
     }
@@ -123,14 +124,16 @@ export function useTenant() {
 /** Enforces that a school UUID must be active, throwing an error otherwise */
 export function useRequiredSchoolId(): string {
   const { currentSchoolId, loading } = useTenant();
-  
+
   if (loading) {
     throw new Error("Loading tenant context...");
   }
-  
+
   if (!currentSchoolId) {
-    throw new Error("Missing school context: No school is selected or associated with your profile.");
+    throw new Error(
+      "Missing school context: No school is selected or associated with your profile.",
+    );
   }
-  
+
   return currentSchoolId;
 }

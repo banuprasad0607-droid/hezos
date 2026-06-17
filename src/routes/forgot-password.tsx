@@ -26,7 +26,11 @@ function ForgotPasswordPage() {
 
   const resetPasswordEmailFn = useServerFn(resetPasswordEmailServer);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<ForgotFields>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ForgotFields>({
     resolver: zodResolver(forgotSchema),
   });
 
@@ -34,7 +38,7 @@ function ForgotPasswordPage() {
     setLoading(true);
     setSubmittedEmail(fields.email);
     const redirectUrl = `${window.location.origin}/reset-password`;
-    
+
     try {
       await resetPasswordEmailFn({
         data: {
@@ -75,7 +79,10 @@ function ForgotPasswordPage() {
       <div className="flex items-center justify-center p-8 bg-card text-foreground">
         <div className="w-full max-w-sm space-y-6">
           <div className="flex items-center">
-            <Link to="/login" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+            <Link
+              to="/login"
+              className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+            >
               <ArrowLeft className="size-3.5" /> Back to Sign in
             </Link>
           </div>
@@ -88,7 +95,7 @@ function ForgotPasswordPage() {
               <div>
                 <h1 className="text-xl font-bold">Check your inbox</h1>
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                  We have sent a secure password recovery link to <strong>{submittedEmail}</strong>. 
+                  We have sent a secure password recovery link to <strong>{submittedEmail}</strong>.
                   Please click the link in the email to choose a new password.
                 </p>
               </div>
@@ -102,7 +109,9 @@ function ForgotPasswordPage() {
           ) : (
             <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-6">
               <div>
-                <h1 className="text-2xl font-semibold tracking-tight text-foreground">Reset password</h1>
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                  Reset password
+                </h1>
                 <p className="text-sm text-muted-foreground mt-1">
                   Enter your email address and we'll send you a link to reset your password.
                 </p>

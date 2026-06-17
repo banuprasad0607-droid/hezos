@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Session, User } from '@supabase/supabase-js';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Session, User } from "@supabase/supabase-js";
 
 const AuthContext = createContext<any>(null);
 
@@ -13,19 +13,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     let mounted = true;
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (mounted) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    }).catch(err => {
-      console.error('Error getting initial session:', err);
-      if (mounted) setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Error getting initial session:", err);
+        if (mounted) setLoading(false);
+      });
 
     // Listen to auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (mounted) {
         setSession(session);
         setUser(session?.user ?? null);
@@ -44,7 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await supabase.auth.signOut();
     } catch (err) {
-      console.error('Error signing out:', err);
+      console.error("Error signing out:", err);
     } finally {
       setSession(null);
       setUser(null);
@@ -54,11 +59,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const refreshSession = async () => {
     try {
-      const { data: { session } } = await supabase.auth.refreshSession();
+      const {
+        data: { session },
+      } = await supabase.auth.refreshSession();
       setSession(session);
       setUser(session?.user ?? null);
     } catch (err) {
-      console.error('Error refreshing session:', err);
+      console.error("Error refreshing session:", err);
     }
   };
 
@@ -67,7 +74,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     user,
     loading,
     signOut,
-    refreshSession
+    refreshSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

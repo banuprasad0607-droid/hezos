@@ -1,13 +1,13 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
-const filePath = 'src/routes/_authenticated/achievements.tsx';
-let content = fs.readFileSync(filePath, 'utf8');
+const filePath = "src/routes/_authenticated/achievements.tsx";
+let content = fs.readFileSync(filePath, "utf8");
 
 // 1. Add useTenant import
 content = content.replace(
   'import { useSchoolContext } from "@/lib/school-context";',
-  'import { useSchoolContext } from "@/lib/school-context";\nimport { useTenant } from "@/lib/tenant-context";'
+  'import { useSchoolContext } from "@/lib/school-context";\nimport { useTenant } from "@/lib/tenant-context";',
 );
 
 // 2. Update useAuth/useSchoolContext to useTenant
@@ -15,7 +15,7 @@ content = content.replace(
   `  const { schoolId, user, roles, signOut } = useAuth();
   const { activeSchool } = useSchoolContext();`,
   `  const { currentSchoolId: schoolId, user, roles, loading: tenantLoading } = useTenant();
-  const { signOut } = useAuth();`
+  const { signOut } = useAuth();`,
 );
 
 // 3. Add loading check
@@ -36,7 +36,7 @@ content = content.replace(
 
   return (
     <>
-      <PageHeader`
+      <PageHeader`,
 );
 
 // 4. Replace subject_allocations table name
@@ -107,9 +107,9 @@ const replacementBlock1 = `        // 1. Fetch class exams
 
 if (content.includes(targetBlock1)) {
   content = content.replace(targetBlock1, replacementBlock1);
-  console.log('Successfully replaced Block 1 (individual student report card details)');
+  console.log("Successfully replaced Block 1 (individual student report card details)");
 } else {
-  console.error('Failed to find Block 1');
+  console.error("Failed to find Block 1");
 }
 
 // 6. Replace block 2: Fetch Exams & Marks in loadData (lines 1159-1178 approx)
@@ -184,10 +184,10 @@ const replacementBlock2 = `      // 4) Fetch Exams & Subjects
 
 if (content.includes(targetBlock2)) {
   content = content.replace(targetBlock2, replacementBlock2);
-  console.log('Successfully replaced Block 2 (loadData exams & marks)');
+  console.log("Successfully replaced Block 2 (loadData exams & marks)");
 } else {
   // Let's do a looser match in case spacing/formatting differs
-  console.error('Failed to find Block 2');
+  console.error("Failed to find Block 2");
 }
 
 // 7. Replace block 3: Class rankings marks calculation (lines 1405-1425 approx)
@@ -269,9 +269,9 @@ const replacementBlock3 = `      // 2) Fetch exams and marks for the class
 
 if (content.includes(targetBlock3)) {
   content = content.replace(targetBlock3, replacementBlock3);
-  console.log('Successfully replaced Block 3 (rankings calculation)');
+  console.log("Successfully replaced Block 3 (rankings calculation)");
 } else {
-  console.error('Failed to find Block 3');
+  console.error("Failed to find Block 3");
 }
 
 // 8. Replace block 4: mock seeder (lines 1885-1936 approx)
@@ -417,9 +417,9 @@ const replacementBlock4 = `    const examNamePrefix = selectedReportCardExam;
 
 if (content.includes(targetBlock4)) {
   content = content.replace(targetBlock4, replacementBlock4);
-  console.log('Successfully replaced Block 4 (mock seeder internal)');
+  console.log("Successfully replaced Block 4 (mock seeder internal)");
 } else {
-  console.error('Failed to find Block 4');
+  console.error("Failed to find Block 4");
 }
 
 // 9. Replace block 5: handleGenerateClassReportCardsInternal marks fetch (lines 2010-2019 approx)
@@ -451,14 +451,14 @@ const replacementBlock5 = `    const classExams = exams.filter(e => e.class_id =
 
 if (content.includes(targetBlock5)) {
   content = content.replace(targetBlock5, replacementBlock5);
-  console.log('Successfully replaced Block 5 (handleGenerateClassReportCardsInternal)');
+  console.log("Successfully replaced Block 5 (handleGenerateClassReportCardsInternal)");
 } else {
-  console.error('Failed to find Block 5');
+  console.error("Failed to find Block 5");
 }
 
 // 10. Replace any remaining exam_marks select statements (lines 2198, 2233 approx)
 content = content.replace(/supabase\.from\("exam_marks"\)/g, 'supabase.from("mark_entries")');
 
 // Write back content
-fs.writeFileSync(filePath, content, 'utf8');
-console.log('Finished refactoring achievements.tsx!');
+fs.writeFileSync(filePath, content, "utf8");
+console.log("Finished refactoring achievements.tsx!");

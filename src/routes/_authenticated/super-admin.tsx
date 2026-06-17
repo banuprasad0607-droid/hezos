@@ -51,9 +51,9 @@ type SchoolRow = {
   email?: string | null;
 };
 
-type Sub = { 
-  school_id: string; 
-  monthly_amount: number; 
+type Sub = {
+  school_id: string;
+  monthly_amount: number;
   status: string;
   billing_cycle?: string;
   trial_end?: string | null;
@@ -66,7 +66,13 @@ function SuperAdminPage() {
   const isSuper = roles.includes("super_admin");
   const [schools, setSchools] = useState<SchoolRow[]>([]);
   const [subs, setSubs] = useState<Sub[]>([]);
-  const [counts, setCounts] = useState({ students: 0, teachers: 0, trial: 0, expired: 0, pendingPayments: 0 });
+  const [counts, setCounts] = useState({
+    students: 0,
+    teachers: 0,
+    trial: 0,
+    expired: 0,
+    pendingPayments: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [revenueData, setRevenueData] = useState<{ month: string; amount: number }[]>([]);
@@ -80,33 +86,49 @@ function SuperAdminPage() {
     setLoading(true);
     const [s, sb, st, tr, paymentsRows] = await Promise.all([
       supabase.from("schools").select("*").order("created_at", { ascending: false }),
-      supabase.from("subscriptions").select("school_id, monthly_amount, status, billing_cycle, trial_end"),
+      supabase
+        .from("subscriptions")
+        .select("school_id, monthly_amount, status, billing_cycle, trial_end"),
       supabase.from("students").select("id", { count: "exact", head: true }),
-      supabase.from("user_roles").select("user_id", { count: "exact", head: true }).eq("role", "teacher"),
-      supabase.from("platform_payments").select("amount, paid_at").eq("status", "completed").order("paid_at", { ascending: true })
+      supabase
+        .from("user_roles")
+        .select("user_id", { count: "exact", head: true })
+        .eq("role", "teacher"),
+      supabase
+        .from("platform_payments")
+        .select("amount, paid_at")
+        .eq("status", "completed")
+        .order("paid_at", { ascending: true }),
     ]);
     const allSchools = (s.data ?? []) as SchoolRow[];
     const allSubs = (sb.data ?? []) as Sub[];
-    
+
     setSchools(allSchools);
     setSubs(allSubs);
-    
+
     // Revenue chart — REAL payment data only, no fabricated numbers
     const revMap = new Map<string, number>();
     if (paymentsRows.data) {
-      paymentsRows.data.forEach(p => {
-        const month = new Date(p.paid_at).toLocaleString('default', { month: 'short', year: '2-digit' });
+      paymentsRows.data.forEach((p) => {
+        const month = new Date(p.paid_at).toLocaleString("default", {
+          month: "short",
+          year: "2-digit",
+        });
         revMap.set(month, (revMap.get(month) ?? 0) + Number(p.amount));
       });
     }
     setRevenueData(Array.from(revMap.entries()).map(([month, amount]) => ({ month, amount })));
 
-    setCounts({ 
-      students: st.count ?? 0, 
+    setCounts({
+      students: st.count ?? 0,
       teachers: tr.count ?? 0,
-      trial: allSubs.filter(sub => sub.status === 'trialing' || (sub.trial_end && new Date(sub.trial_end) > new Date())).length,
-      expired: allSubs.filter(sub => sub.status === 'expired' || sub.status === 'canceled').length,
-      pendingPayments: 0 // Will implement real pending payments via platform_invoices later
+      trial: allSubs.filter(
+        (sub) =>
+          sub.status === "trialing" || (sub.trial_end && new Date(sub.trial_end) > new Date()),
+      ).length,
+      expired: allSubs.filter((sub) => sub.status === "expired" || sub.status === "canceled")
+        .length,
+      pendingPayments: 0, // Will implement real pending payments via platform_invoices later
     });
     setLoading(false);
   };
@@ -150,7 +172,9 @@ function SuperAdminPage() {
   }
 
   const active = schools.filter((s) => s.status === "active").length;
-  const revenue = subs.filter((s) => s.status === "active").reduce((a, b) => a + Number(b.monthly_amount), 0);
+  const revenue = subs
+    .filter((s) => s.status === "active")
+    .reduce((a, b) => a + Number(b.monthly_amount), 0);
 
   return (
     <>
@@ -169,7 +193,12 @@ function SuperAdminPage() {
 
       <div className="flex-1 overflow-y-auto p-8 space-y-8">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
-          <Kpi icon={Building2} label="Total Schools" value={schools.length} sub={`${active} active`} />
+          <Kpi
+            icon={Building2}
+            label="Total Schools"
+            value={schools.length}
+            sub={`${active} active`}
+          />
           <Kpi
             icon={BadgeDollarSign}
             label="MRR (Monthly)"
@@ -191,9 +220,26 @@ function SuperAdminPage() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={revenueData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(val) => `$${val}`} />
-                <RechartsTooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <XAxis
+                  dataKey="month"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: "#64748b" }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: "#64748b" }}
+                  tickFormatter={(val) => `$${val}`}
+                />
+                <RechartsTooltip
+                  cursor={{ fill: "#f1f5f9" }}
+                  contentStyle={{
+                    borderRadius: "8px",
+                    border: "none",
+                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                  }}
+                />
                 <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -339,7 +385,9 @@ function Kpi({
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
         <Icon className="size-4 text-muted-foreground" />
       </div>
-      <h3 className={`text-3xl font-bold mt-2 ${tone === "brand" ? "text-brand" : "text-foreground"}`}>
+      <h3
+        className={`text-3xl font-bold mt-2 ${tone === "brand" ? "text-brand" : "text-foreground"}`}
+      >
         {value}
       </h3>
       {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
@@ -519,8 +567,8 @@ function CreateSchoolWizard({
                 />
               </Field>
               <p className="col-span-2 text-xs text-muted-foreground">
-                The admin will receive these credentials from you and can change the password
-                after signing in.
+                The admin will receive these credentials from you and can change the password after
+                signing in.
               </p>
             </div>
           )}

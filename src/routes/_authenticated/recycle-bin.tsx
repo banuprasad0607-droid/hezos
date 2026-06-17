@@ -7,7 +7,16 @@ import { useTenant } from "@/lib/tenant-context";
 import { usePageTitle } from "@/hooks/use-school-name";
 import { PageHeader } from "@/components/PageHeader";
 import { toast } from "sonner";
-import { Trash2, RotateCcw, Users, GraduationCap, FileText, MessageSquare, BookOpen, Calendar } from "lucide-react";
+import {
+  Trash2,
+  RotateCcw,
+  Users,
+  GraduationCap,
+  FileText,
+  MessageSquare,
+  BookOpen,
+  Calendar,
+} from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/recycle-bin")({
   component: RecycleBinPage,
@@ -38,7 +47,8 @@ function RecycleBinPage() {
       const trashList: TrashItem[] = [];
 
       // 1. Fetch Deleted Students
-      const { data: students } = await (supabase as any).from("students")
+      const { data: students } = await (supabase as any)
+        .from("students")
         .select("id, full_name, admission_number, deleted_at")
         .eq("school_id", effectiveSchoolId)
         .not("deleted_at", "is", null);
@@ -54,7 +64,8 @@ function RecycleBinPage() {
       });
 
       // 2. Fetch Deleted Classes
-      const { data: classes } = await (supabase as any).from("classes")
+      const { data: classes } = await (supabase as any)
+        .from("classes")
         .select("id, name, grade, section, deleted_at")
         .eq("school_id", effectiveSchoolId)
         .not("deleted_at", "is", null);
@@ -70,7 +81,8 @@ function RecycleBinPage() {
       });
 
       // 3. Fetch Deleted Invoices
-      const { data: invoices } = await (supabase as any).from("fee_invoices")
+      const { data: invoices } = await (supabase as any)
+        .from("fee_invoices")
         .select("id, title, amount_due, due_date, deleted_at")
         .eq("school_id", effectiveSchoolId)
         .not("deleted_at", "is", null);
@@ -86,7 +98,8 @@ function RecycleBinPage() {
       });
 
       // 4. Fetch Deleted Remarks
-      const { data: remarks } = await (supabase as any).from("remarks")
+      const { data: remarks } = await (supabase as any)
+        .from("remarks")
         .select("id, category, content, deleted_at")
         .eq("school_id", effectiveSchoolId)
         .not("deleted_at", "is", null);
@@ -102,7 +115,8 @@ function RecycleBinPage() {
       });
 
       // 5. Fetch Deleted Exams
-      const { data: exams } = await (supabase as any).from("exams")
+      const { data: exams } = await (supabase as any)
+        .from("exams")
         .select("id, name, date, deleted_at")
         .eq("school_id", effectiveSchoolId)
         .not("deleted_at", "is", null);
@@ -118,7 +132,8 @@ function RecycleBinPage() {
       });
 
       // 6. Fetch Deleted Attendance
-      const { data: att } = await (supabase as any).from("attendance")
+      const { data: att } = await (supabase as any)
+        .from("attendance")
         .select("id, date, status, deleted_at, students(full_name)")
         .eq("school_id", effectiveSchoolId)
         .not("deleted_at", "is", null);
@@ -159,7 +174,8 @@ function RecycleBinPage() {
       else if (item.type === "exam") table = "exams";
       else if (item.type === "attendance") table = "attendance";
 
-      const { error } = await (supabase as any).from(table as any)
+      const { error } = await (supabase as any)
+        .from(table as any)
         .update({ deleted_at: null })
         .eq("id", item.id)
         .eq("school_id", effectiveSchoolId);
@@ -168,12 +184,14 @@ function RecycleBinPage() {
 
       // Cascade restore for invoices and exams
       if (item.type === "invoice") {
-        await (supabase as any).from("fee_payments")
+        await (supabase as any)
+          .from("fee_payments")
           .update({ deleted_at: null })
           .eq("invoice_id", item.id)
           .eq("school_id", effectiveSchoolId);
       } else if (item.type === "exam") {
-        await (supabase as any).from("mark_entries")
+        await (supabase as any)
+          .from("mark_entries")
           .update({ deleted_at: null })
           .eq("exam_id", item.id)
           .eq("school_id", effectiveSchoolId);
@@ -190,18 +208,25 @@ function RecycleBinPage() {
 
   const handleHardDelete = async (item: TrashItem) => {
     if (!effectiveSchoolId) return;
-    if (!confirm("Are you sure you want to permanently delete this record? This action CANNOT be undone.")) return;
-    
+    if (
+      !confirm(
+        "Are you sure you want to permanently delete this record? This action CANNOT be undone.",
+      )
+    )
+      return;
+
     toast.loading("Permanently deleting...");
     try {
       // Cascade hard delete for invoices and exams first to satisfy foreign key constraints
       if (item.type === "invoice") {
-        await (supabase as any).from("fee_payments")
+        await (supabase as any)
+          .from("fee_payments")
           .delete()
           .eq("invoice_id", item.id)
           .eq("school_id", effectiveSchoolId);
       } else if (item.type === "exam") {
-        await (supabase as any).from("mark_entries")
+        await (supabase as any)
+          .from("mark_entries")
           .delete()
           .eq("exam_id", item.id)
           .eq("school_id", effectiveSchoolId);
@@ -215,7 +240,8 @@ function RecycleBinPage() {
       else if (item.type === "exam") table = "exams";
       else if (item.type === "attendance") table = "attendance";
 
-      const { error } = await (supabase as any).from(table as any)
+      const { error } = await (supabase as any)
+        .from(table as any)
         .delete()
         .eq("id", item.id)
         .eq("school_id", effectiveSchoolId);
@@ -254,21 +280,24 @@ function RecycleBinPage() {
 
   const getIcon = (type: TrashItem["type"]) => {
     switch (type) {
-      case "student": return <Users className="size-4 text-blue-500" />;
-      case "class": return <GraduationCap className="size-4 text-emerald-500" />;
-      case "invoice": return <FileText className="size-4 text-amber-500" />;
-      case "remark": return <MessageSquare className="size-4 text-indigo-500" />;
-      case "exam": return <BookOpen className="size-4 text-pink-500" />;
-      case "attendance": return <Calendar className="size-4 text-sky-500" />;
+      case "student":
+        return <Users className="size-4 text-blue-500" />;
+      case "class":
+        return <GraduationCap className="size-4 text-emerald-500" />;
+      case "invoice":
+        return <FileText className="size-4 text-amber-500" />;
+      case "remark":
+        return <MessageSquare className="size-4 text-indigo-500" />;
+      case "exam":
+        return <BookOpen className="size-4 text-pink-500" />;
+      case "attendance":
+        return <Calendar className="size-4 text-sky-500" />;
     }
   };
 
   return (
     <>
-      <PageHeader
-        title="Recycle Bin"
-        breadcrumb="Archived & soft-deleted records"
-      />
+      <PageHeader title="Recycle Bin" breadcrumb="Archived & soft-deleted records" />
 
       <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-background text-foreground">
         {/* Tabs switcher */}
@@ -278,8 +307,8 @@ function RecycleBinPage() {
               key={tab}
               onClick={() => setActiveTab(tab as any)}
               className={`px-4 py-2 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-                activeTab === tab 
-                  ? "border-brand text-brand" 
+                activeTab === tab
+                  ? "border-brand text-brand"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -289,18 +318,25 @@ function RecycleBinPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-sm text-muted-foreground">Scanning archives...</div>
+          <div className="text-center py-12 text-sm text-muted-foreground">
+            Scanning archives...
+          </div>
         ) : filteredItems.length === 0 ? (
           <div className="bg-card border border-dashed border-border rounded-xl p-16 text-center text-card-foreground">
             <Trash2 className="size-10 mx-auto text-muted-foreground" />
             <h3 className="font-semibold mt-3">Recycle Bin Empty</h3>
-            <p className="text-sm text-muted-foreground mt-1">No soft-deleted records matching this tab were found.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              No soft-deleted records matching this tab were found.
+            </p>
           </div>
         ) : (
           <div className="bg-card border border-border rounded-xl overflow-hidden shadow-xs text-card-foreground">
             <div className="divide-y divide-border">
               {filteredItems.map((item) => (
-                <div key={item.id} className="p-4 flex items-center justify-between hover:bg-secondary/40 transition-colors">
+                <div
+                  key={item.id}
+                  className="p-4 flex items-center justify-between hover:bg-secondary/40 transition-colors"
+                >
                   <div className="flex items-center gap-4">
                     <div className="size-8 rounded-lg bg-secondary flex items-center justify-center shrink-0">
                       {getIcon(item.type)}

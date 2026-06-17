@@ -20,11 +20,11 @@ export function exportToCSV(filename: string, headers: string[], rows: any[][]) 
   const headerLine = headers.map(cleanCSVCell).join(",");
   const rowLines = rows.map((r) => r.map(cleanCSVCell).join(","));
   const csvContent = [headerLine, ...rowLines].join("\n");
-  
+
   // Excel compatibility UTF-8 BOM
   const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
-  
+
   const link = document.createElement("a");
   link.setAttribute("href", url);
   link.setAttribute("download", `${filename}.csv`);
@@ -42,13 +42,13 @@ export function exportToExcel(filename: string, headers: string[], rows: any[][]
   let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">`;
   html += `<head><meta charset="utf-8" /><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Sheet 1</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>`;
   html += `<body><table><thead><tr>`;
-  
+
   headers.forEach((h) => {
     html += `<th style="background-color: #3c68d9; color: #ffffff; font-weight: bold; border: 1px solid #000000;">${h}</th>`;
   });
-  
+
   html += `</tr></thead><tbody>`;
-  
+
   rows.forEach((r) => {
     html += `<tr>`;
     r.forEach((cell) => {
@@ -57,12 +57,12 @@ export function exportToExcel(filename: string, headers: string[], rows: any[][]
     });
     html += `</tr>`;
   });
-  
+
   html += `</tbody></table></body></html>`;
 
   const blob = new Blob([html], { type: "application/vnd.ms-excel" });
   const url = URL.createObjectURL(blob);
-  
+
   const link = document.createElement("a");
   link.setAttribute("href", url);
   link.setAttribute("download", `${filename}.xls`);
@@ -103,7 +103,7 @@ export function exportToPDF(filename: string, title: string, headers: string[], 
   // Header Draw
   doc.setFillColor(60, 104, 217);
   doc.rect(startX, startY, colWidth * headers.length, rowHeight, "F");
-  
+
   doc.setFont("helvetica", "bold");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(8);

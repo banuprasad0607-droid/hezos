@@ -49,7 +49,8 @@ function VerifyIdPage() {
         if (type === "student") {
           const { data: student, error: studentErr } = await supabase
             .from("students")
-            .select(`
+            .select(
+              `
               id,
               full_name,
               admission_number,
@@ -60,13 +61,16 @@ function VerifyIdPage() {
               academic_year,
               school_id,
               classes (name, section)
-            `)
+            `,
+            )
             .eq("id", id)
             .maybeSingle();
 
           if (studentErr) throw studentErr;
           if (!student) {
-            setError("No student record found matching this ID. This card may have been deleted or revoked.");
+            setError(
+              "No student record found matching this ID. This card may have been deleted or revoked.",
+            );
             setLoading(false);
             return;
           }
@@ -85,7 +89,9 @@ function VerifyIdPage() {
           }
 
           if (school.status !== "active") {
-            setError(`Verification blocked: ${school.school_name || school.name || "School"} access is suspended.`);
+            setError(
+              `Verification blocked: ${school.school_name || school.name || "School"} access is suspended.`,
+            );
             setLoading(false);
             return;
           }
@@ -97,14 +103,23 @@ function VerifyIdPage() {
           // Determine active status: student is active if their academic_year matches the current academic year
           const currentYear = new Date().getFullYear();
           const currentMonth = new Date().getMonth();
-          const currentAcademicYear = currentMonth >= 5 ? `${currentYear}-${currentYear + 1}` : `${currentYear - 1}-${currentYear}`;
-          const isActive: "Active" | "Inactive" = (!student.academic_year || student.academic_year === currentAcademicYear) ? "Active" : "Inactive";
+          const currentAcademicYear =
+            currentMonth >= 5
+              ? `${currentYear}-${currentYear + 1}`
+              : `${currentYear - 1}-${currentYear}`;
+          const isActive: "Active" | "Inactive" =
+            !student.academic_year || student.academic_year === currentAcademicYear
+              ? "Active"
+              : "Inactive";
 
           setData({
             id: student.id,
             name: student.full_name,
             photoUrl: student.photo_url,
-            identifier: student.admission_number || student.roll_number || `STU-${currentYear}-${student.id.slice(0, 4).toUpperCase()}`,
+            identifier:
+              student.admission_number ||
+              student.roll_number ||
+              `STU-${currentYear}-${student.id.slice(0, 4).toUpperCase()}`,
             role: "Student",
             classOrDesignation: className,
             departmentOrSection: sectionName,
@@ -119,7 +134,8 @@ function VerifyIdPage() {
         } else if (type === "staff") {
           const { data: staff, error: staffErr } = await supabase
             .from("profiles")
-            .select(`
+            .select(
+              `
               user_id,
               full_name,
               photo_url,
@@ -130,13 +146,16 @@ function VerifyIdPage() {
               emergency_contact,
               mobile_number,
               school_id
-            `)
+            `,
+            )
             .eq("user_id", id)
             .maybeSingle();
 
           if (staffErr) throw staffErr;
           if (!staff) {
-            setError("No staff record found matching this ID. This card may have been deleted or revoked.");
+            setError(
+              "No staff record found matching this ID. This card may have been deleted or revoked.",
+            );
             setLoading(false);
             return;
           }
@@ -161,7 +180,9 @@ function VerifyIdPage() {
           }
 
           if (school.status !== "active") {
-            setError(`Verification blocked: ${school.school_name || school.name || "School"} access is suspended.`);
+            setError(
+              `Verification blocked: ${school.school_name || school.name || "School"} access is suspended.`,
+            );
             setLoading(false);
             return;
           }
@@ -170,7 +191,9 @@ function VerifyIdPage() {
             id: staff.user_id,
             name: staff.full_name,
             photoUrl: staff.photo_url,
-            identifier: staff.employee_id || `EMP-${new Date().getFullYear()}-${staff.user_id.slice(0, 4).toUpperCase()}`,
+            identifier:
+              staff.employee_id ||
+              `EMP-${new Date().getFullYear()}-${staff.user_id.slice(0, 4).toUpperCase()}`,
             role: "Staff",
             classOrDesignation: staff.designation || "Staff Member",
             departmentOrSection: staff.department || "General",
@@ -220,36 +243,54 @@ function VerifyIdPage() {
             {/* School Header */}
             <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
               {data.schoolLogo ? (
-                <img src={data.schoolLogo} alt="" className="size-10 rounded-lg object-cover bg-white" />
+                <img
+                  src={data.schoolLogo}
+                  alt=""
+                  className="size-10 rounded-lg object-cover bg-white"
+                />
               ) : (
                 <div className="size-10 rounded-lg bg-emerald-950 border border-emerald-800 flex items-center justify-center text-emerald-400 font-bold">
                   H
                 </div>
               )}
               <div className="min-w-0">
-                <h2 className="text-sm font-bold text-slate-100 truncate uppercase tracking-wide">{data.schoolName}</h2>
-                <p className="text-[10px] text-slate-400 truncate max-w-[280px]">{data.schoolAddress || "Bengaluru, KA"}</p>
+                <h2 className="text-sm font-bold text-slate-100 truncate uppercase tracking-wide">
+                  {data.schoolName}
+                </h2>
+                <p className="text-[10px] text-slate-400 truncate max-w-[280px]">
+                  {data.schoolAddress || "Bengaluru, KA"}
+                </p>
               </div>
             </div>
 
             {/* Verification & Card Status Badge */}
-            <div className={`border rounded-xl p-3 flex items-center gap-3 ${
-              data.status === "Active" 
-                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
-                : "bg-red-500/10 border-red-500/20 text-red-450"
-            }`}>
-              <div className={`size-8 rounded-full flex items-center justify-center ${
-                data.status === "Active" ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
-              }`}>
-                {data.status === "Active" ? <ShieldCheck className="size-5" /> : <ShieldAlert className="size-5" />}
+            <div
+              className={`border rounded-xl p-3 flex items-center gap-3 ${
+                data.status === "Active"
+                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                  : "bg-red-500/10 border-red-500/20 text-red-450"
+              }`}
+            >
+              <div
+                className={`size-8 rounded-full flex items-center justify-center ${
+                  data.status === "Active"
+                    ? "bg-emerald-500/20 text-emerald-400"
+                    : "bg-red-500/20 text-red-400"
+                }`}
+              >
+                {data.status === "Active" ? (
+                  <ShieldCheck className="size-5" />
+                ) : (
+                  <ShieldAlert className="size-5" />
+                )}
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider">
                   {data.status === "Active" ? "VERIFIED ACTIVE CARD" : "CARD INACTIVE / EXPIRED"}
                 </p>
                 <p className="text-[10px] text-slate-400">
-                  {data.status === "Active" 
-                    ? "Authenticated active school registration." 
+                  {data.status === "Active"
+                    ? "Authenticated active school registration."
                     : "Card has expired or academic year registry is inactive."}
                 </p>
               </div>
@@ -270,13 +311,19 @@ function VerifyIdPage() {
                 <span className="text-[9px] font-bold uppercase tracking-widest bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">
                   {data.role}
                 </span>
-                <h1 className="text-lg font-bold text-slate-100 leading-tight truncate">{data.name}</h1>
+                <h1 className="text-lg font-bold text-slate-100 leading-tight truncate">
+                  {data.name}
+                </h1>
                 <p className="text-xs text-slate-300 font-medium">
-                  {data.role === "Student" ? `Class ${data.classOrDesignation}` : data.classOrDesignation}
+                  {data.role === "Student"
+                    ? `Class ${data.classOrDesignation}`
+                    : data.classOrDesignation}
                   {data.departmentOrSection && ` · Section ${data.departmentOrSection}`}
                 </p>
                 <p className="text-[11px] text-slate-400 font-mono">
-                  {data.role === "Student" ? `Adm: ${data.identifier}` : `Emp ID: ${data.identifier}`}
+                  {data.role === "Student"
+                    ? `Adm: ${data.identifier}`
+                    : `Emp ID: ${data.identifier}`}
                 </p>
               </div>
             </div>
@@ -291,7 +338,9 @@ function VerifyIdPage() {
                 </div>
               </div>
               <div className="bg-slate-850/50 border border-slate-800/80 rounded-xl p-3 space-y-1">
-                <p className="text-[9px] uppercase tracking-wider text-slate-400">Emergency Contact</p>
+                <p className="text-[9px] uppercase tracking-wider text-slate-400">
+                  Emergency Contact
+                </p>
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-200">
                   <Phone className="size-3.5 text-slate-400" />
                   {data.emergencyContact || "—"}
@@ -299,7 +348,9 @@ function VerifyIdPage() {
               </div>
               {data.role === "Student" && data.academicYear && (
                 <div className="bg-slate-850/50 border border-slate-800/80 rounded-xl p-3 col-span-2 space-y-1">
-                  <p className="text-[9px] uppercase tracking-wider text-slate-400">Academic Session</p>
+                  <p className="text-[9px] uppercase tracking-wider text-slate-400">
+                    Academic Session
+                  </p>
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-200">
                     <Calendar className="size-3.5 text-slate-400" />
                     {data.academicYear}
@@ -317,7 +368,8 @@ function VerifyIdPage() {
                 </span>
               </div>
               <p className="text-[9px] text-slate-500 max-w-xs mx-auto">
-                This verification check query is real-time and directly matched with the official active registers of {data?.schoolName || "the school"}.
+                This verification check query is real-time and directly matched with the official
+                active registers of {data?.schoolName || "the school"}.
               </p>
             </div>
           </div>

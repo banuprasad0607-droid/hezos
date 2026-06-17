@@ -2,8 +2,9 @@
 // apply-final-migration.mjs
 // Applies the final production SQL fixes using Supabase Management API
 
-const PROJECT_REF = 'crypicuosxqquudpgosi';
-const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNyeXBpY3Vvc3hxcXV1ZHBnb3NpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDIyODU0NSwiZXhwIjoyMDk1ODA0NTQ1fQ.WBHduzvpxjjuWzPrwQWxU__akZc0Gj1sFpkMBeOcpXw';
+const PROJECT_REF = "crypicuosxqquudpgosi";
+const SERVICE_ROLE_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNyeXBpY3Vvc3hxcXV1ZHBnb3NpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDIyODU0NSwiZXhwIjoyMDk1ODA0NTQ1fQ.WBHduzvpxjjuWzPrwQWxU__akZc0Gj1sFpkMBeOcpXw";
 
 // Individual SQL statements to apply
 const statements = [
@@ -42,16 +43,16 @@ let failed = 0;
 
 for (let i = 0; i < statements.length; i++) {
   const sql = statements[i];
-  const label = sql.slice(0, 60) + '...';
-  
+  const label = sql.slice(0, 60) + "...";
+
   try {
     const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SERVICE_ROLE_KEY}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
       },
-      body: JSON.stringify({ query: sql })
+      body: JSON.stringify({ query: sql }),
     });
 
     if (res.ok) {
@@ -59,7 +60,7 @@ for (let i = 0; i < statements.length; i++) {
       passed++;
     } else {
       const txt = await res.text();
-      if (txt.includes('already exists') || txt.includes('duplicate key')) {
+      if (txt.includes("already exists") || txt.includes("duplicate key")) {
         console.log(`  ✅ [${i + 1}] Already exists — ${label}`);
         passed++;
       } else {

@@ -109,7 +109,7 @@ export function ImageCropper({
           // Threshold 70 is standard keying threshold
           if (distToBg < 70 || distToWhite < 70) {
             // Replace background pixels with professional card blue (#3c68d9)
-            data[idx] = 60;     // R
+            data[idx] = 60; // R
             data[idx + 1] = 104; // G
             data[idx + 2] = 217; // B
             data[idx + 3] = 255; // Alpha

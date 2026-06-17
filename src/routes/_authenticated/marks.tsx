@@ -88,7 +88,7 @@ function MarksManagementPage() {
   const [exams, setExams] = useState<ExamRow[]>([]);
   const [examSubjects, setExamSubjects] = useState<ExamSubjectRow[]>([]);
   const [teacherAllocations, setTeacherAllocations] = useState<AllocationRow[]>([]);
-  
+
   // Selection Filters
   const [selectedClassId, setSelectedClassId] = useState<string>("");
   const [selectedSection, setSelectedSection] = useState<string>("All");
@@ -104,12 +104,12 @@ function MarksManagementPage() {
   // Grade Configuration
   const gradeThresholds = {
     "A+": 91,
-    "A": 81,
+    A: 81,
     "B+": 71,
-    "B": 61,
+    B: 61,
     "C+": 51,
-    "C": 41,
-    "D": 35,
+    C: 41,
+    D: 35,
   };
 
   const calculateGrade = (obtained: number, max: number, isAbsent: boolean, isMedical: boolean) => {
@@ -134,7 +134,8 @@ function MarksManagementPage() {
     try {
       // Fetch Allocations first to guide class/subject filtering
       // RLS ensures teachers only see their own allocations, staff see all.
-      const { data: allocData } = await (supabase as any).from("teacher_allocations")
+      const { data: allocData } = await (supabase as any)
+        .from("teacher_allocations")
         .select("id, teacher_id, subject_id, class_id")
         .eq("school_id", schoolId);
       setTeacherAllocations(allocData || []);
@@ -165,7 +166,8 @@ function MarksManagementPage() {
       setExams(examsData || []);
 
       // Fetch Exam Subjects
-      const { data: examSubjectsData } = await (supabase as any).from("exam_subjects")
+      const { data: examSubjectsData } = await (supabase as any)
+        .from("exam_subjects")
         .select("id, exam_id, subject_id, max_marks, pass_marks")
         .eq("school_id", schoolId);
       setExamSubjects(examSubjectsData || []);
@@ -178,7 +180,6 @@ function MarksManagementPage() {
         .is("deleted_at", null)
         .order("full_name");
       setStudents(studentsData || []);
-
     } catch (err: any) {
       toast.error("Failed to load data: " + err.message);
     } finally {
@@ -194,19 +195,25 @@ function MarksManagementPage() {
   const filteredClasses = useMemo(() => {
     let list = classes;
     if (selectedSection !== "All") {
-      list = list.filter(c => c.section?.toLowerCase() === selectedSection.toLowerCase() || c.name.toLowerCase().includes(selectedSection.toLowerCase()));
+      list = list.filter(
+        (c) =>
+          c.section?.toLowerCase() === selectedSection.toLowerCase() ||
+          c.name.toLowerCase().includes(selectedSection.toLowerCase()),
+      );
     }
 
     if (!isStaff) {
       // Teacher can only see allocated classes OR classes they are the Class Teacher for
-      const allocatedClassIds = teacherAllocations.map(sa => sa.class_id);
-      list = list.filter(c => allocatedClassIds.includes(c.id) || c.class_teacher_id === user?.id);
+      const allocatedClassIds = teacherAllocations.map((sa) => sa.class_id);
+      list = list.filter(
+        (c) => allocatedClassIds.includes(c.id) || c.class_teacher_id === user?.id,
+      );
     }
     return list;
   }, [classes, teacherAllocations, isStaff, user?.id, selectedSection]);
 
   useEffect(() => {
-    if (filteredClasses.length > 0 && !filteredClasses.some(c => c.id === selectedClassId)) {
+    if (filteredClasses.length > 0 && !filteredClasses.some((c) => c.id === selectedClassId)) {
       setSelectedClassId(filteredClasses[0].id);
     } else if (filteredClasses.length === 0) {
       setSelectedClassId("");
@@ -214,11 +221,11 @@ function MarksManagementPage() {
   }, [filteredClasses, selectedClassId]);
 
   const filteredExams = useMemo(() => {
-    return exams.filter(e => e.class_id === selectedClassId);
+    return exams.filter((e) => e.class_id === selectedClassId);
   }, [exams, selectedClassId]);
 
   useEffect(() => {
-    if (filteredExams.length > 0 && !filteredExams.some(e => e.id === selectedExamId)) {
+    if (filteredExams.length > 0 && !filteredExams.some((e) => e.id === selectedExamId)) {
       setSelectedExamId(filteredExams[0].id);
     } else if (filteredExams.length === 0) {
       setSelectedExamId("");
@@ -226,32 +233,43 @@ function MarksManagementPage() {
   }, [filteredExams, selectedExamId]);
 
   const currentExamSubject = useMemo(() => {
-    return examSubjects.find(es => es.exam_id === selectedExamId && es.subject_id === selectedSubjectId);
+    return examSubjects.find(
+      (es) => es.exam_id === selectedExamId && es.subject_id === selectedSubjectId,
+    );
   }, [examSubjects, selectedExamId, selectedSubjectId]);
 
   const filteredSubjects = useMemo(() => {
     // Look up what subjects are actually mapped to this exam
-    const activeExamSubjects = examSubjects.filter(es => es.exam_id === selectedExamId);
-    let list = subjects.filter(s => activeExamSubjects.some(es => es.subject_id === s.id));
+    const activeExamSubjects = examSubjects.filter((es) => es.exam_id === selectedExamId);
+    let list = subjects.filter((s) => activeExamSubjects.some((es) => es.subject_id === s.id));
 
     if (!isStaff) {
-      const cls = classes.find(c => c.id === selectedClassId);
+      const cls = classes.find((c) => c.id === selectedClassId);
       const isClassTeacher = cls?.class_teacher_id === user?.id;
-      
+
       // If they are class teacher, they can view all subjects for the class
       // Otherwise restrict to allocated subjects
       if (!isClassTeacher) {
         const allocatedSubjectIds = teacherAllocations
-          .filter(ta => ta.class_id === selectedClassId)
-          .map(ta => ta.subject_id);
-        list = list.filter(s => allocatedSubjectIds.includes(s.id));
+          .filter((ta) => ta.class_id === selectedClassId)
+          .map((ta) => ta.subject_id);
+        list = list.filter((s) => allocatedSubjectIds.includes(s.id));
       }
     }
     return list;
-  }, [subjects, selectedExamId, examSubjects, isStaff, teacherAllocations, selectedClassId, classes, user?.id]);
+  }, [
+    subjects,
+    selectedExamId,
+    examSubjects,
+    isStaff,
+    teacherAllocations,
+    selectedClassId,
+    classes,
+    user?.id,
+  ]);
 
   useEffect(() => {
-    if (filteredSubjects.length > 0 && !filteredSubjects.some(s => s.id === selectedSubjectId)) {
+    if (filteredSubjects.length > 0 && !filteredSubjects.some((s) => s.id === selectedSubjectId)) {
       setSelectedSubjectId(filteredSubjects[0].id);
     } else if (filteredSubjects.length === 0) {
       setSelectedSubjectId("");
@@ -267,22 +285,25 @@ function MarksManagementPage() {
 
     const fetchMarks = async () => {
       try {
-        const classStudentIds = students.filter(s => s.class_id === selectedClassId).map(s => s.id);
+        const classStudentIds = students
+          .filter((s) => s.class_id === selectedClassId)
+          .map((s) => s.id);
         if (classStudentIds.length === 0) {
           setMarks({});
           return;
         }
 
-        const { data } = await (supabase as any).from("mark_entries")
+        const { data } = await (supabase as any)
+          .from("mark_entries")
           .select("*")
           .eq("exam_id", selectedExamId)
           .eq("exam_subject_id", currentExamSubject.id)
           .in("student_id", classStudentIds);
 
         const mRecord: Record<string, MarkEntry> = {};
-        
+
         // Initialize for all students
-        classStudentIds.forEach(sid => {
+        classStudentIds.forEach((sid) => {
           const match = (data || []).find((d: any) => d.student_id === sid);
           if (match) {
             mRecord[sid] = {
@@ -293,17 +314,17 @@ function MarksManagementPage() {
               remarks: match.remarks || "",
               is_absent: match.is_absent || false,
               is_medical_exempt: match.is_medical_exempt || false,
-              status: match.status || "Draft"
+              status: match.status || "Draft",
             };
           } else {
-             mRecord[sid] = {
+            mRecord[sid] = {
               student_id: sid,
               marks_obtained: 0,
               grade: "F",
               remarks: "",
               is_absent: false,
               is_medical_exempt: false,
-              status: "Draft"
+              status: "Draft",
             };
           }
         });
@@ -317,32 +338,36 @@ function MarksManagementPage() {
   }, [selectedExamId, selectedClassId, currentExamSubject, students]);
 
   // Derive global status for the current subject
-  const currentStatusArray = Object.values(marks).map(m => m.status);
-  const overallStatus = currentStatusArray.length > 0 
-    ? (currentStatusArray.every(s => s === currentStatusArray[0]) ? currentStatusArray[0] : "Mixed") 
-    : "Draft";
+  const currentStatusArray = Object.values(marks).map((m) => m.status);
+  const overallStatus =
+    currentStatusArray.length > 0
+      ? currentStatusArray.every((s) => s === currentStatusArray[0])
+        ? currentStatusArray[0]
+        : "Mixed"
+      : "Draft";
 
   // Check editing permissions based on subject allocation & lock status
   const isAssignedSubjectTeacher = useMemo(() => {
     if (isStaff) return true;
     if (!selectedClassId || !selectedSubjectId) return false;
 
-    return teacherAllocations.some(sa => 
-      sa.class_id === selectedClassId && 
-      sa.subject_id === selectedSubjectId && 
-      sa.teacher_id === user?.id
+    return teacherAllocations.some(
+      (sa) =>
+        sa.class_id === selectedClassId &&
+        sa.subject_id === selectedSubjectId &&
+        sa.teacher_id === user?.id,
     );
   }, [isStaff, selectedClassId, selectedSubjectId, teacherAllocations, user?.id]);
 
   const isClassTeacher = useMemo(() => {
-    const cls = classes.find(c => c.id === selectedClassId);
+    const cls = classes.find((c) => c.id === selectedClassId);
     return cls?.class_teacher_id === user?.id;
   }, [classes, selectedClassId, user?.id]);
 
   const canEditMarks = useMemo(() => {
     // If not allocated subject teacher, they cannot edit. Period.
     if (!isAssignedSubjectTeacher && !isStaff) return false;
-    
+
     // Admins/Principals can edit until locked
     if (isStaff) {
       return overallStatus !== "Locked" && overallStatus !== "Published";
@@ -356,17 +381,17 @@ function MarksManagementPage() {
   const handleMarkChange = (studentId: string, updates: Partial<MarkEntry>) => {
     if (!currentExamSubject || !canEditMarks) return;
 
-    setMarks(prev => {
+    setMarks((prev) => {
       const existing = prev[studentId];
       const maxMarks = currentExamSubject.max_marks;
-      
+
       let newObtained = updates.marks_obtained ?? existing.marks_obtained;
       // Clamp values
       newObtained = Math.min(Math.max(newObtained, 0), maxMarks);
-      
+
       const newAbsent = updates.is_absent ?? existing.is_absent;
       const newMedical = updates.is_medical_exempt ?? existing.is_medical_exempt;
-      
+
       const newGrade = calculateGrade(newObtained, maxMarks, newAbsent, newMedical);
 
       const nextState = {
@@ -375,7 +400,7 @@ function MarksManagementPage() {
         marks_obtained: newObtained,
         grade: newGrade,
         is_absent: newAbsent,
-        is_medical_exempt: newMedical
+        is_medical_exempt: newMedical,
       };
 
       // Debounce saving to Supabase
@@ -389,14 +414,14 @@ function MarksManagementPage() {
 
       return {
         ...prev,
-        [studentId]: nextState
+        [studentId]: nextState,
       };
     });
   };
 
   const saveSingleMark = async (studentId: string, entry: MarkEntry) => {
     if (!selectedExamId || !currentExamSubject || !schoolId) return;
-    
+
     setIsSaving(true);
     try {
       const payload = {
@@ -409,18 +434,22 @@ function MarksManagementPage() {
         remarks: entry.remarks,
         is_absent: entry.is_absent,
         is_medical_exempt: entry.is_medical_exempt,
-        status: entry.status || 'Draft'
+        status: entry.status || "Draft",
       };
 
       if (entry.id) {
         await (supabase as any).from("mark_entries").update(payload).eq("id", entry.id);
       } else {
-        const { data, error } = await (supabase as any).from("mark_entries").insert(payload).select("id").single();
+        const { data, error } = await (supabase as any)
+          .from("mark_entries")
+          .insert(payload)
+          .select("id")
+          .single();
         if (error) throw error;
         if (data) {
-          setMarks(prev => ({
+          setMarks((prev) => ({
             ...prev,
-            [studentId]: { ...prev[studentId], id: data.id }
+            [studentId]: { ...prev[studentId], id: data.id },
           }));
         }
       }
@@ -452,7 +481,7 @@ function MarksManagementPage() {
           remarks: entry.remarks,
           is_absent: entry.is_absent,
           is_medical_exempt: entry.is_medical_exempt,
-          status: newStatus
+          status: newStatus,
         };
 
         if (entry.id) {
@@ -469,14 +498,14 @@ function MarksManagementPage() {
         void (async () => {
           try {
             const templates = await whatsappService.getTemplates(schoolId!);
-            const template = templates.find(t => t.name === "exam_result_notification");
+            const template = templates.find((t) => t.name === "exam_result_notification");
             if (template) {
               const { data: studs } = await supabase
                 .from("students")
                 .select("id, full_name, parent_user_id, emergency_contact")
                 .in("id", studentIds);
 
-              for (const stud of (studs || [])) {
+              for (const stud of studs || []) {
                 const phone = stud.emergency_contact || "+91 90000 00000";
                 const markEntry = marks[stud.id];
                 if (markEntry) {
@@ -489,7 +518,7 @@ function MarksManagementPage() {
                     template.id!,
                     [stud.full_name, String(pct)],
                     stud.id,
-                    stud.parent_user_id
+                    stud.parent_user_id,
                   );
                 }
               }
@@ -529,14 +558,21 @@ function MarksManagementPage() {
         breadcrumb="Academics"
         actions={
           <div className="flex gap-2 text-xs font-semibold">
-            <span className={`px-3 py-1.5 rounded-lg border font-bold flex items-center gap-1.5 ${
-              overallStatus === "Draft" ? "bg-slate-100 text-slate-700 border-slate-200" :
-              overallStatus === "Submitted" ? "bg-blue-50 text-blue-700 border-blue-200" :
-              overallStatus === "Verified" ? "bg-purple-50 text-purple-700 border-purple-200" :
-              overallStatus === "Approved" ? "bg-amber-50 text-amber-700 border-amber-200" :
-              overallStatus === "Locked" ? "bg-rose-50 text-rose-800 border-rose-200" :
-              "bg-emerald-50 text-emerald-800 border-emerald-200"
-            }`}>
+            <span
+              className={`px-3 py-1.5 rounded-lg border font-bold flex items-center gap-1.5 ${
+                overallStatus === "Draft"
+                  ? "bg-slate-100 text-slate-700 border-slate-200"
+                  : overallStatus === "Submitted"
+                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                    : overallStatus === "Verified"
+                      ? "bg-purple-50 text-purple-700 border-purple-200"
+                      : overallStatus === "Approved"
+                        ? "bg-amber-50 text-amber-700 border-amber-200"
+                        : overallStatus === "Locked"
+                          ? "bg-rose-50 text-rose-800 border-rose-200"
+                          : "bg-emerald-50 text-emerald-800 border-emerald-200"
+              }`}
+            >
               <Shield className="size-3.5" /> Status: {overallStatus.toUpperCase()}
             </span>
           </div>
@@ -544,27 +580,30 @@ function MarksManagementPage() {
       />
 
       <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
-        
         {/* Filters Panel */}
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-border dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-muted-foreground uppercase">Class</span>
-              <select 
-                value={selectedClassId} 
-                onChange={(e) => setSelectedClassId(e.target.value)} 
+              <select
+                value={selectedClassId}
+                onChange={(e) => setSelectedClassId(e.target.value)}
                 className="mt-1 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none"
               >
-                {filteredClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {filteredClasses.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
                 {filteredClasses.length === 0 && <option value="">No Allocated Classes</option>}
               </select>
             </div>
 
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-muted-foreground uppercase">Section</span>
-              <select 
-                value={selectedSection} 
-                onChange={(e) => setSelectedSection(e.target.value)} 
+              <select
+                value={selectedSection}
+                onChange={(e) => setSelectedSection(e.target.value)}
                 className="mt-1 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none"
               >
                 <option value="All">All Sections</option>
@@ -574,32 +613,42 @@ function MarksManagementPage() {
             </div>
 
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Exam Term</span>
-              <select 
-                value={selectedExamId} 
-                onChange={(e) => setSelectedExamId(e.target.value)} 
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                Exam Term
+              </span>
+              <select
+                value={selectedExamId}
+                onChange={(e) => setSelectedExamId(e.target.value)}
                 className="mt-1 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none"
               >
                 {filteredExams.length === 0 && <option value="">-- No Exams --</option>}
-                {filteredExams.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                {filteredExams.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.name}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-muted-foreground uppercase">Subject</span>
-              <select 
-                value={selectedSubjectId} 
-                onChange={(e) => setSelectedSubjectId(e.target.value)} 
+              <select
+                value={selectedSubjectId}
+                onChange={(e) => setSelectedSubjectId(e.target.value)}
                 className="mt-1 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none"
               >
-                 {filteredSubjects.length === 0 && <option value="">-- No Subjects --</option>}
-                {filteredSubjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                {filteredSubjects.length === 0 && <option value="">-- No Subjects --</option>}
+                {filteredSubjects.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <button 
+            <button
               onClick={loadData}
               className="p-1.5 border border-border dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg bg-card text-muted-foreground transition-all cursor-pointer"
               title="Refresh"
@@ -617,23 +666,26 @@ function MarksManagementPage() {
                 <Shield className="size-4 text-indigo-500" /> Marks Lock Workflow
               </h4>
               <p className="text-xs text-muted-foreground">
-                Current Subject Status: <strong className="text-slate-800 dark:text-slate-200">{overallStatus}</strong>.
-                {!canEditMarks && " Editing is strictly prohibited by RBAC rules because marks are locked or you lack allocation."}
+                Current Subject Status:{" "}
+                <strong className="text-slate-800 dark:text-slate-200">{overallStatus}</strong>.
+                {!canEditMarks &&
+                  " Editing is strictly prohibited by RBAC rules because marks are locked or you lack allocation."}
                 {canEditMarks && " You have edit privileges. Marks are auto-saved on change."}
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2">
               {/* Teacher Subject Submission */}
-              {isAssignedSubjectTeacher && (overallStatus === "Draft" || overallStatus === "Mixed") && (
-                <button
-                  onClick={() => handleUpdateExamStatus("Submitted")}
-                  disabled={isSaving}
-                  className="px-4 py-1.5 bg-blue-600 text-white font-bold text-xs rounded-lg shadow-sm hover:bg-blue-700 transition-all cursor-pointer"
-                >
-                  Submit Subject to Class Teacher
-                </button>
-              )}
+              {isAssignedSubjectTeacher &&
+                (overallStatus === "Draft" || overallStatus === "Mixed") && (
+                  <button
+                    onClick={() => handleUpdateExamStatus("Submitted")}
+                    disabled={isSaving}
+                    className="px-4 py-1.5 bg-blue-600 text-white font-bold text-xs rounded-lg shadow-sm hover:bg-blue-700 transition-all cursor-pointer"
+                  >
+                    Submit Subject to Class Teacher
+                  </button>
+                )}
 
               {/* Class Teacher actions */}
               {isClassTeacher && overallStatus === "Submitted" && (
@@ -684,12 +736,26 @@ function MarksManagementPage() {
           <div className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-base text-slate-850 dark:text-slate-100">Student Scores Grid</h3>
-                <p className="text-xs text-muted-foreground">Class: {classes.find(c => c.id === selectedClassId)?.name} · Subject: {subjects.find(s => s.id === selectedSubjectId)?.name} · Max Score: {currentExamSubject?.max_marks} · Pass: {currentExamSubject?.pass_marks}</p>
+                <h3 className="font-bold text-base text-slate-850 dark:text-slate-100">
+                  Student Scores Grid
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Class: {classes.find((c) => c.id === selectedClassId)?.name} · Subject:{" "}
+                  {subjects.find((s) => s.id === selectedSubjectId)?.name} · Max Score:{" "}
+                  {currentExamSubject?.max_marks} · Pass: {currentExamSubject?.pass_marks}
+                </p>
               </div>
-              
+
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                {isSaving ? <span className="flex items-center gap-1"><RefreshCw className="size-3 animate-spin" /> Auto-saving...</span> : <span className="flex items-center gap-1 text-emerald-600"><CheckCircle2 className="size-3" /> Saved</span>}
+                {isSaving ? (
+                  <span className="flex items-center gap-1">
+                    <RefreshCw className="size-3 animate-spin" /> Auto-saving...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-emerald-600">
+                    <CheckCircle2 className="size-3" /> Saved
+                  </span>
+                )}
               </div>
             </div>
 
@@ -707,89 +773,125 @@ function MarksManagementPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {students.filter(s => s.class_id === selectedClassId).map((student) => {
-                    const studentMark = marks[student.id];
-                    if (!studentMark) return null;
+                  {students
+                    .filter((s) => s.class_id === selectedClassId)
+                    .map((student) => {
+                      const studentMark = marks[student.id];
+                      if (!studentMark) return null;
 
-                    return (
-                      <tr key={student.id} className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/20 dark:hover:bg-slate-800/20 transition-colors">
-                        <td className="py-3 px-4 font-mono font-bold text-slate-500">#{student.roll_number || "—"}</td>
-                        <td className="py-3 px-4 font-bold text-slate-800 dark:text-slate-100">
-                          <div className="flex items-center gap-2">
-                             <div className="size-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-[10px] overflow-hidden shrink-0">
-                              {student.photo_url ? (
-                                <img src={student.photo_url} alt="" className="size-full object-cover" />
-                              ) : (
-                                student.full_name.slice(0, 1).toUpperCase()
-                              )}
+                      return (
+                        <tr
+                          key={student.id}
+                          className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/20 dark:hover:bg-slate-800/20 transition-colors"
+                        >
+                          <td className="py-3 px-4 font-mono font-bold text-slate-500">
+                            #{student.roll_number || "—"}
+                          </td>
+                          <td className="py-3 px-4 font-bold text-slate-800 dark:text-slate-100">
+                            <div className="flex items-center gap-2">
+                              <div className="size-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-[10px] overflow-hidden shrink-0">
+                                {student.photo_url ? (
+                                  <img
+                                    src={student.photo_url}
+                                    alt=""
+                                    className="size-full object-cover"
+                                  />
+                                ) : (
+                                  student.full_name.slice(0, 1).toUpperCase()
+                                )}
+                              </div>
+                              {student.full_name}
                             </div>
-                            {student.full_name}
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-center font-semibold text-slate-500">{currentExamSubject.max_marks}</td>
-                        <td className="py-3 px-4 text-right">
-                          <input
-                            type="number"
-                            min="0"
-                            max={currentExamSubject.max_marks}
-                            step="0.5"
-                            value={studentMark.marks_obtained}
-                            disabled={!canEditMarks || studentMark.is_absent || studentMark.is_medical_exempt}
-                            onChange={(e) => handleMarkChange(student.id, { marks_obtained: Number(e.target.value) })}
-                            className="w-24 px-2 py-1.5 border border-border dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md text-right font-black focus:outline-none focus:ring-1 focus:ring-brand text-slate-800 dark:text-slate-100 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 transition-all"
-                          />
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <label className="flex items-center gap-1 cursor-pointer">
-                              <input 
-                                type="checkbox" 
-                                checked={studentMark.is_absent}
-                                disabled={!canEditMarks || studentMark.is_medical_exempt}
-                                onChange={(e) => handleMarkChange(student.id, { is_absent: e.target.checked })}
-                                className="rounded border-slate-300 text-rose-500 focus:ring-rose-500 disabled:opacity-50"
-                              />
-                              <span className="text-[10px] font-bold text-rose-600">ABS</span>
-                            </label>
-                            <label className="flex items-center gap-1 cursor-pointer">
-                              <input 
-                                type="checkbox" 
-                                checked={studentMark.is_medical_exempt}
-                                disabled={!canEditMarks || studentMark.is_absent}
-                                onChange={(e) => handleMarkChange(student.id, { is_medical_exempt: e.target.checked })}
-                                className="rounded border-slate-300 text-blue-500 focus:ring-blue-500 disabled:opacity-50"
-                              />
-                              <span className="text-[10px] font-bold text-blue-600">MED</span>
-                            </label>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <span className={`inline-block px-2.5 py-0.5 rounded font-black text-[10px] ${
-                            studentMark.grade.includes("F") ? "bg-rose-50 text-rose-700 dark:bg-rose-955/20 dark:text-rose-400" :
-                            studentMark.grade.includes("EX") ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400" :
-                            studentMark.grade.includes("A") ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-955/20 dark:text-emerald-400" :
-                            "bg-blue-50 text-blue-700 dark:bg-blue-955/20 dark:text-blue-400"
-                          }`}>
-                            {studentMark.grade}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <input
-                            type="text"
-                            value={studentMark.remarks}
-                            disabled={!canEditMarks}
-                            placeholder="Enter remarks..."
-                            onChange={(e) => handleMarkChange(student.id, { remarks: e.target.value })}
-                            className="w-full px-2.5 py-1.5 border border-border dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-brand text-slate-800 dark:text-slate-100 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 transition-all"
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          </td>
+                          <td className="py-3 px-4 text-center font-semibold text-slate-500">
+                            {currentExamSubject.max_marks}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <input
+                              type="number"
+                              min="0"
+                              max={currentExamSubject.max_marks}
+                              step="0.5"
+                              value={studentMark.marks_obtained}
+                              disabled={
+                                !canEditMarks ||
+                                studentMark.is_absent ||
+                                studentMark.is_medical_exempt
+                              }
+                              onChange={(e) =>
+                                handleMarkChange(student.id, {
+                                  marks_obtained: Number(e.target.value),
+                                })
+                              }
+                              className="w-24 px-2 py-1.5 border border-border dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md text-right font-black focus:outline-none focus:ring-1 focus:ring-brand text-slate-800 dark:text-slate-100 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 transition-all"
+                            />
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <label className="flex items-center gap-1 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={studentMark.is_absent}
+                                  disabled={!canEditMarks || studentMark.is_medical_exempt}
+                                  onChange={(e) =>
+                                    handleMarkChange(student.id, { is_absent: e.target.checked })
+                                  }
+                                  className="rounded border-slate-300 text-rose-500 focus:ring-rose-500 disabled:opacity-50"
+                                />
+                                <span className="text-[10px] font-bold text-rose-600">ABS</span>
+                              </label>
+                              <label className="flex items-center gap-1 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={studentMark.is_medical_exempt}
+                                  disabled={!canEditMarks || studentMark.is_absent}
+                                  onChange={(e) =>
+                                    handleMarkChange(student.id, {
+                                      is_medical_exempt: e.target.checked,
+                                    })
+                                  }
+                                  className="rounded border-slate-300 text-blue-500 focus:ring-blue-500 disabled:opacity-50"
+                                />
+                                <span className="text-[10px] font-bold text-blue-600">MED</span>
+                              </label>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <span
+                              className={`inline-block px-2.5 py-0.5 rounded font-black text-[10px] ${
+                                studentMark.grade.includes("F")
+                                  ? "bg-rose-50 text-rose-700 dark:bg-rose-955/20 dark:text-rose-400"
+                                  : studentMark.grade.includes("EX")
+                                    ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400"
+                                    : studentMark.grade.includes("A")
+                                      ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-955/20 dark:text-emerald-400"
+                                      : "bg-blue-50 text-blue-700 dark:bg-blue-955/20 dark:text-blue-400"
+                              }`}
+                            >
+                              {studentMark.grade}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <input
+                              type="text"
+                              value={studentMark.remarks}
+                              disabled={!canEditMarks}
+                              placeholder="Enter remarks..."
+                              onChange={(e) =>
+                                handleMarkChange(student.id, { remarks: e.target.value })
+                              }
+                              className="w-full px-2.5 py-1.5 border border-border dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-brand text-slate-800 dark:text-slate-100 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 transition-all"
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
 
-                  {students.filter(s => s.class_id === selectedClassId).length === 0 && (
+                  {students.filter((s) => s.class_id === selectedClassId).length === 0 && (
                     <tr>
-                      <td colSpan={7} className="py-8 text-center text-muted-foreground italic">No students enrolled in this class.</td>
+                      <td colSpan={7} className="py-8 text-center text-muted-foreground italic">
+                        No students enrolled in this class.
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -799,10 +901,11 @@ function MarksManagementPage() {
         ) : (
           <div className="bg-white dark:bg-slate-900 p-12 text-center text-muted-foreground rounded-2xl border border-border dark:border-slate-800">
             <BookOpen className="size-10 mx-auto text-slate-300 mb-2" />
-            <p className="font-semibold">Select class, exam term, and subject above to enter marks.</p>
+            <p className="font-semibold">
+              Select class, exam term, and subject above to enter marks.
+            </p>
           </div>
         )}
-
       </div>
     </>
   );

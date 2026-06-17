@@ -23,7 +23,11 @@ function SignupPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<SignupFields>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignupFields>({
     resolver: zodResolver(signupSchema),
   });
 
@@ -44,7 +48,10 @@ function SignupPage() {
         if (error.status === 429 || error.message.toLowerCase().includes("rate limit")) {
           return toast.error("Too many signup requests. Please wait a minute and try again.");
         }
-        if (error.message.toLowerCase().includes("already registered") || error.message.toLowerCase().includes("exists")) {
+        if (
+          error.message.toLowerCase().includes("already registered") ||
+          error.message.toLowerCase().includes("exists")
+        ) {
           return toast.error("An account with this email already exists. Please sign in instead.");
         }
         return toast.error(error.message);
@@ -61,7 +68,9 @@ function SignupPage() {
     <div className="min-h-screen grid lg:grid-cols-2">
       <div className="hidden lg:flex bg-sidebar-bg text-sidebar-fg p-12 flex-col justify-between">
         <div className="flex items-center gap-3">
-          <div className="size-8 bg-brand rounded-lg flex items-center justify-center font-bold text-brand-foreground font-sans">H</div>
+          <div className="size-8 bg-brand rounded-lg flex items-center justify-center font-bold text-brand-foreground font-sans">
+            H
+          </div>
           <span className="font-semibold tracking-tight">HEZO SCHOOL</span>
         </div>
         <div className="max-w-md space-y-4">
@@ -80,8 +89,12 @@ function SignupPage() {
       <div className="flex items-center justify-center p-8 bg-card text-foreground">
         <form onSubmit={handleSubmit(onSubmitForm)} className="w-full max-w-sm space-y-6">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Create your school</h1>
-            <p className="text-sm text-muted-foreground mt-1">You'll be the Admin. Invite teachers next.</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              Create your school
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              You'll be the Admin. Invite teachers next.
+            </p>
           </div>
 
           <div className="space-y-3">
@@ -130,7 +143,9 @@ function SignupPage() {
 
           <p className="text-sm text-center text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="text-brand font-medium hover:underline">Sign in</Link>
+            <Link to="/login" className="text-brand font-medium hover:underline">
+              Sign in
+            </Link>
           </p>
         </form>
       </div>

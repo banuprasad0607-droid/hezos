@@ -19,22 +19,29 @@ interface Props {
   buildMessage?: (r: BroadcastRecipient) => string;
 }
 
-export function WhatsAppBroadcast({ label = "WhatsApp", recipients, defaultMessage, disabled, buildMessage }: Props) {
+export function WhatsAppBroadcast({
+  label = "WhatsApp",
+  recipients,
+  defaultMessage,
+  disabled,
+  buildMessage,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState(defaultMessage);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
 
-  useEffect(() => { if (open) setMessage(defaultMessage); }, [open, defaultMessage]);
+  useEffect(() => {
+    if (open) setMessage(defaultMessage);
+  }, [open, defaultMessage]);
 
-  const valid = useMemo(
-    () => recipients.filter((r) => whatsappLink(r.phone, "x")),
-    [recipients]
-  );
+  const valid = useMemo(() => recipients.filter((r) => whatsappLink(r.phone, "x")), [recipients]);
 
   useEffect(() => {
     if (!open) return;
     const next: Record<string, boolean> = {};
-    valid.forEach((r) => { next[r.id] = true; });
+    valid.forEach((r) => {
+      next[r.id] = true;
+    });
     setSelected(next);
   }, [open, valid]);
 
@@ -92,25 +99,46 @@ export function WhatsAppBroadcast({ label = "WhatsApp", recipients, defaultMessa
       </button>
 
       {open && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={() => setOpen(false)}>
-          <div onClick={(e) => e.stopPropagation()} className="bg-card rounded-xl w-full max-w-lg shadow-lg max-h-[90vh] flex flex-col">
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-card rounded-xl w-full max-w-lg shadow-lg max-h-[90vh] flex flex-col"
+          >
             <div className="p-5 border-b border-border flex items-center justify-between">
               <div>
-                <h2 className="font-semibold text-base flex items-center gap-2"><MessageCircle className="size-4 text-success" /> WhatsApp Broadcast</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">{valid.length} of {recipients.length} parents have valid numbers</p>
+                <h2 className="font-semibold text-base flex items-center gap-2">
+                  <MessageCircle className="size-4 text-success" /> WhatsApp Broadcast
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {valid.length} of {recipients.length} parents have valid numbers
+                </p>
               </div>
-              <button onClick={() => setOpen(false)} className="size-8 rounded-md hover:bg-secondary inline-flex items-center justify-center"><X className="size-4" /></button>
+              <button
+                onClick={() => setOpen(false)}
+                className="size-8 rounded-md hover:bg-secondary inline-flex items-center justify-center"
+              >
+                <X className="size-4" />
+              </button>
             </div>
 
             <div className="p-5 space-y-3 border-b border-border">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Message</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Message
+              </label>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background"
               />
-              {buildMessage && <p className="text-[10px] text-muted-foreground">Per-recipient details (like the student's name) are appended automatically.</p>}
+              {buildMessage && (
+                <p className="text-[10px] text-muted-foreground">
+                  Per-recipient details (like the student's name) are appended automatically.
+                </p>
+              )}
             </div>
 
             <div className="flex-1 overflow-y-auto p-2">
@@ -134,10 +162,20 @@ export function WhatsAppBroadcast({ label = "WhatsApp", recipients, defaultMessa
                         />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{r.name}</p>
-                          <p className="text-[11px] text-muted-foreground truncate">{r.subtitle ? `${r.subtitle} · ` : ""}{r.phone}</p>
+                          <p className="text-[11px] text-muted-foreground truncate">
+                            {r.subtitle ? `${r.subtitle} · ` : ""}
+                            {r.phone}
+                          </p>
                         </div>
                         {link && (
-                          <a href={link} target="_blank" rel="noreferrer" className="text-xs text-success font-semibold hover:underline">Open</a>
+                          <a
+                            href={link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs text-success font-semibold hover:underline"
+                          >
+                            Open
+                          </a>
                         )}
                       </li>
                     );
@@ -149,9 +187,19 @@ export function WhatsAppBroadcast({ label = "WhatsApp", recipients, defaultMessa
             <div className="p-4 border-t border-border flex items-center justify-between gap-3">
               <span className="text-xs text-muted-foreground">{selectedList.length} selected</span>
               <div className="flex gap-2">
-                <button onClick={() => setOpen(false)} className="px-3 py-2 text-sm border border-border rounded-md">Close</button>
-                <button onClick={openAll} disabled={selectedList.length === 0} className="px-4 py-2 text-sm font-semibold bg-success text-white rounded-md inline-flex items-center gap-1 disabled:opacity-50">
-                  <Send className="size-4" /> Open {selectedList.length} chat{selectedList.length === 1 ? "" : "s"}
+                <button
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-2 text-sm border border-border rounded-md"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={openAll}
+                  disabled={selectedList.length === 0}
+                  className="px-4 py-2 text-sm font-semibold bg-success text-white rounded-md inline-flex items-center gap-1 disabled:opacity-50"
+                >
+                  <Send className="size-4" /> Open {selectedList.length} chat
+                  {selectedList.length === 1 ? "" : "s"}
                 </button>
               </div>
             </div>

@@ -26,7 +26,13 @@ type Invite = {
 };
 
 function InvitationsPage() {
-  const { currentSchoolId: effectiveSchoolId, profile, roles, user, loading: tenantLoading } = useTenant();
+  const {
+    currentSchoolId: effectiveSchoolId,
+    profile,
+    roles,
+    user,
+    loading: tenantLoading,
+  } = useTenant();
   const isAdmin = roles.includes("admin") || roles.includes("super_admin");
   const createTeacher = useServerFn(provisionTeacher);
   const schoolDisplayName = useSchoolName();
@@ -103,7 +109,6 @@ function InvitationsPage() {
     }
   };
 
-
   const revoke = async (id: string) => {
     const { error } = await supabase
       .from("teacher_invitations")
@@ -114,8 +119,7 @@ function InvitationsPage() {
     load();
   };
 
-  const inviteLink = (token: string) =>
-    `${window.location.origin}/signup?invite=${token}`;
+  const inviteLink = (token: string) => `${window.location.origin}/signup?invite=${token}`;
 
   const copy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -125,7 +129,7 @@ function InvitationsPage() {
   const mailto = (inv: Invite) => {
     const subject = encodeURIComponent(`You're invited to join ${schoolDisplayName} as a Teacher`);
     const body = encodeURIComponent(
-      `Hi${inv.full_name ? " " + inv.full_name : ""},\n\nYou've been invited to join as a teacher at ${schoolDisplayName}.\n\nAccept your invitation and create your account here:\n${inviteLink(inv.token)}\n\nThis link expires on ${new Date(inv.expires_at).toLocaleDateString()}.\n\n— ${profile?.full_name ?? "Your school admin"}`
+      `Hi${inv.full_name ? " " + inv.full_name : ""},\n\nYou've been invited to join as a teacher at ${schoolDisplayName}.\n\nAccept your invitation and create your account here:\n${inviteLink(inv.token)}\n\nThis link expires on ${new Date(inv.expires_at).toLocaleDateString()}.\n\n— ${profile?.full_name ?? "Your school admin"}`,
     );
     window.location.href = `mailto:${inv.email}?subject=${subject}&body=${body}`;
   };
@@ -140,9 +144,12 @@ function InvitationsPage() {
   }
 
   const statusOf = (inv: Invite) => {
-    if (inv.accepted_at) return { label: "Accepted", tone: "bg-success/10 text-success", Icon: CheckCircle2 };
-    if (inv.revoked_at) return { label: "Revoked", tone: "bg-muted text-muted-foreground", Icon: X };
-    if (new Date(inv.expires_at) < new Date()) return { label: "Expired", tone: "bg-muted text-muted-foreground", Icon: Clock };
+    if (inv.accepted_at)
+      return { label: "Accepted", tone: "bg-success/10 text-success", Icon: CheckCircle2 };
+    if (inv.revoked_at)
+      return { label: "Revoked", tone: "bg-muted text-muted-foreground", Icon: X };
+    if (new Date(inv.expires_at) < new Date())
+      return { label: "Expired", tone: "bg-muted text-muted-foreground", Icon: Clock };
     return { label: "Pending", tone: "bg-warning/10 text-warning", Icon: Clock };
   };
 
@@ -151,7 +158,10 @@ function InvitationsPage() {
       <PageHeader title="Teachers" breadcrumb="Admin" />
 
       <div className="grid lg:grid-cols-[380px_1fr] gap-6">
-        <form onSubmit={invite} className="bg-card border border-border rounded-lg p-5 h-fit space-y-4">
+        <form
+          onSubmit={invite}
+          className="bg-card border border-border rounded-lg p-5 h-fit space-y-4"
+        >
           <div>
             <h2 className="text-sm font-semibold">Add teacher</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -186,7 +196,9 @@ function InvitationsPage() {
             />
           </div>
           <div>
-            <label className="text-xs font-medium">Full name {mode === "invite" && "(optional)"}</label>
+            <label className="text-xs font-medium">
+              Full name {mode === "invite" && "(optional)"}
+            </label>
             <input
               required={mode === "direct"}
               value={fullName}
@@ -236,7 +248,6 @@ function InvitationsPage() {
             <span className="text-xs text-muted-foreground">{invites.length} total</span>
           </div>
 
-
           {loading ? (
             <div className="p-8 text-sm text-muted-foreground">Loading…</div>
           ) : invites.length === 0 ? (
@@ -247,14 +258,17 @@ function InvitationsPage() {
             <ul className="divide-y divide-border">
               {invites.map((inv) => {
                 const s = statusOf(inv);
-                const isActive = !inv.accepted_at && !inv.revoked_at && new Date(inv.expires_at) >= new Date();
+                const isActive =
+                  !inv.accepted_at && !inv.revoked_at && new Date(inv.expires_at) >= new Date();
                 return (
                   <li key={inv.id} className="px-5 py-4">
                     <div className="flex items-start justify-between gap-4 flex-wrap">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="text-sm font-medium truncate">{inv.email}</p>
-                          <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${s.tone}`}>
+                          <span
+                            className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${s.tone}`}
+                          >
                             <s.Icon className="size-3" />
                             {s.label}
                           </span>
@@ -263,7 +277,8 @@ function InvitationsPage() {
                           <p className="text-xs text-muted-foreground mt-0.5">{inv.full_name}</p>
                         )}
                         <p className="text-xs text-muted-foreground mt-1">
-                          {inv.accepted_at ? "Joined" : "Expires"} {new Date(inv.accepted_at ?? inv.expires_at).toLocaleDateString()}
+                          {inv.accepted_at ? "Joined" : "Expires"}{" "}
+                          {new Date(inv.accepted_at ?? inv.expires_at).toLocaleDateString()}
                         </p>
                         {inv.temp_password && (
                           <div className="mt-2 flex items-center gap-2 text-xs bg-muted px-2 py-1.5 rounded-md">

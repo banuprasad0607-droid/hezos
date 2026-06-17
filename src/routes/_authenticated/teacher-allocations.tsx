@@ -28,7 +28,8 @@ function TeacherAllocationsPage() {
   const [academicYear, setAcademicYear] = useState("2026-2027");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isStaff = roles.includes("super_admin") || roles.includes("admin") || roles.includes("principal");
+  const isStaff =
+    roles.includes("super_admin") || roles.includes("admin") || roles.includes("principal");
 
   const loadData = async () => {
     if (!schoolId) return;
@@ -37,13 +38,15 @@ function TeacherAllocationsPage() {
       // Fetch Allocations
       const { data: allocData } = await (supabase as any)
         .from("teacher_allocations")
-        .select(`
+        .select(
+          `
           id,
           academic_year,
           profiles:teacher_id ( full_name, email ),
           subjects:subject_id ( name, code ),
           classes:class_id ( name )
-        `)
+        `,
+        )
         .eq("school_id", schoolId);
       setAllocations(allocData || []);
 
@@ -53,9 +56,9 @@ function TeacherAllocationsPage() {
         .select("user_id")
         .eq("school_id", schoolId)
         .eq("role", "teacher");
-      
+
       if (rolesData && rolesData.length > 0) {
-        const teacherIds = rolesData.map(r => r.user_id);
+        const teacherIds = rolesData.map((r) => r.user_id);
         const { data: profilesData } = await supabase
           .from("profiles")
           .select("id, full_name, email")
@@ -79,7 +82,6 @@ function TeacherAllocationsPage() {
         .is("deleted_at", null)
         .order("name");
       setClasses(classesData || []);
-
     } catch (err: any) {
       toast.error("Failed to load allocations: " + err.message);
     } finally {
@@ -105,11 +107,11 @@ function TeacherAllocationsPage() {
         teacher_id: selectedTeacherId,
         subject_id: selectedSubjectId,
         class_id: selectedClassId,
-        academic_year: academicYear
+        academic_year: academicYear,
       });
 
       if (error) throw error;
-      
+
       toast.success("Allocation created successfully");
       // Reset form slightly, maybe keep teacher selected
       setSelectedSubjectId("");
@@ -128,7 +130,7 @@ function TeacherAllocationsPage() {
       const { error } = await (supabase as any).from("teacher_allocations").delete().eq("id", id);
       if (error) throw error;
       toast.success("Allocation removed");
-      setAllocations(prev => prev.filter(a => a.id !== id));
+      setAllocations((prev) => prev.filter((a) => a.id !== id));
     } catch (err: any) {
       toast.error("Failed to delete: " + err.message);
     }
@@ -136,28 +138,18 @@ function TeacherAllocationsPage() {
 
   if (!isStaff) {
     if (tenantLoading) {
-
       return (
-
         <div className="flex-1 flex items-center justify-center p-8 bg-background min-h-screen">
-
           <div className="text-center space-y-4">
-
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto"></div>
 
             <p className="text-sm text-muted-foreground">Loading...</p>
-
           </div>
-
         </div>
-
       );
-
     }
 
-
     return (
-
       <div className="p-8 text-center text-muted-foreground">
         <Shield className="size-10 mx-auto text-rose-300 mb-2" />
         <p>You do not have permission to access Teacher Allocations.</p>
@@ -166,95 +158,96 @@ function TeacherAllocationsPage() {
   }
 
   if (tenantLoading) {
-
-
     return (
-
-
       <div className="flex-1 flex items-center justify-center p-8 bg-background min-h-screen">
-
-
         <div className="text-center space-y-4">
-
-
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto"></div>
 
-
           <p className="text-sm text-muted-foreground">Loading...</p>
-
-
         </div>
-
-
       </div>
-
-
     );
-
-
   }
 
-
-
   return (
-
-
     <>
       <PageHeader title="Teacher Subject Allocations" breadcrumb="Academics" />
 
       <div className="p-6 lg:p-8 space-y-8">
-        
         {/* Create Allocation Form */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-border dark:border-slate-800 shadow-sm">
           <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
             <Plus className="size-4" /> New Allocation
           </h3>
-          <form onSubmit={handleAllocate} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+          <form
+            onSubmit={handleAllocate}
+            className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end"
+          >
             <div>
-              <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-1">Teacher</label>
-              <select 
-                value={selectedTeacherId} 
-                onChange={(e) => setSelectedTeacherId(e.target.value)} 
+              <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-1">
+                Teacher
+              </label>
+              <select
+                value={selectedTeacherId}
+                onChange={(e) => setSelectedTeacherId(e.target.value)}
                 className="w-full bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none"
                 required
               >
                 <option value="">-- Select Teacher --</option>
-                {teachers.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)}
+                {teachers.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.full_name}
+                  </option>
+                ))}
               </select>
             </div>
-            
+
             <div>
-              <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-1">Subject</label>
-              <select 
-                value={selectedSubjectId} 
-                onChange={(e) => setSelectedSubjectId(e.target.value)} 
+              <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-1">
+                Subject
+              </label>
+              <select
+                value={selectedSubjectId}
+                onChange={(e) => setSelectedSubjectId(e.target.value)}
                 className="w-full bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none"
                 required
               >
                 <option value="">-- Select Subject --</option>
-                {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                {subjects.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-1">Class</label>
-              <select 
-                value={selectedClassId} 
-                onChange={(e) => setSelectedClassId(e.target.value)} 
+              <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-1">
+                Class
+              </label>
+              <select
+                value={selectedClassId}
+                onChange={(e) => setSelectedClassId(e.target.value)}
                 className="w-full bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none"
                 required
               >
                 <option value="">-- Select Class --</option>
-                {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {classes.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-1">Academic Year</label>
-              <input 
-                type="text" 
-                value={academicYear} 
-                onChange={(e) => setAcademicYear(e.target.value)} 
+              <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-1">
+                Academic Year
+              </label>
+              <input
+                type="text"
+                value={academicYear}
+                onChange={(e) => setAcademicYear(e.target.value)}
                 className="w-full bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none"
                 required
               />
@@ -284,9 +277,17 @@ function TeacherAllocationsPage() {
             </thead>
             <tbody className="divide-y divide-border dark:divide-slate-800">
               {isLoading ? (
-                <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">Loading allocations...</td></tr>
+                <tr>
+                  <td colSpan={5} className="p-6 text-center text-muted-foreground">
+                    Loading allocations...
+                  </td>
+                </tr>
               ) : allocations.length === 0 ? (
-                <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">No allocations found.</td></tr>
+                <tr>
+                  <td colSpan={5} className="p-6 text-center text-muted-foreground">
+                    No allocations found.
+                  </td>
+                </tr>
               ) : (
                 allocations.map((a) => (
                   <tr key={a.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
@@ -299,11 +300,9 @@ function TeacherAllocationsPage() {
                     <td className="py-3 px-6 font-bold text-slate-700 dark:text-slate-200">
                       {a.classes?.name || "Unknown Class"}
                     </td>
-                    <td className="py-3 px-6 text-slate-500">
-                      {a.academic_year}
-                    </td>
+                    <td className="py-3 px-6 text-slate-500">{a.academic_year}</td>
                     <td className="py-3 px-6 text-right">
-                      <button 
+                      <button
                         onClick={() => handleDelete(a.id)}
                         className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950 rounded-md transition-colors"
                       >
@@ -316,7 +315,6 @@ function TeacherAllocationsPage() {
             </tbody>
           </table>
         </div>
-
       </div>
     </>
   );

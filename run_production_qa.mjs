@@ -1,13 +1,13 @@
-import pg from 'pg';
+import pg from "pg";
 const { Client } = pg;
 
 const client = new Client({
-  host: 'db.crypicuosxqquudpgosi.supabase.co',
+  host: "db.crypicuosxqquudpgosi.supabase.co",
   port: 5432,
-  database: 'postgres',
-  user: 'postgres',
-  password: 'bANU@NIRO3009',
-  ssl: { rejectUnauthorized: false }
+  database: "postgres",
+  user: "postgres",
+  password: "bANU@NIRO3009",
+  ssl: { rejectUnauthorized: false },
 });
 
 // Mock Token Bucket rate limit check for programmatic validation
@@ -23,7 +23,7 @@ function checkRateLimit(key, limit, intervalMs, activeBuckets = new Map()) {
   const elapsed = now - bucket.lastRefill;
   const refillRate = limit / intervalMs;
   const tokensToAdd = elapsed * refillRate;
-  
+
   bucket.tokens = Math.min(limit, bucket.tokens + tokensToAdd);
   bucket.lastRefill = now;
 
@@ -37,13 +37,15 @@ function checkRateLimit(key, limit, intervalMs, activeBuckets = new Map()) {
 async function run() {
   console.log("Starting production hardening QA tests...");
   let exitCode = 0;
-  
+
   try {
     await client.connect();
     console.log("Connected to PostgreSQL database successfully.");
 
     // TEST 1: Check if deleted_at exists on all 8 tables
-    console.log("\n--- TEST 1: Checking if deleted_at columns exist on all 8 operational tables ---");
+    console.log(
+      "\n--- TEST 1: Checking if deleted_at columns exist on all 8 operational tables ---",
+    );
     const targetTables = [
       "students",
       "classes",
@@ -52,16 +54,19 @@ async function run() {
       "exams",
       "mark_entries",
       "attendance",
-      "remarks"
+      "remarks",
     ];
 
     for (const table of targetTables) {
-      const colCheck = await client.query(`
+      const colCheck = await client.query(
+        `
         SELECT column_name 
         FROM information_schema.columns 
         WHERE table_name = $1 AND column_name = 'deleted_at';
-      `, [table]);
-      
+      `,
+        [table],
+      );
+
       if (colCheck.rowCount > 0) {
         console.log(`[PASS] Table "${table}" contains column "deleted_at".`);
       } else {
@@ -75,36 +80,48 @@ async function run() {
     await client.query("BEGIN;"); // Run tests in a transaction to rollback and stay clean
 
     // Insert dummy student
-    const testStudentId = 'd8888888-8888-8888-8888-888888888888';
-    const schoolId = 'a0000000-a000-a000-a000-a00000000000';
-    
+    const testStudentId = "d8888888-8888-8888-8888-888888888888";
+    const schoolId = "a0000000-a000-a000-a000-a00000000000";
+
     // Insert school first to satisfy foreign key constraint
-    await client.query(`
+    await client.query(
+      `
       INSERT INTO public.schools (id, name, owner_id) 
       VALUES ($1, 'QA Test School', '00000000-0000-0000-0000-000000000001')
       ON CONFLICT (id) DO NOTHING;
-    `, [schoolId]);
+    `,
+      [schoolId],
+    );
 
     // Insert student
-    await client.query(`
+    await client.query(
+      `
       INSERT INTO public.students (id, school_id, full_name, admission_number) 
       VALUES ($1, $2, 'QA Test Student', 'QA-8888')
       ON CONFLICT (id) DO NOTHING;
-    `, [testStudentId, schoolId]);
+    `,
+      [testStudentId, schoolId],
+    );
 
     // Soft delete
-    await client.query(`
+    await client.query(
+      `
       UPDATE public.students 
       SET deleted_at = NOW() 
       WHERE id = $1;
-    `, [testStudentId]);
+    `,
+      [testStudentId],
+    );
 
     // Verify it is marked deleted
-    const checkDel = await client.query(`
+    const checkDel = await client.query(
+      `
       SELECT deleted_at 
       FROM public.students 
       WHERE id = $1;
-    `, [testStudentId]);
+    `,
+      [testStudentId],
+    );
 
     if (checkDel.rowCount > 0 && checkDel.rows[0].deleted_at !== null) {
       console.log("[PASS] Student soft delete successfully set deleted_at timestamp.");
@@ -114,18 +131,24 @@ async function run() {
     }
 
     // Restore
-    await client.query(`
+    await client.query(
+      `
       UPDATE public.students 
       SET deleted_at = NULL 
       WHERE id = $1;
-    `, [testStudentId]);
+    `,
+      [testStudentId],
+    );
 
     // Verify it is restored
-    const checkRest = await client.query(`
+    const checkRest = await client.query(
+      `
       SELECT deleted_at 
       FROM public.students 
       WHERE id = $1;
-    `, [testStudentId]);
+    `,
+      [testStudentId],
+    );
 
     if (checkRest.rowCount > 0 && checkRest.rows[0].deleted_at === null) {
       console.log("[PASS] Student successfully restored by setting deleted_at to NULL.");
@@ -141,14 +164,14 @@ async function run() {
     const activeBuckets = new Map();
     const limit = 3;
     const intervalMs = 1000;
-    
+
     // Allow up to limit
     let allAllowed = true;
     for (let i = 0; i < limit; i++) {
       const allowed = checkRateLimit("user1", limit, intervalMs, activeBuckets);
       if (!allowed) allAllowed = false;
     }
-    
+
     if (allAllowed) {
       console.log("[PASS] Rate limiter allowed initial token allocations.");
     } else {
@@ -159,17 +182,21 @@ async function run() {
     // Exhausted request
     const blocked = !checkRateLimit("user1", limit, intervalMs, activeBuckets);
     if (blocked) {
-      console.log("[PASS] Rate limiter successfully throttled subsequent requests after capacity depletion.");
+      console.log(
+        "[PASS] Rate limiter successfully throttled subsequent requests after capacity depletion.",
+      );
     } else {
       console.error("[FAIL] Rate limiter failed to throttle request after token exhaustion!");
       exitCode = 1;
     }
 
     // Refill check
-    await new Promise(resolve => setTimeout(resolve, intervalMs + 50));
+    await new Promise((resolve) => setTimeout(resolve, intervalMs + 50));
     const refilled = checkRateLimit("user1", limit, intervalMs, activeBuckets);
     if (refilled) {
-      console.log("[PASS] Rate limiter refilled tokens and allowed new requests after the refill interval.");
+      console.log(
+        "[PASS] Rate limiter refilled tokens and allowed new requests after the refill interval.",
+      );
     } else {
       console.error("[FAIL] Rate limiter did not refill tokens after time elapsed!");
       exitCode = 1;
@@ -182,7 +209,6 @@ async function run() {
       console.error("PRODUCTION QA STATUS: FAIL (Some check failures occurred)");
     }
     console.log("=================================\n");
-
   } catch (err) {
     console.error("QA script error:", err);
     exitCode = 1;

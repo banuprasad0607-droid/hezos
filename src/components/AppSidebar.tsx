@@ -86,10 +86,10 @@ export function AppSidebar() {
   const roleLabel = isSuper
     ? "Super Admin"
     : isAdmin
-    ? "School Admin"
-    : isTeacher
-    ? "Teacher"
-    : "Parent";
+      ? "School Admin"
+      : isTeacher
+        ? "Teacher"
+        : "Parent";
 
   void Globe2;
 
@@ -107,7 +107,9 @@ export function AppSidebar() {
 
   const linkCls = (active: boolean) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-      active ? "bg-brand text-white shadow-sm" : "text-sidebar-muted hover:bg-white/5 hover:text-white"
+      active
+        ? "bg-brand text-white shadow-sm"
+        : "text-sidebar-muted hover:bg-white/5 hover:text-white"
     }`;
 
   return (
@@ -115,11 +117,7 @@ export function AppSidebar() {
       {/* School Header */}
       <div className="p-6 flex items-center gap-3">
         {logoUrl ? (
-          <img
-            src={logoUrl}
-            alt="School logo"
-            className="size-8 rounded-lg object-cover"
-          />
+          <img src={logoUrl} alt="School logo" className="size-8 rounded-lg object-cover" />
         ) : (
           <div className="size-8 bg-brand rounded-lg flex items-center justify-center font-bold text-lg text-brand-foreground">
             {logoLetter}
@@ -157,7 +155,9 @@ export function AppSidebar() {
         {/* PARENT-ONLY view */}
         {isParentOnly ? (
           <>
-            <div className="text-[10px] font-bold text-sidebar-muted uppercase tracking-wider px-2 py-3">MAIN</div>
+            <div className="text-[10px] font-bold text-sidebar-muted uppercase tracking-wider px-2 py-3">
+              MAIN
+            </div>
             {parentNav.map((item) => {
               const Icon = item.icon;
               return (
@@ -173,7 +173,9 @@ export function AppSidebar() {
             {/* SUPER ADMIN without school context — platform only */}
             {isSuper && !inSchoolContext && (
               <>
-                <div className="text-[10px] font-bold text-sidebar-muted uppercase tracking-wider px-2 py-3">PLATFORM</div>
+                <div className="text-[10px] font-bold text-sidebar-muted uppercase tracking-wider px-2 py-3">
+                  PLATFORM
+                </div>
                 <Link to="/super-admin" className={linkCls(pathname === "/super-admin")}>
                   <Building2 className="size-4" />
                   Schools
@@ -184,7 +186,9 @@ export function AppSidebar() {
             {/* School-context nav (admin/teacher/super-in-school) */}
             {effectiveSchoolId && (
               <>
-                <div className="text-[10px] font-bold text-sidebar-muted uppercase tracking-wider px-2 py-3">MAIN</div>
+                <div className="text-[10px] font-bold text-sidebar-muted uppercase tracking-wider px-2 py-3">
+                  MAIN
+                </div>
                 {operationsNav.map((item) => {
                   const Icon = item.icon;
                   return (
@@ -195,7 +199,9 @@ export function AppSidebar() {
                   );
                 })}
 
-                <div className="text-[10px] font-bold text-sidebar-muted uppercase tracking-wider px-2 py-3 mt-4">MANAGEMENT</div>
+                <div className="text-[10px] font-bold text-sidebar-muted uppercase tracking-wider px-2 py-3 mt-4">
+                  MANAGEMENT
+                </div>
                 {commsNav.map((item) => {
                   const Icon = item.icon;
                   return (
@@ -209,7 +215,9 @@ export function AppSidebar() {
                 {/* Admin-only section — NOT shown to teachers */}
                 {isAdmin && (
                   <>
-                    <div className="text-[10px] font-bold text-sidebar-muted uppercase tracking-wider px-2 py-3 mt-4">SYSTEM</div>
+                    <div className="text-[10px] font-bold text-sidebar-muted uppercase tracking-wider px-2 py-3 mt-4">
+                      SYSTEM
+                    </div>
                     {adminNav.map((item) => {
                       const Icon = item.icon;
                       return (
@@ -225,7 +233,9 @@ export function AppSidebar() {
                 {/* Super admin also gets back-to-platform link while in school context */}
                 {isSuper && inSchoolContext && (
                   <>
-                    <div className="text-[10px] font-bold text-sidebar-muted uppercase tracking-wider px-2 py-3 mt-4">PLATFORM</div>
+                    <div className="text-[10px] font-bold text-sidebar-muted uppercase tracking-wider px-2 py-3 mt-4">
+                      PLATFORM
+                    </div>
                     <Link to="/super-admin" className={linkCls(pathname === "/super-admin")}>
                       <Building2 className="size-4" />
                       Schools

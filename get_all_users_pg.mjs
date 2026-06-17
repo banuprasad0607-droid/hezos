@@ -1,22 +1,24 @@
-import pg from 'pg';
+import pg from "pg";
 
 const { Client } = pg;
 
 const client = new Client({
-  host: 'db.crypicuosxqquudpgosi.supabase.co',
+  host: "db.crypicuosxqquudpgosi.supabase.co",
   port: 5432,
-  database: 'postgres',
-  user: 'postgres',
-  password: 'bANU@NIRO3009',
-  ssl: { rejectUnauthorized: false }
+  database: "postgres",
+  user: "postgres",
+  password: "bANU@NIRO3009",
+  ssl: { rejectUnauthorized: false },
 });
 
 async function run() {
   try {
     await client.connect();
-    
+
     console.log("=== SCHOOLS ===");
-    const schoolsRes = await client.query("SELECT id, name, school_name, school_code FROM public.schools");
+    const schoolsRes = await client.query(
+      "SELECT id, name, school_name, school_code FROM public.schools",
+    );
     console.table(schoolsRes.rows);
 
     console.log("\n=== USERS (PROFILES + ROLES) ===");
@@ -30,7 +32,6 @@ async function run() {
     console.log("\n=== SCHOOL CREDENTIALS ===");
     const credsRes = await client.query("SELECT * FROM public.school_credentials");
     console.table(credsRes.rows);
-
   } catch (err) {
     console.error("Error running script:", err);
   } finally {
