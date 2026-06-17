@@ -30,3 +30,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment secrets
+.env
+.env.local
+.env.*
+
+# Netlify local cache
+.netlify/
+
