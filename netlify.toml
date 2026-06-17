@@ -1,4 +1,5 @@
 [build]
+  command = "npm run build"
   publish = "dist"
 
 [[headers]]
@@ -11,4 +12,7 @@
     Content-Security-Policy = "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval' blob:; frame-ancestors 'none';"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
 
-
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
