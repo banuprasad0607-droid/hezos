@@ -33,7 +33,7 @@ function InvitationsPage() {
     user,
     loading: tenantLoading,
   } = useTenant();
-  const isAdmin = roles.includes("admin") || roles.includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin") || (roles ?? []).includes("super_admin");
   const createTeacher = useServerFn(provisionTeacher);
   const schoolDisplayName = useSchoolName();
   usePageTitle("Invite Teachers");

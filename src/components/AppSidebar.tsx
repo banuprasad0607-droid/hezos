@@ -78,10 +78,10 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const schoolDisplayName = useSchoolName();
 
-  const isSuper = roles.includes("super_admin");
-  const isAdmin = roles.includes("admin") || isSuper;
-  const isTeacher = roles.includes("teacher");
-  const isParentOnly = roles.includes("parent") && !isAdmin && !isTeacher && !isSuper;
+  const isSuper = (roles ?? []).includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin") || isSuper;
+  const isTeacher = (roles ?? []).includes("teacher");
+  const isParentOnly = (roles ?? []).includes("parent") && !isAdmin && !isTeacher && !isSuper;
 
   const roleLabel = isSuper
     ? "Super Admin"
@@ -258,8 +258,11 @@ export function AppSidebar() {
             <p className="text-xs text-sidebar-muted truncate">{roleLabel}</p>
           </div>
           <button
-            onClick={signOut}
-            className="text-sidebar-muted hover:text-sidebar-fg transition-colors"
+            onClick={(e) => {
+              e.preventDefault();
+              void signOut().then(() => navigate({ to: "/login" }));
+            }}
+            className="text-sidebar-muted hover:text-sidebar-fg transition-colors cursor-pointer"
             aria-label="Sign out"
           >
             <LogOut className="size-4" />

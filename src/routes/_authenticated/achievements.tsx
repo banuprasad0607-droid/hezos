@@ -634,10 +634,10 @@ export function AchievementsPage() {
 
   // Detect actual default simulated role
   useEffect(() => {
-    if (actualRoles.includes("super_admin")) setSimulatedRole("super_admin");
-    else if (actualRoles.includes("admin")) setSimulatedRole("admin");
-    else if (actualRoles.includes("teacher")) setSimulatedRole("teacher");
-    else if (actualRoles.includes("parent")) setSimulatedRole("parent");
+    if ((actualRoles ?? []).includes("super_admin")) setSimulatedRole("super_admin");
+    else if ((actualRoles ?? []).includes("admin")) setSimulatedRole("admin");
+    else if ((actualRoles ?? []).includes("teacher")) setSimulatedRole("teacher");
+    else if ((actualRoles ?? []).includes("parent")) setSimulatedRole("parent");
     else setSimulatedRole("student");
   }, [actualRoles]);
 
@@ -1509,7 +1509,9 @@ export function AchievementsPage() {
       result = result.filter((s) => s.class_id === selectedClass);
     }
     if (searchQuery) {
-      result = result.filter((s) => s.full_name.toLowerCase().includes(searchQuery.toLowerCase()));
+      result = result.filter((s) =>
+        s.full_name?.toLowerCase()?.includes(searchQuery.toLowerCase()),
+      );
     }
     return result;
   }, [students, selectedClass, searchQuery]);
@@ -1542,8 +1544,8 @@ export function AchievementsPage() {
     if (searchQuery) {
       result = result.filter(
         (a) =>
-          a.student?.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          a.title.toLowerCase().includes(searchQuery.toLowerCase()),
+          a.student?.full_name?.toLowerCase()?.includes(searchQuery.toLowerCase()) ||
+          a.title?.toLowerCase()?.includes(searchQuery.toLowerCase()),
       );
     }
     return result;
@@ -1755,7 +1757,7 @@ export function AchievementsPage() {
       });
       await Promise.all(insRankPromises);
 
-      const isCategoryEnabled = (cat: string) => enabledCategories.includes(cat);
+      const isCategoryEnabled = (cat: string) => (enabledCategories ?? []).includes(cat);
 
       // Clear previous awards in these categories to prevent duplicates
       await supabase
@@ -1902,7 +1904,7 @@ export function AchievementsPage() {
 
       if (isCategoryEnabled("discipline_award")) {
         const disciplineWinner =
-          studentTotals.find((s) => s.fullName.toLowerCase().includes("rohan")) ||
+          studentTotals.find((s) => s.fullName?.toLowerCase()?.includes("rohan")) ||
           studentTotals[studentTotals.length - 1];
         if (disciplineWinner) {
           const { data: discAwardIns } = await supabase
@@ -3729,11 +3731,11 @@ export function AchievementsPage() {
                                       const studObj = students.find((s) => s.id === aw.student_id);
                                       setSelectedStudentForPoster(studObj);
                                       setPosterTheme(
-                                        aw.category.includes("1")
+                                        aw.category?.includes("1")
                                           ? "gold"
-                                          : aw.category.includes("2")
+                                          : aw.category?.includes("2")
                                             ? "silver"
-                                            : aw.category.includes("3")
+                                            : aw.category?.includes("3")
                                               ? "bronze"
                                               : "royal",
                                       );
@@ -4177,11 +4179,11 @@ export function AchievementsPage() {
                                 const studObj = students.find((s) => s.id === aw.student_id);
                                 setSelectedStudentForPoster(studObj);
                                 setPosterTheme(
-                                  aw.category.includes("1")
+                                  aw.category?.includes("1")
                                     ? "gold"
-                                    : aw.category.includes("2")
+                                    : aw.category?.includes("2")
                                       ? "silver"
-                                      : aw.category.includes("3")
+                                      : aw.category?.includes("3")
                                         ? "bronze"
                                         : "royal",
                                 );
@@ -5224,7 +5226,9 @@ export function AchievementsPage() {
                           {students
                             .filter((s) => s.class_id === selectedReportCardClass)
                             .map((student) => {
-                              const isSelected = promotionSelectedStudents.includes(student.id);
+                              const isSelected = (promotionSelectedStudents ?? []).includes(
+                                student.id,
+                              );
                               const rc = reportCards.find(
                                 (r) =>
                                   r.student_id === student.id &&
@@ -5316,7 +5320,7 @@ export function AchievementsPage() {
                         (s) =>
                           s.id === user?.id ||
                           s.roll_number?.includes("101") ||
-                          s.full_name?.toLowerCase().includes("arav"),
+                          s.full_name?.toLowerCase()?.includes("arav"),
                       );
                     } else if (selectedReportCardClass) {
                       displayStudents = students.filter(
@@ -5940,7 +5944,7 @@ export function AchievementsPage() {
                           >
                             <input
                               type="checkbox"
-                              checked={enabledCategories.includes(cat.key)}
+                              checked={(enabledCategories ?? []).includes(cat.key)}
                               onChange={(e) => {
                                 if (e.target.checked) {
                                   setEnabledCategories((prev) => [...prev, cat.key]);

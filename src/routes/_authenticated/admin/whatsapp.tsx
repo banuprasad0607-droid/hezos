@@ -564,7 +564,7 @@ function WhatsAppManagementPage() {
   const filteredConversations = useMemo(() => {
     return conversations.filter((c) => {
       const matchesSearch =
-        c.parent_phone.includes(searchQuery) ||
+        c.parent_phone?.includes(searchQuery) ||
         (c.parent_name || "").toLowerCase().includes(searchQuery.toLowerCase());
       if (!matchesSearch) return false;
 

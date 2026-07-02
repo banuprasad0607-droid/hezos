@@ -51,7 +51,7 @@ type Tab = "overview" | "salaries" | "runs";
 
 function PayrollPage() {
   const { currentSchoolId: effectiveSchoolId, user, roles, loading: tenantLoading } = useTenant();
-  const isAdmin = roles.includes("admin") || roles.includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin") || (roles ?? []).includes("super_admin");
   usePageTitle("Payroll");
   const [tab, setTab] = useState<Tab>("overview");
   const [teachers, setTeachers] = useState<Teacher[]>([]);

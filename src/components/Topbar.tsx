@@ -20,7 +20,7 @@ export function Topbar() {
   const { activeSchool, exitSchool } = useSchoolContext();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
-  const isSuper = roles.includes("super_admin");
+  const isSuper = (roles ?? []).includes("super_admin");
   const inSchoolContext = isSuper && activeSchool !== null;
 
   return (

@@ -312,6 +312,7 @@ export const resetAdminPassword = createServerFn({ method: "POST" })
   });
 
 const ProvisionStudentInput = z.object({
+  school_id: z.string().uuid().optional(),
   student: z.object({
     full_name: z.string().min(1).max(120),
     admission_number: z.string().max(40).nullable().optional(),
@@ -334,28 +335,38 @@ export const provisionStudent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => ProvisionStudentInput.parse(data))
   .handler(async ({ data, context }) => {
+    console.log(
+      "Nitro SUPABASE_SERVICE_ROLE_KEY inside handler:",
+      process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 15),
+    );
     const ip = getClientIp();
     enforceRateLimit(`student:ip:${ip}`, 20, 60 * 1000);
     enforceRateLimit(`student:user:${context.userId}`, 20, 60 * 1000);
 
-    // Caller must be staff (admin or teacher) in a school
-    const { data: prof } = await context.supabase
-      .from("profiles")
-      .select("school_id")
-      .eq("user_id", context.userId)
-      .maybeSingle();
-    const schoolId = prof?.school_id;
-    if (!schoolId) throw new Error("You are not assigned to a school");
-
     const { data: roles } = await context.supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", context.userId)
-      .eq("school_id", schoolId);
-    const isStaff = (roles ?? []).some(
-      (r: { role: string }) => r.role === "admin" || r.role === "teacher",
-    );
-    if (!isStaff) throw new Error("Only school staff can add students");
+      .eq("user_id", context.userId);
+    const isSuperAdmin = (roles ?? []).some((r: { role: string }) => r.role === "super_admin");
+
+    let schoolId = data.school_id;
+
+    if (isSuperAdmin) {
+      if (!schoolId) throw new Error("Super admins must specify a school_id");
+    } else {
+      const { data: prof } = await context.supabase
+        .from("profiles")
+        .select("school_id")
+        .eq("user_id", context.userId)
+        .maybeSingle();
+      schoolId = prof?.school_id;
+      if (!schoolId) throw new Error("You are not assigned to a school");
+
+      const isStaff = (roles ?? []).some(
+        (r: { role: string }) => r.role === "admin" || r.role === "teacher",
+      );
+      if (!isStaff) throw new Error("Only school staff can add students");
+    }
 
     // Provision parent auth user if email + password supplied
     let parentUserId: string | null = null;

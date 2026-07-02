@@ -219,7 +219,7 @@ const currentAcademicYear = (() => {
 function IdCardManagementPage() {
   const { currentSchoolId: schoolId, user, roles, loading: tenantLoading } = useTenant();
 
-  const isAdmin = roles.includes("admin") || roles.includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin") || (roles ?? []).includes("super_admin");
   usePageTitle("ID Cards");
 
   const [activeTab, setActiveTab] = useState<TabType>("overview");
@@ -369,7 +369,7 @@ function IdCardManagementPage() {
         .map((r) => r.user_id);
 
       const normStaff = (staffRes.data || [])
-        .filter((p: any) => staffIds.includes(p.user_id))
+        .filter((p: any) => (staffIds ?? []).includes(p.user_id))
         .map((p: any) => ({
           user_id: p.user_id,
           full_name: p.full_name || "—",
@@ -730,8 +730,8 @@ function IdCardManagementPage() {
   const downloadBulkPDF = async (type: "student" | "staff", mode: PdfExportMode) => {
     const list =
       type === "student"
-        ? students.filter((s) => selectedStudentIds.includes(s.id))
-        : staff.filter((t) => selectedStaffIds.includes(t.user_id));
+        ? students.filter((s) => (selectedStudentIds ?? []).includes(s.id))
+        : staff.filter((t) => (selectedStaffIds ?? []).includes(t.user_id));
 
     if (list.length === 0) {
       toast.error("Please select at least one record to generate.");
@@ -865,7 +865,7 @@ function IdCardManagementPage() {
   const filteredStudents = students.filter((s) => {
     const term = studentSearch.toLowerCase();
     const matchesSearch =
-      s.full_name.toLowerCase().includes(term) ||
+      s.full_name?.toLowerCase()?.includes(term) ||
       (s.admission_number || "").toLowerCase().includes(term) ||
       (s.roll_number || "").toLowerCase().includes(term);
 
@@ -882,7 +882,7 @@ function IdCardManagementPage() {
   const filteredStaff = staff.filter((t) => {
     const term = staffSearch.toLowerCase();
     const matchesSearch =
-      t.full_name.toLowerCase().includes(term) ||
+      t.full_name?.toLowerCase()?.includes(term) ||
       (t.employee_id || "").toLowerCase().includes(term);
     const matchesDept = staffDeptFilter === "all" || t.department === staffDeptFilter;
     return matchesSearch && matchesDept;
@@ -1189,7 +1189,9 @@ function IdCardManagementPage() {
                     </div>
                     <button
                       onClick={() => {
-                        const list = students.filter((s) => selectedStudentIds.includes(s.id));
+                        const list = students.filter((s) =>
+                          (selectedStudentIds ?? []).includes(s.id),
+                        );
                         handlePrint("student", list, "a4");
                       }}
                       className="px-3 py-1.5 text-xs bg-secondary border border-border rounded-md inline-flex items-center gap-1 text-foreground font-semibold"
@@ -1255,7 +1257,7 @@ function IdCardManagementPage() {
                         <td className="px-6 py-3">
                           <input
                             type="checkbox"
-                            checked={selectedStudentIds.includes(s.id)}
+                            checked={(selectedStudentIds ?? []).includes(s.id)}
                             onChange={(e) => {
                               if (e.target.checked) {
                                 setSelectedStudentIds([...selectedStudentIds, s.id]);
@@ -1399,7 +1401,9 @@ function IdCardManagementPage() {
                     </div>
                     <button
                       onClick={() => {
-                        const list = staff.filter((t) => selectedStaffIds.includes(t.user_id));
+                        const list = staff.filter((t) =>
+                          (selectedStaffIds ?? []).includes(t.user_id),
+                        );
                         handlePrint("staff", list, "a4");
                       }}
                       className="px-3 py-1.5 text-xs bg-secondary border border-border rounded-md inline-flex items-center gap-1 text-foreground font-semibold"
@@ -1450,7 +1454,7 @@ function IdCardManagementPage() {
                         <td className="px-6 py-3">
                           <input
                             type="checkbox"
-                            checked={selectedStaffIds.includes(t.user_id)}
+                            checked={(selectedStaffIds ?? []).includes(t.user_id)}
                             onChange={(e) => {
                               if (e.target.checked) {
                                 setSelectedStaffIds([...selectedStaffIds, t.user_id]);
@@ -2043,7 +2047,7 @@ function IdCardManagementPage() {
               </div>
             )}
             {students
-              .filter((s) => selectedStudentIds.includes(s.id))
+              .filter((s) => (selectedStudentIds ?? []).includes(s.id))
               .map((s) => (
                 <div key={`bulk-student-${s.id}`} className="flex gap-4">
                   <div
@@ -2083,7 +2087,7 @@ function IdCardManagementPage() {
                 </div>
               ))}
             {staff
-              .filter((t) => selectedStaffIds.includes(t.user_id))
+              .filter((t) => (selectedStaffIds ?? []).includes(t.user_id))
               .map((t) => (
                 <div key={`bulk-staff-${t.user_id}`} className="flex gap-4">
                   <div
@@ -2750,7 +2754,12 @@ export function IDCardComponent({
 
   // Logo rendering (increased by 50%: size-12 instead of size-8)
   const schoolLogoNode = school?.logo_url ? (
-    <img src={school.logo_url} alt="" className="size-12 object-contain bg-white rounded p-0.5" />
+    <img
+      src={school.logo_url}
+      alt=""
+      className="size-12 object-contain bg-white rounded p-0.5"
+      crossOrigin="anonymous"
+    />
   ) : (
     <SchoolCrestPlaceholder
       className={`size-12 ${theme === "premium-corporate" || theme === "gold-premium" ? "text-teal-400" : "text-amber-400"}`}
@@ -2814,9 +2823,19 @@ export function IDCardComponent({
               className={`w-[110px] h-[142px] rounded border bg-white overflow-hidden shadow-sm flex items-center justify-center flex-shrink-0 relative ${accentBorder}`}
             >
               {rec.photo_url ? (
-                <img src={rec.photo_url} alt="" className="size-full object-cover" />
+                <img
+                  src={rec.photo_url}
+                  alt=""
+                  className="size-full object-cover"
+                  crossOrigin="anonymous"
+                />
               ) : (
-                <User className="size-16 text-slate-300" />
+                <img
+                  src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjY2JkNWUxIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTIwIDIxdi0yYTQgNCAwIDAgMC00LTRIOGE0IDQgMCAwIDAtNCA0djIiPjwvcGF0aD48Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiPjwvY2lyY2xlPjwvc3ZnPg=="
+                  alt=""
+                  style={{ width: "64px", height: "64px" }}
+                  className="w-16 h-16 object-contain opacity-60"
+                />
               )}
             </div>
 
@@ -2905,7 +2924,12 @@ export function IDCardComponent({
               <Barcode value={identifier} />
               {signature && !isVisitor && (
                 <div className="h-3.5 mt-0.5 flex items-end opacity-75 grayscale">
-                  <img src={signature} alt="Sig" className="h-full object-contain" />
+                  <img
+                    src={signature}
+                    alt="Sig"
+                    className="h-full object-contain"
+                    crossOrigin="anonymous"
+                  />
                 </div>
               )}
             </div>
@@ -3143,9 +3167,19 @@ export function IDCardComponent({
                 className={`w-[72px] h-[92px] rounded border bg-white overflow-hidden shadow-sm flex items-center justify-center flex-shrink-0 relative ${accentBorder}`}
               >
                 {rec.photo_url ? (
-                  <img src={rec.photo_url} alt="" className="size-full object-cover" />
+                  <img
+                    src={rec.photo_url}
+                    alt=""
+                    className="size-full object-cover"
+                    crossOrigin="anonymous"
+                  />
                 ) : (
-                  <User className="size-12 text-slate-300" />
+                  <img
+                    src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNjYmQ1ZTEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjAgMjF2LTJhNCA0IDAgMCAwLTQtNEg4YTQgNCAwIDAgMC00IDR2MiI+PC9wYXRoPjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCI+PC9jaXJjbGU+PC9zdmc+"
+                    alt=""
+                    style={{ width: "48px", height: "48px" }}
+                    className="w-12 h-12 object-contain opacity-60"
+                  />
                 )}
               </div>
 
@@ -3164,7 +3198,12 @@ export function IDCardComponent({
 
               {signature && !isVisitor && (
                 <div className="h-3.5 flex items-end opacity-75 grayscale mt-1">
-                  <img src={signature} alt="Sig" className="h-full object-contain" />
+                  <img
+                    src={signature}
+                    alt="Sig"
+                    className="h-full object-contain"
+                    crossOrigin="anonymous"
+                  />
                 </div>
               )}
 

@@ -65,7 +65,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
       // 3. Determine the current school ID
       // If super admin has selected an active school in context, use that.
       // Otherwise, use the school_id from the user's profile.
-      const isSuperAdmin = roleList.includes("super_admin");
+      const isSuperAdmin = (roleList ?? []).includes("super_admin");
       const resolvedSchoolId =
         isSuperAdmin && activeSchool?.id ? activeSchool.id : profileData?.school_id || null;
 

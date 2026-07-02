@@ -31,8 +31,10 @@ interface LeaveRow {
 function LeavesPage() {
   const { currentSchoolId: effectiveSchoolId, user, roles, loading: tenantLoading } = useTenant();
   const isStaff =
-    roles.includes("admin") || roles.includes("teacher") || roles.includes("super_admin");
-  const isParent = roles.includes("parent") && !isStaff;
+    (roles ?? []).includes("admin") ||
+    (roles ?? []).includes("teacher") ||
+    (roles ?? []).includes("super_admin");
+  const isParent = (roles ?? []).includes("parent") && !isStaff;
   usePageTitle("Leave Requests");
 
   const [children, setChildren] = useState<Child[]>([]);

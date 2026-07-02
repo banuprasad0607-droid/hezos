@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
+import { useTenant } from "@/lib/tenant-context";
 import { GraduationCap, CalendarCheck, BookOpen, MessageSquare, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -18,14 +19,16 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
-  const { session, loading, schoolId, roles } = useAuth();
+  const { session, loading: authLoading } = useAuth();
+  const { roles, currentSchoolId: schoolId, loading: tenantLoading } = useTenant();
   const navigate = useNavigate();
+  const loading = authLoading || tenantLoading;
 
   useEffect(() => {
     if (loading) return;
     if (!session) return;
-    if (roles.includes("super_admin") && !schoolId) navigate({ to: "/super-admin" });
-    else if (!schoolId && !roles.includes("parent")) navigate({ to: "/onboarding" });
+    if ((roles ?? []).includes("super_admin") && !schoolId) navigate({ to: "/super-admin" });
+    else if (!schoolId && !(roles ?? []).includes("parent")) navigate({ to: "/onboarding" });
     else navigate({ to: "/dashboard" });
   }, [session, loading, schoolId, roles, navigate]);
 

@@ -22,7 +22,9 @@ function ReportCardsPage() {
   usePageTitle("Report Cards");
 
   const isStaff =
-    roles.includes("super_admin") || roles.includes("admin") || roles.includes("principal");
+    (roles ?? []).includes("super_admin") ||
+    (roles ?? []).includes("admin") ||
+    (roles ?? []).includes("principal");
 
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);

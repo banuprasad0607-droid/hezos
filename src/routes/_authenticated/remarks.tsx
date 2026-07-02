@@ -38,9 +38,9 @@ interface Remark {
 
 function RemarksPage() {
   const { currentSchoolId: effectiveSchoolId, user, roles, loading: tenantLoading } = useTenant();
-  const isSuper = roles.includes("super_admin");
-  const isAdmin = roles.includes("admin") || isSuper;
-  const isTeacher = roles.includes("teacher");
+  const isSuper = (roles ?? []).includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin") || isSuper;
+  const isTeacher = (roles ?? []).includes("teacher");
   const canManage = isAdmin || isTeacher;
 
   usePageTitle("Student Remarks");

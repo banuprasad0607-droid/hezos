@@ -52,7 +52,7 @@ function ForgotPasswordPage() {
     } catch (err: any) {
       setLoading(false);
       let msg = err.message || "Failed to send reset link.";
-      if (msg.includes("429") || msg.toLowerCase().includes("too many requests")) {
+      if ((msg ?? "").includes("429") || (msg ?? "").toLowerCase().includes("too many requests")) {
         msg = "Too many password reset requests. Please slow down and try again later.";
       }
       toast.error(msg);

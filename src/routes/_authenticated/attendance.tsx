@@ -49,7 +49,7 @@ interface Student {
 
 function AttendancePage() {
   const { currentSchoolId: effectiveSchoolId, user, roles, loading: tenantLoading } = useTenant();
-  const isAdmin = roles.includes("admin") || roles.includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin") || (roles ?? []).includes("super_admin");
   usePageTitle("Attendance");
 
   // Tabs: daily | student-matrix | teacher-daily | teacher-matrix

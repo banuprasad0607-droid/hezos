@@ -58,7 +58,7 @@ function AdminPanel() {
   const { refresh } = useAuth();
   usePageTitle("Admin Panel");
   const navigate = useNavigate();
-  const isAdmin = roles.includes("admin") || roles.includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin") || (roles ?? []).includes("super_admin");
 
   const [schoolName, setSchoolName] = useState("");
   const [savingSchool, setSavingSchool] = useState(false);
@@ -141,11 +141,11 @@ function AdminPanel() {
         email: p.email,
         roles: rolesByUser.get(p.user_id) ?? [],
       }))
-      .filter((s) => s.roles.includes("admin") || s.roles.includes("teacher"))
+      .filter((s) => (s.roles ?? []).includes("admin") || (s.roles ?? []).includes("teacher"))
       .sort((a, b) => a.full_name.localeCompare(b.full_name));
 
     setStaff(list);
-    const teacherCount = list.filter((s) => s.roles.includes("teacher")).length;
+    const teacherCount = list.filter((s) => (s.roles ?? []).includes("teacher")).length;
     setCounts({
       students: students.count ?? 0,
       teachers: teacherCount,
@@ -489,7 +489,7 @@ function AdminPanel() {
               <ul className="divide-y divide-border">
                 {staff.map((s) => {
                   const isMe = s.user_id === user?.id;
-                  const isAdminRole = s.roles.includes("admin");
+                  const isAdminRole = (s.roles ?? []).includes("admin");
                   return (
                     <li
                       key={s.user_id}

@@ -1,15 +1,6 @@
-import pg from "pg";
+import { getDbClient } from "./db_helper.mjs";
 
-const { Client } = pg;
-
-const client = new Client({
-  host: "db.crypicuosxqquudpgosi.supabase.co",
-  port: 5432,
-  database: "postgres",
-  user: "postgres",
-  password: "bANU@NIRO3009",
-  ssl: { rejectUnauthorized: false },
-});
+const client = getDbClient();
 
 async function run() {
   try {

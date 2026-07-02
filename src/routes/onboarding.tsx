@@ -16,7 +16,7 @@ function PendingAssignmentPage() {
   useEffect(() => {
     if (loading) return;
     if (!user) navigate({ to: "/login" });
-    else if (roles.includes("super_admin")) navigate({ to: "/super-admin" });
+    else if ((roles ?? []).includes("super_admin")) navigate({ to: "/super-admin" });
     else if (schoolId) navigate({ to: "/dashboard" });
   }, [user, loading, schoolId, roles, navigate]);
 

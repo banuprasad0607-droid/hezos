@@ -19,6 +19,11 @@ function createSupabaseAdminClient() {
     throw new Error(message);
   }
 
+  console.log(
+    "[Supabase] createSupabaseAdminClient using key starting with:",
+    SUPABASE_SERVICE_ROLE_KEY.substring(0, 15),
+  );
+
   return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: {
       storage: undefined,

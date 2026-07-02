@@ -6,8 +6,8 @@ import { AlertCircle, Clock } from "lucide-react";
 
 export function SubscriptionBanner() {
   const { currentSchoolId: schoolId, roles } = useTenant();
-  const isAdmin = roles.includes("admin");
-  const isSuper = roles.includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin");
+  const isSuper = (roles ?? []).includes("super_admin");
   const [sub, setSub] = useState<{ status: string; trial_end: string | null } | null>(null);
 
   useEffect(() => {

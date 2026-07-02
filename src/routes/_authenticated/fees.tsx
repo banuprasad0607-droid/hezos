@@ -79,7 +79,7 @@ function FeesPage() {
     user,
     loading: tenantLoading,
   } = useTenant();
-  const isAdmin = roles.includes("admin") || roles.includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin") || (roles ?? []).includes("super_admin");
   usePageTitle("Fees");
   const displaySchoolName = currentSchool?.name ?? "School";
   const [tab, setTab] = useState<Tab>("overview");

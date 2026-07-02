@@ -45,12 +45,12 @@ function SignupPage() {
       });
       setLoading(false);
       if (error) {
-        if (error.status === 429 || error.message.toLowerCase().includes("rate limit")) {
+        if (error.status === 429 || error.message?.toLowerCase()?.includes("rate limit")) {
           return toast.error("Too many signup requests. Please wait a minute and try again.");
         }
         if (
-          error.message.toLowerCase().includes("already registered") ||
-          error.message.toLowerCase().includes("exists")
+          error.message?.toLowerCase()?.includes("already registered") ||
+          error.message?.toLowerCase()?.includes("exists")
         ) {
           return toast.error("An account with this email already exists. Please sign in instead.");
         }

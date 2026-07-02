@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { provisionSchool } from "@/lib/platform.functions";
 import { useAuth } from "@/lib/auth";
+import { useTenant } from "@/lib/tenant-context";
 import { useSchoolContext } from "@/lib/school-context";
 import { PageHeader } from "@/components/PageHeader";
 import { toast } from "sonner";
@@ -60,10 +61,10 @@ type Sub = {
 };
 
 function SuperAdminPage() {
-  const { roles } = useAuth();
+  const { roles } = useTenant();
   const { enterSchool } = useSchoolContext();
   const navigate = useNavigate();
-  const isSuper = roles.includes("super_admin");
+  const isSuper = (roles ?? []).includes("super_admin");
   const [schools, setSchools] = useState<SchoolRow[]>([]);
   const [subs, setSubs] = useState<Sub[]>([]);
   const [counts, setCounts] = useState({

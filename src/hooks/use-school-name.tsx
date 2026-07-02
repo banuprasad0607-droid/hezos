@@ -12,7 +12,7 @@ import { useTenant } from "@/lib/tenant-context";
 export function useSchoolName(): string {
   const { roles, currentSchool } = useTenant();
 
-  const isSuper = roles.includes("super_admin");
+  const isSuper = (roles ?? []).includes("super_admin");
 
   if (isSuper) {
     // Super admin entered a school context

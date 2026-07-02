@@ -1,14 +1,6 @@
-import pg from "pg";
-const { Client } = pg;
+import { getDbClient } from "./db_helper.mjs";
 
-const client = new Client({
-  host: "db.crypicuosxqquudpgosi.supabase.co",
-  port: 5432,
-  database: "postgres",
-  user: "postgres",
-  password: "bANU@NIRO3009",
-  ssl: { rejectUnauthorized: false },
-});
+const client = getDbClient();
 
 // Mock Token Bucket rate limit check for programmatic validation
 function checkRateLimit(key, limit, intervalMs, activeBuckets = new Map()) {

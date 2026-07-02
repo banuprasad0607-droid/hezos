@@ -78,8 +78,8 @@ function StudentsPage() {
   const { currentSchoolId: effectiveSchoolId, roles, loading: tenantLoading } = useTenant();
   const schoolId = effectiveSchoolId;
 
-  const isSuper = roles.includes("super_admin");
-  const isAdmin = roles.includes("admin") || isSuper;
+  const isSuper = (roles ?? []).includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin") || isSuper;
 
   usePageTitle("Students & Parents");
   const [classes, setClasses] = useState<Klass[]>([]);
@@ -451,6 +451,7 @@ function StudentsPage() {
 
       const res = await provisionStudentFn({
         data: {
+          school_id: effectiveSchoolId,
           student: {
             full_name: fullName,
             admission_number: admissionNumber || null,

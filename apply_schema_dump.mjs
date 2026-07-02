@@ -123,7 +123,7 @@ async function run() {
     console.log(`🚀 Found ${statements.length} SQL statements to execute.`);
 
     let count = 0;
-    
+
     for (let i = 0; i < statements.length; i++) {
       const stmt = statements[i];
       try {
@@ -141,7 +141,9 @@ async function run() {
       }
     }
 
-    console.log(`✅ Schema dump applied successfully. Executed ${count} of ${statements.length} statements.`);
+    console.log(
+      `✅ Schema dump applied successfully. Executed ${count} of ${statements.length} statements.`,
+    );
   } catch (err) {
     console.error("❌ Schema import failed:", err);
   } finally {

@@ -23,8 +23,8 @@ interface ClassRow {
 
 function ClassesPage() {
   const { currentSchoolId: effectiveSchoolId, roles, loading: tenantLoading } = useTenant();
-  const isSuper = roles.includes("super_admin");
-  const isAdmin = roles.includes("admin") || isSuper;
+  const isSuper = (roles ?? []).includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin") || isSuper;
 
   usePageTitle("Classes");
   const [classes, setClasses] = useState<ClassRow[]>([]);

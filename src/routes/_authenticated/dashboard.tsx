@@ -40,7 +40,9 @@ function DashboardPage() {
   const [remarks, setRemarks] = useState<Remark[]>([]);
 
   const isParent =
-    roles.includes("parent") && !roles.includes("admin") && !roles.includes("teacher");
+    (roles ?? []).includes("parent") &&
+    !(roles ?? []).includes("admin") &&
+    !(roles ?? []).includes("teacher");
 
   useEffect(() => {
     if (!effectiveSchoolId || isParent) return;
@@ -172,7 +174,7 @@ function DashboardPage() {
     );
   }
 
-  const isSuperAdmin = roles.includes("super_admin");
+  const isSuperAdmin = (roles ?? []).includes("super_admin");
   if (!effectiveSchoolId && !isParent && !isSuperAdmin) {
     return (
       <div className="flex-1 flex items-center justify-center p-8 bg-[#F9FAFB] min-h-screen">
@@ -206,8 +208,8 @@ function DashboardPage() {
             Welcome back, {profile?.full_name?.split(" ")[0] || "Admin"}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {roles.includes("admin") ? "Admin Dashboard" : "Teacher Dashboard"} • School Management
-            & Academics
+            {(roles ?? []).includes("admin") ? "Admin Dashboard" : "Teacher Dashboard"} • School
+            Management & Academics
           </p>
         </div>
         <Link

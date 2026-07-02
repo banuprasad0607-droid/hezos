@@ -3,9 +3,9 @@ import fs from "fs";
 import path from "path";
 
 const ARTIFACT_DIR =
-  "C:\\Users\\banup\\.gemini\\antigravity\\brain\\06b37cee-8ad9-40c9-8b2f-9b34e6208fef";
-const email = "qa_admin_1781532222398@gmail.com";
-const password = "Pass_1781532222398!";
+  "C:\\Users\\banup\\.gemini\\antigravity\\brain\\96252ed7-3a82-4872-ab23-e2a6321eb349";
+const email = "qa_admin_1782655526977@gmail.com";
+const password = "Pass_1782655526977!";
 
 const ROUTES = [
   { name: "01_Dashboard", path: "/dashboard" },

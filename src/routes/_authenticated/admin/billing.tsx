@@ -46,7 +46,7 @@ type SubData = {
 
 function BillingPage() {
   const { currentSchoolId: schoolId, roles, loading: tenantLoading } = useTenant();
-  const isAdmin = roles.includes("admin") || roles.includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin") || (roles ?? []).includes("super_admin");
   usePageTitle("Billing & Subscription");
 
   const [loading, setLoading] = useState(true);

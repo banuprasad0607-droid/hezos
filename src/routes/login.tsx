@@ -91,7 +91,7 @@ function LoginPage() {
     } catch (err: any) {
       setLoading(false);
       let msg = err.message || "Could not sign in";
-      if (msg.includes("429") || msg.toLowerCase().includes("too many requests")) {
+      if ((msg ?? "").includes("429") || (msg ?? "").toLowerCase().includes("too many requests")) {
         msg = "Too many login attempts. Please slow down and try again later.";
       }
       toast.error(msg);

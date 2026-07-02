@@ -32,8 +32,8 @@ type TrashItem = {
 
 function RecycleBinPage() {
   const { currentSchoolId: effectiveSchoolId, roles, loading: tenantLoading } = useTenant();
-  const isSuper = roles.includes("super_admin");
-  const isAdmin = roles.includes("admin") || isSuper;
+  const isSuper = (roles ?? []).includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin") || isSuper;
 
   usePageTitle("Recycle Bin");
   const [items, setItems] = useState<TrashItem[]>([]);

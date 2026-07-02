@@ -39,3 +39,9 @@ dist-ssr
 # Netlify local cache
 .netlify/
 
+# Temporary scratch scripts
+scratch/
+
+# Vercel output and local configurations
+.vercel/
+

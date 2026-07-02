@@ -29,7 +29,9 @@ export function getDbClient() {
     throw new Error("Missing VITE_SUPABASE_PROJECT_ID in .env file.");
   }
   if (!password || password.startsWith("[YOUR_DATABASE")) {
-    throw new Error("Missing or placeholder SUPABASE_DB_PASSWORD in .env file. Please set your actual database password.");
+    throw new Error(
+      "Missing or placeholder SUPABASE_DB_PASSWORD in .env file. Please set your actual database password.",
+    );
   }
 
   const { Client } = pg;

@@ -29,7 +29,9 @@ function TeacherAllocationsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isStaff =
-    roles.includes("super_admin") || roles.includes("admin") || roles.includes("principal");
+    (roles ?? []).includes("super_admin") ||
+    (roles ?? []).includes("admin") ||
+    (roles ?? []).includes("principal");
 
   const loadData = async () => {
     if (!schoolId) return;

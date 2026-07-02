@@ -76,9 +76,9 @@ function MarksManagementPage() {
   usePageTitle("Marks Management");
 
   // Determine roles
-  const isSuperAdmin = roles.includes("super_admin");
-  const isAdmin = roles.includes("admin");
-  const isPrincipal = roles.includes("principal");
+  const isSuperAdmin = (roles ?? []).includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin");
+  const isPrincipal = (roles ?? []).includes("principal");
   const isStaff = isSuperAdmin || isAdmin || isPrincipal;
 
   // Core Data State
@@ -198,7 +198,7 @@ function MarksManagementPage() {
       list = list.filter(
         (c) =>
           c.section?.toLowerCase() === selectedSection.toLowerCase() ||
-          c.name.toLowerCase().includes(selectedSection.toLowerCase()),
+          c.name?.toLowerCase()?.includes(selectedSection.toLowerCase()),
       );
     }
 
@@ -206,7 +206,7 @@ function MarksManagementPage() {
       // Teacher can only see allocated classes OR classes they are the Class Teacher for
       const allocatedClassIds = teacherAllocations.map((sa) => sa.class_id);
       list = list.filter(
-        (c) => allocatedClassIds.includes(c.id) || c.class_teacher_id === user?.id,
+        (c) => (allocatedClassIds ?? []).includes(c.id) || c.class_teacher_id === user?.id,
       );
     }
     return list;
@@ -253,7 +253,7 @@ function MarksManagementPage() {
         const allocatedSubjectIds = teacherAllocations
           .filter((ta) => ta.class_id === selectedClassId)
           .map((ta) => ta.subject_id);
-        list = list.filter((s) => allocatedSubjectIds.includes(s.id));
+        list = list.filter((s) => (allocatedSubjectIds ?? []).includes(s.id));
       }
     }
     return list;
@@ -859,11 +859,11 @@ function MarksManagementPage() {
                           <td className="py-3 px-4 text-center">
                             <span
                               className={`inline-block px-2.5 py-0.5 rounded font-black text-[10px] ${
-                                studentMark.grade.includes("F")
+                                studentMark.grade?.includes("F")
                                   ? "bg-rose-50 text-rose-700 dark:bg-rose-955/20 dark:text-rose-400"
-                                  : studentMark.grade.includes("EX")
+                                  : studentMark.grade?.includes("EX")
                                     ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400"
-                                    : studentMark.grade.includes("A")
+                                    : studentMark.grade?.includes("A")
                                       ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-955/20 dark:text-emerald-400"
                                       : "bg-blue-50 text-blue-700 dark:bg-blue-955/20 dark:text-blue-400"
                               }`}

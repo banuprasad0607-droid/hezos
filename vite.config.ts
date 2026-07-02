@@ -6,12 +6,24 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+const nitroPreset = process.env.NITRO_PRESET || (process.env.VERCEL ? "vercel" : "netlify");
+
 export default defineConfig({
   nitro: {
-    preset: "netlify",
-    output: {
-      publicDir: "dist",
-    },
+    preset: nitroPreset,
+    ...(nitroPreset === "vercel"
+      ? {
+          output: {
+            dir: ".vercel/output",
+            serverDir: ".vercel/output/functions/__nitro.func",
+            publicDir: ".vercel/output/static",
+          },
+        }
+      : {
+          output: {
+            publicDir: "dist",
+          },
+        }),
   },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
