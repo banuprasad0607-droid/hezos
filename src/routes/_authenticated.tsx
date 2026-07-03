@@ -8,6 +8,8 @@ import { Topbar } from "@/components/Topbar";
 import { SubscriptionBanner } from "@/components/SubscriptionBanner";
 import { AlertCircle } from "lucide-react";
 
+import { useState } from "react";
+
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
 });
@@ -17,6 +19,7 @@ function AuthLayout() {
   const { roles, currentSchoolId: schoolId, currentSchool, loading: tenantLoading } = useTenant();
   const { activeSchool } = useSchoolContext();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const loading = authLoading || tenantLoading;
   const schoolStatus = currentSchool?.status;
@@ -71,12 +74,29 @@ function AuthLayout() {
   }
 
   return (
-    <div className="min-h-screen flex bg-background">
-      <AppSidebar />
-      <div className="flex-1 flex flex-col min-w-0">
+    <div className="min-h-screen flex bg-background relative overflow-hidden">
+      {/* Sidebar Backdrop Overlay for Mobile/Tablet */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity duration-300"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Responsive Sidebar Container */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-sidebar-bg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <AppSidebar onClose={() => setSidebarOpen(false)} />
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <SubscriptionBanner />
-        <Topbar />
-        <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <Topbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
           <Outlet />
         </main>
       </div>

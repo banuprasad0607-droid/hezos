@@ -70,7 +70,7 @@ const parentNav = [
   { to: "/announcements", label: "Announcements", icon: Megaphone },
 ] as const;
 
-export function AppSidebar() {
+export function AppSidebar({ onClose }: { onClose?: () => void }) {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const { profile, roles, currentSchoolId: schoolId } = useTenant();
   const { signOut } = useAuth();
@@ -141,6 +141,7 @@ export function AppSidebar() {
           <button
             onClick={() => {
               exitSchool();
+              onClose?.();
               void navigate({ to: "/super-admin" });
             }}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-sidebar-muted hover:bg-white/5 hover:text-white transition-colors border border-white/10"
@@ -151,7 +152,7 @@ export function AppSidebar() {
         </div>
       )}
 
-      <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-4 space-y-1 overflow-y-auto" onClick={onClose}>
         {/* PARENT-ONLY view */}
         {isParentOnly ? (
           <>
@@ -248,7 +249,7 @@ export function AppSidebar() {
         )}
       </nav>
 
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-white/10" onClick={onClose}>
         <div className="flex items-center gap-3 mb-3">
           <div className="size-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-semibold">
             {(profile?.full_name || "U").slice(0, 1).toUpperCase()}

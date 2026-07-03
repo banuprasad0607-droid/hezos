@@ -8,6 +8,7 @@ import {
   X,
   Sun,
   Moon,
+  Menu,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useSchoolContext } from "@/lib/school-context";
@@ -15,7 +16,11 @@ import { useTenant } from "@/lib/tenant-context";
 import { useNavigate } from "@tanstack/react-router";
 import { useTheme } from "@/lib/theme-provider";
 
-export function Topbar() {
+interface TopbarProps {
+  onToggleSidebar?: () => void;
+}
+
+export function Topbar({ onToggleSidebar }: TopbarProps) {
   const { profile, roles } = useTenant();
   const { activeSchool, exitSchool } = useSchoolContext();
   const { theme, setTheme } = useTheme();
@@ -24,9 +29,19 @@ export function Topbar() {
   const inSchoolContext = isSuper && activeSchool !== null;
 
   return (
-    <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6 shrink-0 text-card-foreground">
-      <div className="flex items-center gap-6 flex-1">
-        <button className="p-1 text-muted-foreground hover:bg-accent rounded-md transition-colors">
+    <header className="h-16 bg-card border-b border-border flex items-center justify-between px-4 sm:px-6 shrink-0 text-card-foreground">
+      <div className="flex items-center gap-4 sm:gap-6 flex-1">
+        <button 
+          onClick={onToggleSidebar}
+          className="p-2 text-muted-foreground hover:bg-accent rounded-md transition-colors lg:hidden"
+          aria-label="Toggle sidebar"
+        >
+          <Menu className="size-5" />
+        </button>
+        <button 
+          onClick={() => window.history.back()}
+          className="p-1 text-muted-foreground hover:bg-accent rounded-md transition-colors hidden lg:block"
+        >
           <ChevronLeft className="size-5" />
         </button>
         <div className="relative max-w-md w-full">
