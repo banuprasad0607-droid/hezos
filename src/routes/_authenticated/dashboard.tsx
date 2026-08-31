@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -28,6 +28,7 @@ interface Remark {
 }
 
 function DashboardPage() {
+  const navigate = useNavigate();
   const {
     currentSchoolId: effectiveSchoolId,
     profile,
@@ -42,7 +43,14 @@ function DashboardPage() {
   const isParent =
     (roles ?? []).includes("parent") &&
     !(roles ?? []).includes("admin") &&
-    !(roles ?? []).includes("teacher");
+    !(roles ?? []).includes("teacher") &&
+    !(roles ?? []).includes("super_admin");
+
+  useEffect(() => {
+    if (isParent) {
+      void navigate({ to: "/parent" });
+    }
+  }, [isParent, navigate]);
 
   useEffect(() => {
     if (!effectiveSchoolId || isParent) return;
@@ -200,7 +208,7 @@ function DashboardPage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#F9FAFB] p-8 space-y-6 text-foreground">
+    <div className="flex-1 overflow-y-auto bg-[#F9FAFB] dark:bg-background p-4 sm:p-6 lg:p-8 space-y-6 text-foreground">
       {/* Header Area */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>

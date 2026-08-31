@@ -77,11 +77,15 @@ function RemarksPage() {
       let query = (supabase as any)
         .from("remarks")
         .select(
-          "id, student_id, category, content, created_at, visible_to_parent, students!inner(full_name, parent_name, parent_phone)",
+          "id, student_id, category, content, created_at, visible_to_parent, students!inner(full_name, parent_name, parent_phone, parent_user_id)",
           { count: "exact" },
         )
         .eq("school_id", effectiveSchoolId)
         .is("deleted_at", null);
+
+      if (!canManage && user) {
+        query = query.eq("students.parent_user_id", user.id).eq("visible_to_parent", true);
+      }
 
       if (categoryFilter !== "all") {
         query = query.eq("category", categoryFilter as any);
@@ -116,17 +120,21 @@ function RemarksPage() {
 
   useEffect(() => {
     if (!effectiveSchoolId) return;
-    supabase
+    let sQuery = supabase
       .from("students")
       .select("id, full_name")
       .eq("school_id", effectiveSchoolId)
-      .is("deleted_at", null)
-      .order("full_name")
-      .then(({ data }) => {
-        setStudents(data ?? []);
-        if (data?.[0] && !studentId) setStudentId(data[0].id);
-      });
-  }, [effectiveSchoolId]);
+      .is("deleted_at", null);
+
+    if (!canManage && user) {
+      sQuery = sQuery.eq("parent_user_id", user.id);
+    }
+
+    sQuery.order("full_name").then(({ data }) => {
+      setStudents(data ?? []);
+      if (data?.[0] && !studentId) setStudentId(data[0].id);
+    });
+  }, [effectiveSchoolId, canManage, user]);
 
   useEffect(() => {
     void load();
@@ -248,7 +256,7 @@ function RemarksPage() {
           </div>
         }
       />
-      <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-background text-foreground">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 bg-background text-foreground">
         {/* Filters and Search */}
         <div className="bg-card border border-border rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">

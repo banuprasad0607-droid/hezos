@@ -60,15 +60,38 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
       if (rolesErr) throw rolesErr;
 
       const roleList = (rolesData || []).map((r: any) => r.role);
-      setRoles(roleList);
+      let roleSchoolId = (rolesData || []).find((r: any) => r.school_id)?.school_id || null;
 
       // 3. Determine the current school ID
-      // If super admin has selected an active school in context, use that.
-      // Otherwise, use the school_id from the user's profile.
       const isSuperAdmin = (roleList ?? []).includes("super_admin");
-      const resolvedSchoolId =
-        isSuperAdmin && activeSchool?.id ? activeSchool.id : profileData?.school_id || null;
+      let resolvedSchoolId =
+        isSuperAdmin && activeSchool?.id
+          ? activeSchool.id
+          : profileData?.school_id || roleSchoolId || null;
 
+      // If still not resolved, check if user is a parent of a student
+      if (!resolvedSchoolId) {
+        try {
+          const { data: std } = await supabase
+            .from("students")
+            .select("school_id")
+            .eq("parent_user_id", user.id)
+            .is("deleted_at", null)
+            .limit(1)
+            .maybeSingle();
+
+          if (std?.school_id) {
+            resolvedSchoolId = std.school_id;
+            if (!roleList.includes("parent")) {
+              roleList.push("parent");
+            }
+          }
+        } catch (stdErr) {
+          console.warn("Parent school fallback lookup error:", stdErr);
+        }
+      }
+
+      setRoles(roleList);
       setCurrentSchoolId(resolvedSchoolId);
 
       // 4. Fetch school details if a school is associated

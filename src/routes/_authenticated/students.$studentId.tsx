@@ -15,9 +15,11 @@ import {
   Mail,
   Camera,
   User,
+  Pencil,
 } from "lucide-react";
 import { whatsappLink } from "@/lib/notify";
 import { useTenant } from "@/lib/tenant-context";
+import { EditStudentModal, type StudentEditData } from "@/components/EditStudentModal";
 
 export const Route = createFileRoute("/_authenticated/students/$studentId")({
   component: StudentProfile,
@@ -31,6 +33,8 @@ interface StudentRow {
   photo_url: string | null;
   date_of_birth: string | null;
   gender: string | null;
+  blood_group?: string | null;
+  emergency_contact?: string | null;
   address: string | null;
   parent_name: string | null;
   parent_email: string | null;
@@ -46,6 +50,8 @@ function StudentProfile() {
   const { currentSchoolId: effectiveSchoolId, loading: tenantLoading } = useTenant();
   usePageTitle("Student Profile");
   const [student, setStudent] = useState<StudentRow | null>(null);
+  const [classes, setClasses] = useState<Array<{ id: string; name: string; section?: string | null }>>([]);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [attendance, setAttendance] = useState<Array<{ date: string; status: string }>>([]);
   const [homework, setHomework] = useState<
     Array<{
@@ -73,6 +79,71 @@ function StudentProfile() {
 
   const [cropTarget, setCropTarget] = useState<string | null>(null);
   const [updatingPhoto, setUpdatingPhoto] = useState(false);
+
+  const loadStudent = async () => {
+    if (!effectiveSchoolId) return;
+    const { data } = await supabase
+      .from("students")
+      .select(
+        "id, full_name, admission_number, roll_number, photo_url, date_of_birth, gender, blood_group, emergency_contact, address, parent_name, parent_email, parent_phone, parent_user_id, class_id, school_id, classes(name)",
+      )
+      .eq("id", studentId)
+      .eq("school_id", effectiveSchoolId)
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (!data) return;
+    const norm = {
+      ...data,
+      classes: Array.isArray(data.classes) ? (data.classes[0] ?? null) : data.classes,
+    } as StudentRow;
+    setStudent(norm);
+
+    const [att, rem, inv, hw, clsRes] = await Promise.all([
+      supabase
+        .from("attendance")
+        .select("date, status")
+        .eq("student_id", studentId)
+        .eq("school_id", effectiveSchoolId)
+        .is("deleted_at", null)
+        .order("date", { ascending: false })
+        .limit(60),
+      supabase
+        .from("remarks")
+        .select("id, category, content, created_at")
+        .eq("student_id", studentId)
+        .eq("school_id", effectiveSchoolId)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(30),
+      supabase
+        .from("fee_invoices")
+        .select("id, title, period, amount_due, amount_paid, status, due_date")
+        .eq("student_id", studentId)
+        .eq("school_id", effectiveSchoolId)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false }),
+      norm.class_id
+        ? supabase
+            .from("homework")
+            .select("id, title, subject, due_date, created_at")
+            .eq("class_id", norm.class_id)
+            .eq("school_id", effectiveSchoolId)
+            .order("created_at", { ascending: false })
+            .limit(20)
+        : Promise.resolve({ data: [] }),
+      supabase
+        .from("classes")
+        .select("id, name, section")
+        .eq("school_id", effectiveSchoolId)
+        .is("deleted_at", null)
+        .order("name"),
+    ]);
+    setAttendance(att.data ?? []);
+    setRemarks(rem.data ?? []);
+    setInvoices((inv.data ?? []) as typeof invoices);
+    setHomework((hw.data ?? []) as typeof homework);
+    setClasses(clsRes.data ?? []);
+  };
 
   const saveProfilePhoto = async (base64: string) => {
     if (!student) return;
@@ -117,63 +188,7 @@ function StudentProfile() {
   };
 
   useEffect(() => {
-    if (!effectiveSchoolId) return;
-    (async () => {
-      const { data } = await supabase
-        .from("students")
-        .select(
-          "id, full_name, admission_number, roll_number, photo_url, date_of_birth, gender, address, parent_name, parent_email, parent_phone, parent_user_id, class_id, school_id, classes(name)",
-        )
-        .eq("id", studentId)
-        .eq("school_id", effectiveSchoolId)
-        .is("deleted_at", null)
-        .maybeSingle();
-      if (!data) return;
-      const norm = {
-        ...data,
-        classes: Array.isArray(data.classes) ? (data.classes[0] ?? null) : data.classes,
-      } as StudentRow;
-      setStudent(norm);
-
-      const [att, rem, inv, hw] = await Promise.all([
-        supabase
-          .from("attendance")
-          .select("date, status")
-          .eq("student_id", studentId)
-          .eq("school_id", effectiveSchoolId)
-          .is("deleted_at", null)
-          .order("date", { ascending: false })
-          .limit(60),
-        supabase
-          .from("remarks")
-          .select("id, category, content, created_at")
-          .eq("student_id", studentId)
-          .eq("school_id", effectiveSchoolId)
-          .is("deleted_at", null)
-          .order("created_at", { ascending: false })
-          .limit(30),
-        supabase
-          .from("fee_invoices")
-          .select("id, title, period, amount_due, amount_paid, status, due_date")
-          .eq("student_id", studentId)
-          .eq("school_id", effectiveSchoolId)
-          .is("deleted_at", null)
-          .order("created_at", { ascending: false }),
-        norm.class_id
-          ? supabase
-              .from("homework")
-              .select("id, title, subject, due_date, created_at")
-              .eq("class_id", norm.class_id)
-              .eq("school_id", effectiveSchoolId)
-              .order("created_at", { ascending: false })
-              .limit(20)
-          : Promise.resolve({ data: [] }),
-      ]);
-      setAttendance(att.data ?? []);
-      setRemarks(rem.data ?? []);
-      setInvoices((inv.data ?? []) as typeof invoices);
-      setHomework((hw.data ?? []) as typeof homework);
-    })();
+    void loadStudent();
   }, [studentId, effectiveSchoolId]);
 
   if (!student) {
@@ -182,7 +197,6 @@ function StudentProfile() {
         <div className="flex-1 flex items-center justify-center p-8 bg-background min-h-screen">
           <div className="text-center space-y-4">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto"></div>
-
             <p className="text-sm text-muted-foreground">Loading...</p>
           </div>
         </div>
@@ -202,18 +216,6 @@ function StudentProfile() {
     `Hello ${student.parent_name ?? ""}, this is regarding ${student.full_name}.`,
   );
 
-  if (tenantLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center p-8 bg-background min-h-screen">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto"></div>
-
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
       <PageHeader
@@ -224,16 +226,25 @@ function StudentProfile() {
           </Link>
         }
         actions={
-          wa ? (
-            <a
-              href={wa}
-              target="_blank"
-              rel="noreferrer"
-              className="px-3 py-1.5 text-sm font-medium bg-[#25D366] text-white rounded-md"
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setEditModalOpen(true)}
+              className="px-3.5 py-1.5 text-sm font-semibold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-1.5 shadow-sm cursor-pointer transition-colors"
             >
-              WhatsApp Parent
-            </a>
-          ) : null
+              <Pencil className="size-3.5" />
+              Edit Profile
+            </button>
+            {wa && (
+              <a
+                href={wa}
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-1.5 text-sm font-medium bg-[#25D366] text-white rounded-lg hover:bg-[#20bd5a] flex items-center gap-1.5 shadow-sm transition-colors"
+              >
+                WhatsApp Parent
+              </a>
+            )}
+          </div>
         }
       />
       <div className="flex-1 overflow-y-auto p-8 space-y-6">
@@ -461,6 +472,15 @@ function StudentProfile() {
           </div>
         </div>
       )}
+
+      {/* Edit Student Modal */}
+      <EditStudentModal
+        student={student as any}
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onUpdated={() => void loadStudent()}
+        classes={classes}
+      />
     </>
   );
 }

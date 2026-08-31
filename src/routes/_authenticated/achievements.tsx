@@ -3383,7 +3383,7 @@ export function AchievementsPage() {
       />
 
       {/* Main Container */}
-      <div className="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-slate-950 p-6 lg:p-8 space-y-6">
+      <div className="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-slate-950 p-4 sm:p-6 lg:p-8 space-y-6">
         {/* Navigation Tabs Bar */}
         <div className="flex border-b border-border dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-1.5 shadow-xs overflow-x-auto gap-1">
           <TabButton

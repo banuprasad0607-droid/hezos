@@ -39,9 +39,15 @@ interface ParentRow {
 }
 
 function HomeworkPage() {
-  const { currentSchoolId: effectiveSchoolId, user, loading: tenantLoading } = useTenant();
+  const { currentSchoolId: effectiveSchoolId, user, roles, loading: tenantLoading } = useTenant();
   const schoolId = effectiveSchoolId;
-  usePageTitle("Homework");
+  const isSuper = (roles ?? []).includes("super_admin");
+  const isAdmin = (roles ?? []).includes("admin") || isSuper;
+  const isTeacher = (roles ?? []).includes("teacher");
+  const isStaff = isAdmin || isTeacher || (roles ?? []).includes("principal");
+  const isParent = (roles ?? []).includes("parent") && !isStaff;
+
+  usePageTitle(isParent ? "My Child's Homework" : "Homework");
   const [classes, setClasses] = useState<Klass[]>([]);
   const [items, setItems] = useState<Homework[]>([]);
   const [parents, setParents] = useState<ParentRow[]>([]);
@@ -58,13 +64,31 @@ function HomeworkPage() {
 
   const load = async () => {
     if (!effectiveSchoolId) return;
-    const { data } = await supabase
+
+    let query = supabase
       .from("homework")
       .select(
         "id, class_id, title, subject, description, due_date, file_url, file_type, created_at, classes(name)",
       )
-      .eq("school_id", effectiveSchoolId)
-      .order("created_at", { ascending: false });
+      .eq("school_id", effectiveSchoolId);
+
+    if (isParent && user) {
+      const { data: myKids } = await supabase
+        .from("students")
+        .select("class_id")
+        .eq("parent_user_id", user.id)
+        .is("deleted_at", null);
+
+      const kidClassIds = (myKids ?? []).map((k) => k.class_id).filter(Boolean) as string[];
+      if (kidClassIds.length > 0) {
+        query = query.in("class_id", kidClassIds);
+      } else {
+        setItems([]);
+        return;
+      }
+    }
+
+    const { data } = await query.order("created_at", { ascending: false });
     setItems(
       (
         (data ?? []) as unknown as Array<
@@ -79,22 +103,24 @@ function HomeworkPage() {
 
   useEffect(() => {
     if (!effectiveSchoolId) return;
-    supabase
-      .from("classes")
-      .select("id, name")
-      .eq("school_id", effectiveSchoolId)
-      .order("name")
-      .then(({ data }) => {
-        setClasses(data ?? []);
-        if (data?.[0] && !classId) setClassId(data[0].id);
-      });
-    supabase
-      .from("students")
-      .select("id, full_name, class_id, parent_name, parent_phone")
-      .eq("school_id", effectiveSchoolId)
-      .then(({ data }) => setParents((data ?? []) as ParentRow[]));
+    if (isStaff) {
+      supabase
+        .from("classes")
+        .select("id, name")
+        .eq("school_id", effectiveSchoolId)
+        .order("name")
+        .then(({ data }) => {
+          setClasses(data ?? []);
+          if (data?.[0] && !classId) setClassId(data[0].id);
+        });
+      supabase
+        .from("students")
+        .select("id, full_name, class_id, parent_name, parent_phone")
+        .eq("school_id", effectiveSchoolId)
+        .then(({ data }) => setParents((data ?? []) as ParentRow[]));
+    }
     void load();
-  }, [effectiveSchoolId]);
+  }, [effectiveSchoolId, isStaff, isParent, user]);
 
   const recipientsFor = (cid: string): BroadcastRecipient[] =>
     parents
@@ -220,32 +246,38 @@ function HomeworkPage() {
   return (
     <>
       <PageHeader
-        title="Homework"
-        breadcrumb="Operations"
+        title={isParent ? "Child Homework" : "Homework"}
+        breadcrumb={isParent ? "Parent Portal" : "Operations"}
         actions={
-          <button
-            onClick={() => setOpen(true)}
-            disabled={classes.length === 0}
-            className="px-4 py-1.5 text-sm font-medium bg-primary text-primary-foreground rounded-md inline-flex items-center gap-1 disabled:opacity-50"
-          >
-            <Plus className="size-4" /> Create Homework
-          </button>
+          isStaff ? (
+            <button
+              onClick={() => setOpen(true)}
+              disabled={classes.length === 0}
+              className="px-4 py-1.5 text-sm font-medium bg-primary text-primary-foreground rounded-md inline-flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+            >
+              <Plus className="size-4" /> Create Homework
+            </button>
+          ) : null
         }
       />
 
-      <div className="flex-1 overflow-y-auto p-8">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
         {items.length === 0 ? (
           <div className="bg-card border border-dashed border-border rounded-xl p-16 text-center">
             <FileText className="size-10 mx-auto text-muted-foreground" />
             <h3 className="font-semibold mt-3">No homework yet</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              {classes.length === 0 ? "Create a class first." : "Post your first assignment."}
+              {isParent
+                ? "No active assignments for your child's class right now."
+                : classes.length === 0
+                  ? "Create a class first."
+                  : "Post your first assignment."}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {items.map((h) => (
-              <article key={h.id} className="bg-card border border-border rounded-xl p-5">
+              <article key={h.id} className="bg-card border border-border rounded-xl p-5 shadow-xs">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
@@ -256,7 +288,7 @@ function HomeworkPage() {
                     <h3 className="font-semibold text-base mt-1 truncate">{h.title}</h3>
                   </div>
                   {h.file_type !== "none" && (
-                    <span className="shrink-0 inline-flex items-center gap-1 text-xs bg-brand-soft text-brand px-2 py-1 rounded">
+                    <span className="shrink-0 inline-flex items-center gap-1 text-xs bg-brand-soft text-brand px-2 py-1 rounded font-medium">
                       {h.file_type === "pdf" ? (
                         <FileText className="size-3" />
                       ) : (
@@ -270,7 +302,7 @@ function HomeworkPage() {
                   <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{h.description}</p>
                 )}
                 <div className="flex items-center justify-between mt-4">
-                  <div className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                  <div className="text-xs text-muted-foreground inline-flex items-center gap-1 font-medium">
                     <Calendar className="size-3" />
                     {h.due_date ? `Due ${h.due_date}` : "No due date"}
                   </div>
@@ -279,19 +311,21 @@ function HomeworkPage() {
                       href={h.file_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-xs text-brand font-medium inline-flex items-center gap-1 hover:underline"
+                      className="text-xs text-brand font-semibold inline-flex items-center gap-1 hover:underline"
                     >
                       <Download className="size-3" /> Download
                     </a>
                   )}
                 </div>
-                <div className="mt-3 pt-3 border-t border-border flex justify-end">
-                  <WhatsAppBroadcast
-                    label="Notify parents"
-                    recipients={recipientsFor(h.class_id)}
-                    defaultMessage={`📚 New homework: ${h.title}${h.subject ? ` (${h.subject})` : ""}\n${h.description ?? ""}${h.due_date ? `\nDue: ${h.due_date}` : ""}${h.file_url ? `\nAttachment: ${h.file_url}` : ""}`}
-                  />
-                </div>
+                {isStaff && (
+                  <div className="mt-3 pt-3 border-t border-border flex justify-end">
+                    <WhatsAppBroadcast
+                      label="Notify parents"
+                      recipients={recipientsFor(h.class_id)}
+                      defaultMessage={`📚 New homework: ${h.title}${h.subject ? ` (${h.subject})` : ""}\n${h.description ?? ""}${h.due_date ? `\nDue: ${h.due_date}` : ""}${h.file_url ? `\nAttachment: ${h.file_url}` : ""}`}
+                    />
+                  </div>
+                )}
               </article>
             ))}
           </div>

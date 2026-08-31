@@ -9,7 +9,8 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:all": "node run_security_tests.mjs && node scratch/test_adversarial.mjs && node run_production_qa.mjs && node audit_database.mjs && npm run typecheck && npm run build && npx playwright test"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -77,6 +78,7 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@lovable.dev/vite-tanstack-config": "^2.1.1",
+    "@playwright/test": "^1.62.1",
     "@types/node": "^22.16.5",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.0",

@@ -150,7 +150,7 @@ function AnnouncementsPage() {
           </button>
         }
       />
-      <div className="flex-1 overflow-y-auto p-8">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
         {items.length === 0 ? (
           <div className="bg-card border border-dashed border-border rounded-xl p-16 text-center">
             <Megaphone className="size-10 mx-auto text-muted-foreground" />

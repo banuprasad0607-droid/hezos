@@ -27,8 +27,8 @@ function walk(dir, callback) {
 // 1. Audit Branding references
 walk(routesDir, (filepath) => {
   const basename = path.basename(filepath);
-  // Ignore super-admin.tsx since it is allowed to display HEZO SCHOOL branding
-  if (basename === "super-admin.tsx") return;
+  // Ignore super-admin.tsx and platform routes since they are allowed to display HEZO platform branding
+  if (basename === "super-admin.tsx" || filepath.includes(path.sep + "platform") || basename === "platform.tsx") return;
 
   const content = fs.readFileSync(filepath, "utf8");
 

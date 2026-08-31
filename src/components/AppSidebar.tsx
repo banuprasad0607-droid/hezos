@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
@@ -22,11 +23,16 @@ import {
   Contact,
   ChevronLeft,
   Trash2,
+  UserCheck,
+  Upload,
+  ScrollText,
+  Camera,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useSchoolContext } from "@/lib/school-context";
 import { useTenant } from "@/lib/tenant-context";
 import { useSchoolName } from "@/hooks/use-school-name";
+import { SchoolLogoUploadModal } from "@/components/SchoolLogoUploadModal";
 
 const operationsNav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -72,11 +78,12 @@ const parentNav = [
 
 export function AppSidebar({ onClose }: { onClose?: () => void }) {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
-  const { profile, roles, currentSchoolId: schoolId } = useTenant();
+  const { profile, roles, currentSchool, currentSchoolId: schoolId, refreshTenant } = useTenant();
   const { signOut } = useAuth();
   const { activeSchool, exitSchool } = useSchoolContext();
   const navigate = useNavigate();
   const schoolDisplayName = useSchoolName();
+  const [logoModalOpen, setLogoModalOpen] = useState(false);
 
   const isSuper = (roles ?? []).includes("super_admin");
   const isAdmin = (roles ?? []).includes("admin") || isSuper;
@@ -102,8 +109,8 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
   // Logo letter — use first letter of the display name
   const logoLetter = schoolDisplayName.slice(0, 1).toUpperCase();
 
-  // Logo URL — use active school logo if in context, otherwise nothing for super admin
-  const logoUrl = activeSchool?.logo_url ?? null;
+  // Logo URL — active school logo or current school logo
+  const logoUrl = activeSchool?.logo_url || currentSchool?.logo_url || currentSchool?.school_logo || null;
 
   const linkCls = (active: boolean) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -116,13 +123,31 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
     <aside className="w-64 bg-sidebar-bg text-sidebar-fg flex flex-col shrink-0">
       {/* School Header */}
       <div className="p-6 flex items-center gap-3">
-        {logoUrl ? (
-          <img src={logoUrl} alt="School logo" className="size-8 rounded-lg object-cover" />
-        ) : (
-          <div className="size-8 bg-brand rounded-lg flex items-center justify-center font-bold text-lg text-brand-foreground">
-            {logoLetter}
-          </div>
-        )}
+        <div className="relative group">
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt="School logo"
+              className="size-9 rounded-xl object-cover border border-white/10 shadow-sm"
+            />
+          ) : (
+            <div className="size-9 bg-brand rounded-xl flex items-center justify-center font-bold text-base text-brand-foreground shadow-sm">
+              {logoLetter}
+            </div>
+          )}
+
+          {isAdmin && effectiveSchoolId && (
+            <button
+              type="button"
+              onClick={() => setLogoModalOpen(true)}
+              className="absolute -bottom-1 -right-1 p-1 bg-primary text-primary-foreground rounded-full shadow-md hover:scale-110 transition border border-sidebar-bg opacity-80 group-hover:opacity-100"
+              title="Upload / Change School Logo"
+            >
+              <Camera className="size-2.5" />
+            </button>
+          )}
+        </div>
+
         <div className="overflow-hidden flex-1">
           <span className="text-base font-semibold tracking-tight block truncate">
             {schoolDisplayName}
@@ -142,7 +167,7 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
             onClick={() => {
               exitSchool();
               onClose?.();
-              void navigate({ to: "/super-admin" });
+              void navigate({ to: "/platform" });
             }}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-sidebar-muted hover:bg-white/5 hover:text-white transition-colors border border-white/10"
           >
@@ -177,9 +202,29 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
                 <div className="text-[10px] font-bold text-sidebar-muted uppercase tracking-wider px-2 py-3">
                   PLATFORM
                 </div>
-                <Link to="/super-admin" className={linkCls(pathname === "/super-admin")}>
+                <Link to="/platform" className={linkCls(pathname === "/platform")}>
+                  <LayoutDashboard className="size-4" />
+                  Overview
+                </Link>
+                <Link to="/platform/schools" className={linkCls(pathname.startsWith("/platform/schools"))}>
                   <Building2 className="size-4" />
                   Schools
+                </Link>
+                <Link to="/platform/teachers" className={linkCls(pathname.startsWith("/platform/teachers"))}>
+                  <Users className="size-4" />
+                  Teachers
+                </Link>
+                <Link to="/platform/staff" className={linkCls(pathname.startsWith("/platform/staff"))}>
+                  <UserCheck className="size-4" />
+                  Staff
+                </Link>
+                <Link to="/platform/bulk-import" className={linkCls(pathname.startsWith("/platform/bulk-import"))}>
+                  <Upload className="size-4" />
+                  Bulk Import
+                </Link>
+                <Link to="/platform/audit-logs" className={linkCls(pathname.startsWith("/platform/audit-logs"))}>
+                  <ScrollText className="size-4" />
+                  Audit Logs
                 </Link>
               </>
             )}
@@ -237,9 +282,9 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
                     <div className="text-[10px] font-bold text-sidebar-muted uppercase tracking-wider px-2 py-3 mt-4">
                       PLATFORM
                     </div>
-                    <Link to="/super-admin" className={linkCls(pathname === "/super-admin")}>
+                    <Link to="/platform" className={linkCls(pathname.startsWith("/platform"))}>
                       <Building2 className="size-4" />
-                      Schools
+                      Control Center
                     </Link>
                   </>
                 )}
@@ -277,6 +322,19 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
           Change password
         </Link>
       </div>
+
+      {effectiveSchoolId && (
+        <SchoolLogoUploadModal
+          isOpen={logoModalOpen}
+          onClose={() => setLogoModalOpen(false)}
+          schoolId={effectiveSchoolId}
+          currentLogoUrl={logoUrl}
+          schoolName={schoolDisplayName}
+          onLogoUpdated={() => {
+            void refreshTenant();
+          }}
+        />
+      )}
     </aside>
   );
 }

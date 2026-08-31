@@ -914,14 +914,14 @@ function IdCardManagementPage() {
         title="ID Cards"
         breadcrumb="Card & Visitor Passes"
         actions={
-          <div className="flex bg-secondary rounded-md p-0.5">
+          <div className="flex bg-secondary rounded-md p-0.5 overflow-x-auto max-w-full">
             {(
               ["overview", "students", "staff", "visitors", "settings", "reports"] as TabType[]
             ).map((t) => (
               <button
                 key={t}
                 onClick={() => setActiveTab(t)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded capitalize transition ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded capitalize transition shrink-0 ${
                   activeTab === t
                     ? "bg-card shadow-sm text-foreground"
                     : "text-muted-foreground hover:text-foreground"
@@ -934,7 +934,7 @@ function IdCardManagementPage() {
         }
       />
 
-      <div className="flex-1 overflow-y-auto p-8 space-y-6 print:hidden">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 print:hidden">
         {/* TAB 1: OVERVIEW */}
         {activeTab === "overview" && (
           <div className="space-y-6">
@@ -2715,112 +2715,111 @@ export function IDCardComponent({
   let headerCls = "";
   let accentText = "";
   let accentBorder = "border-slate-200";
+  let subBannerCls = "bg-gradient-to-r from-blue-700 to-indigo-800 text-white";
 
   if (theme === "modern-blue") {
-    themeCls =
-      "bg-gradient-to-br from-slate-50 via-sky-50/50 to-blue-50 text-slate-800 border-sky-200";
-    headerCls = "bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white";
+    themeCls = "bg-white text-slate-800 border-slate-200/80 shadow-lg";
+    headerCls = "bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-950 text-white";
     accentText = "text-blue-700 font-semibold";
-    accentBorder = "border-sky-300";
+    accentBorder = "border-blue-500/30 ring-2 ring-blue-500/20";
+    subBannerCls = "bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white";
   } else if (theme === "premium-corporate") {
-    // Dark professional theme
-    themeCls =
-      "bg-gradient-to-br from-slate-900 to-slate-950 text-slate-100 border-slate-700 shadow-inner";
-    headerCls = "bg-slate-950 text-teal-400 border-b border-teal-500/30";
+    themeCls = "bg-gradient-to-br from-slate-900 to-slate-950 text-slate-100 border-slate-700/80 shadow-lg";
+    headerCls = "bg-slate-950 text-teal-400 border-b border-teal-500/40";
     accentText = "text-teal-400 font-semibold uppercase tracking-wider";
-    accentBorder = "border-teal-500/40";
+    accentBorder = "border-teal-500/50 ring-2 ring-teal-500/20";
+    subBannerCls = "bg-gradient-to-r from-teal-600 to-emerald-600 text-slate-950 font-black";
   } else if (theme === "gold-premium") {
-    // Elegant gold/black style
-    themeCls =
-      "bg-gradient-to-br from-slate-950 via-slate-900 to-amber-950 text-amber-50 border-amber-400";
-    headerCls = "bg-slate-950 text-amber-400 border-b-2 border-amber-400";
+    themeCls = "bg-gradient-to-br from-slate-950 via-slate-900 to-amber-950 text-amber-50 border-amber-500/60 shadow-lg";
+    headerCls = "bg-slate-950 text-amber-400 border-b border-amber-500/40";
     accentText = "text-amber-400 font-bold uppercase";
-    accentBorder = "border-amber-400/50";
+    accentBorder = "border-amber-400/60 ring-2 ring-amber-400/20";
+    subBannerCls = "bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-black";
   } else if (theme === "school-classic") {
-    themeCls = "bg-rose-50/10 text-rose-950 border-rose-800";
-    headerCls = "bg-gradient-to-r from-red-800 to-rose-950 text-white border-b-2 border-red-900";
+    themeCls = "bg-white text-slate-800 border-rose-200 shadow-lg";
+    headerCls = "bg-gradient-to-r from-red-900 via-rose-900 to-red-950 text-white";
     accentText = "text-rose-800 font-bold";
-    accentBorder = "border-rose-800/30";
+    accentBorder = "border-rose-500/30 ring-2 ring-rose-500/20";
+    subBannerCls = "bg-gradient-to-r from-red-700 to-rose-800 text-white";
   } else {
     // minimal
-    themeCls = "bg-white text-slate-800 border-slate-200";
-    headerCls = "bg-slate-50 text-slate-800 border-b border-slate-200";
+    themeCls = "bg-white text-slate-800 border-slate-200 shadow-md";
+    headerCls = "bg-slate-900 text-white";
     accentText = "text-slate-900 font-medium";
-    accentBorder = "border-slate-200";
+    accentBorder = "border-slate-300 ring-2 ring-slate-200";
+    subBannerCls = "bg-slate-800 text-white";
   }
 
   // Topper Rank logic
   const topperRank = rec.rankings?.find((r: any) => r.rank_position <= 3);
 
-  // Logo rendering (increased by 50%: size-12 instead of size-8)
+  // Logo rendering with circular container & soft elevation
   const schoolLogoNode = school?.logo_url ? (
     <img
       src={school.logo_url}
       alt=""
-      className="size-12 object-contain bg-white rounded p-0.5"
+      className="size-11 object-contain bg-white rounded-lg p-1 shadow-sm border border-white/20 flex-shrink-0"
       crossOrigin="anonymous"
     />
   ) : (
-    <SchoolCrestPlaceholder
-      className={`size-12 ${theme === "premium-corporate" || theme === "gold-premium" ? "text-teal-400" : "text-amber-400"}`}
-    />
+    <div className="size-11 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center p-1 border border-white/20 flex-shrink-0 shadow-inner">
+      <SchoolCrestPlaceholder
+        className={`size-9 ${theme === "premium-corporate" ? "text-teal-400" : theme === "gold-premium" ? "text-amber-400" : "text-amber-300"}`}
+      />
+    </div>
   );
-
-  let subBannerCls = "bg-amber-400 text-slate-950";
-  if (theme === "premium-corporate") {
-    subBannerCls = "bg-teal-500 text-slate-950";
-  } else if (theme === "gold-premium") {
-    subBannerCls = "bg-amber-500 text-slate-950";
-  } else if (theme === "school-classic") {
-    subBannerCls = "bg-rose-800 text-white";
-  } else if (theme === "minimal") {
-    subBannerCls = "bg-slate-100 text-slate-900 border-y border-slate-200";
-  }
 
   // Portrait Layout
   if (orientation === "portrait") {
     if (side === "front") {
       return (
         <div
-          className={`w-full h-full border rounded-xl flex flex-col justify-between overflow-hidden shadow-md relative ${themeCls}`}
+          className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden relative select-none ${themeCls}`}
         >
           {/* Top banner / Header */}
-          <div
-            className={`px-2 py-1.5 flex items-center gap-2 border-b relative min-h-[56px] ${headerCls}`}
-          >
-            {schoolLogoNode}
-            <div className="text-left min-w-0 flex-1 leading-tight">
-              <h2 className="text-[13.5px] font-extrabold uppercase tracking-wide leading-tight break-words whitespace-normal">
-                {school?.name || "School Name"}
-              </h2>
-              <p className="text-[7.5px] opacity-85 break-words whitespace-normal leading-tight mt-0.5">
-                {school?.address || "Address Detail"}
-              </p>
+          <div className="relative">
+            <div
+              className={`px-2.5 py-2 flex items-center gap-2 relative min-h-[58px] ${headerCls}`}
+            >
+              {schoolLogoNode}
+              <div className="text-left min-w-0 flex-1 leading-tight">
+                <h2 className="text-[12px] font-black uppercase tracking-wider leading-tight line-clamp-2 text-white">
+                  {school?.name || "School Campus"}
+                </h2>
+                <p className="text-[7px] opacity-80 line-clamp-1 leading-tight mt-0.5 text-slate-200">
+                  {school?.address || "School Campus"}
+                </p>
+              </div>
+              <div className="text-right leading-none flex-shrink-0">
+                <span className="inline-block bg-white/15 backdrop-blur-md px-1.5 py-0.5 rounded text-[6.5px] font-mono font-bold text-white border border-white/20">
+                  {rec.academic_year || currentAcademicYear}
+                </span>
+              </div>
             </div>
-            <div className="text-right leading-none flex-shrink-0 font-mono text-[7px] opacity-85 font-semibold ml-1">
-              <div>{rec.academic_year || currentAcademicYear}</div>
-            </div>
-          </div>
 
-          <div
-            className={`font-extrabold text-[7px] text-center uppercase tracking-wider py-0.5 ${subBannerCls}`}
-          >
-            {isStudent ? "STUDENT IDENTITY CARD" : isVisitor ? "VISITOR PASS" : "IDENTITY CARD"}
+            {/* Sub-banner ribbon */}
+            <div
+              className={`font-black text-[7px] text-center uppercase tracking-widest py-1 shadow-xs flex items-center justify-center gap-1.5 ${subBannerCls}`}
+            >
+              <span className="size-1 rounded-full bg-white/70"></span>
+              {isStudent ? "STUDENT IDENTITY CARD" : isVisitor ? "VISITOR PASS" : "STAFF IDENTITY CARD"}
+              <span className="size-1 rounded-full bg-white/70"></span>
+            </div>
           </div>
 
           {/* Body Section */}
-          <div className="flex-1 p-2 flex flex-col items-center justify-start space-y-1 min-h-0 relative">
+          <div className="flex-1 px-2.5 py-1.5 flex flex-col items-center justify-between min-h-0 relative">
             {/* Academic Topper Badge Overlay */}
             {topperRank && (
-              <div className="absolute top-1 right-1 bg-amber-400 text-slate-950 text-[6px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 border border-amber-300 shadow-md">
-                <Trophy className="size-1.5 text-slate-950" />
-                Rank {topperRank.rank_position}
+              <div className="absolute top-1 right-2 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-[6.5px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 border border-amber-300 shadow-md z-10">
+                <Trophy className="size-2 text-slate-950" />
+                RANK {topperRank.rank_position}
               </div>
             )}
 
-            {/* Passport Photo Frame (35-40% of card height: 142px of 396px) */}
+            {/* Student Photo with premium frame & drop shadow */}
             <div
-              className={`w-[110px] h-[142px] rounded border bg-white overflow-hidden shadow-sm flex items-center justify-center flex-shrink-0 relative ${accentBorder}`}
+              className={`w-[102px] h-[126px] rounded-xl border-2 border-white overflow-hidden shadow-md flex items-center justify-center flex-shrink-0 relative bg-slate-100 mt-0.5 ${accentBorder}`}
             >
               {rec.photo_url ? (
                 <img
@@ -2831,85 +2830,90 @@ export function IDCardComponent({
                 />
               ) : (
                 <img
-                  src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjY2JkNWUxIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTIwIDIxdi0yYTQgNCAwIDAgMC00LTRIOGE0IDQgMCAwIDAtNCA0djIiPjwvcGF0aD48Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiPjwvY2lyY2xlPjwvc3ZnPg=="
+                  src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTRhM2I4IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjAgMjF2LTJhNCA0IDAgMCAwLTQtNEg4YTQgNCAwIDAgMC00IDR2MiI+PC9wYXRoPjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCI+PC9jaXJjbGU+PC9zdmc+"
                   alt=""
-                  style={{ width: "64px", height: "64px" }}
-                  className="w-16 h-16 object-contain opacity-60"
+                  style={{ width: "56px", height: "56px" }}
+                  className="w-14 h-14 object-contain opacity-50"
                 />
               )}
             </div>
 
-            {/* Details (Full name & role designation) */}
-            <div className="text-center w-full min-w-0">
+            {/* Name & Class Pill */}
+            <div className="text-center w-full min-w-0 mt-1">
               <h4
-                className={`${nameFontSize} font-bold leading-tight break-words whitespace-normal px-1 text-center w-full`}
+                className={`font-black uppercase tracking-tight text-slate-900 leading-tight ${nameFontSize}`}
                 title={displayName}
               >
                 {displayName}
               </h4>
+              <div className="mt-0.5">
+                <span className="inline-block bg-blue-50 text-blue-800 border border-blue-200/80 px-2.5 py-0.5 rounded-full font-bold text-[7.5px] uppercase tracking-wide shadow-2xs">
+                  {displayClassOrDesignation}
+                </span>
+              </div>
             </div>
 
-            {/* Structured Info Grid */}
-            <div className="w-full text-[7.2px] space-y-0.5 px-2">
+            {/* Structured Info Card */}
+            <div className="w-full bg-slate-50/90 border border-slate-200/80 rounded-lg p-1.5 text-[7px] space-y-1 mt-1 shadow-2xs">
               {isStudent ? (
                 <>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/55 pb-0.5">
-                    <span className="opacity-60">Student ID:</span>{" "}
-                    <span className="font-bold font-mono">{identifier}</span>
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                    <span className="text-slate-500 font-semibold">Admission No:</span>
+                    <span className="font-black font-mono text-slate-900">{identifier}</span>
                   </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/55 pb-0.5">
-                    <span className="opacity-60">Class:</span>{" "}
-                    <span className="font-bold">{displayClassOrDesignation}</span>
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                    <span className="text-slate-500 font-semibold">Roll Number:</span>
+                    <span className="font-bold text-slate-900">{rec.roll_number || "—"}</span>
                   </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/55 pb-0.5">
-                    <span className="opacity-60">Roll Number:</span>{" "}
-                    <span className="font-bold">{rec.roll_number || "—"}</span>
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                    <span className="text-slate-500 font-semibold">Date of Birth:</span>
+                    <span className="font-bold text-slate-900">{rec.date_of_birth || "—"}</span>
                   </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/55 pb-0.5">
-                    <span className="opacity-60">Date of Birth:</span>{" "}
-                    <span className="font-bold">{rec.date_of_birth || "—"}</span>
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                    <span className="text-slate-500 font-semibold">Blood Group:</span>
+                    <span className="font-black text-red-600 bg-red-50 border border-red-200/80 px-1.5 py-0.2 rounded">
+                      {rec.blood_group || "—"}
+                    </span>
                   </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/55 pb-0.5">
-                    <span className="opacity-60">Blood Group:</span>{" "}
-                    <span className="font-bold text-red-500">{rec.blood_group || "—"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="opacity-60">Parent Contact:</span>{" "}
-                    <span className="font-bold font-mono">{rec.parent_phone || "—"}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 font-semibold">Parent Contact:</span>
+                    <span className="font-black font-mono text-slate-900">{rec.parent_phone || "—"}</span>
                   </div>
                 </>
               ) : isVisitor ? (
                 <>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/55 pb-0.5">
-                    <span className="opacity-60">Pass Number:</span>{" "}
-                    <span className="font-bold font-mono">{identifier}</span>
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                    <span className="text-slate-500 font-semibold">Pass Number:</span>
+                    <span className="font-black font-mono text-slate-900">{identifier}</span>
                   </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/55 pb-0.5">
-                    <span className="opacity-60">Visitor Phone:</span>{" "}
-                    <span className="font-bold font-mono">{rec.contact_number}</span>
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                    <span className="text-slate-500 font-semibold">Visitor Phone:</span>
+                    <span className="font-black font-mono text-slate-900">{rec.contact_number}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="opacity-60">Host:</span>{" "}
-                    <span className="font-bold truncate max-w-[100px]">{rec.host_name || "—"}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 font-semibold">Host:</span>
+                    <span className="font-bold truncate max-w-[100px] text-slate-900">{rec.host_name || "—"}</span>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/55 pb-0.5">
-                    <span className="opacity-60">Employee ID:</span>{" "}
-                    <span className="font-bold font-mono">{identifier}</span>
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                    <span className="text-slate-500 font-semibold">Employee ID:</span>
+                    <span className="font-black font-mono text-slate-900">{identifier}</span>
                   </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/55 pb-0.5">
-                    <span className="opacity-60">Department:</span>{" "}
-                    <span className="font-bold">{rec.department || "—"}</span>
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                    <span className="text-slate-500 font-semibold">Department:</span>
+                    <span className="font-bold text-slate-900">{rec.department || "—"}</span>
                   </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/55 pb-0.5">
-                    <span className="opacity-60">Blood Group:</span>{" "}
-                    <span className="font-bold text-red-505">{rec.blood_group || "—"}</span>
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                    <span className="text-slate-500 font-semibold">Blood Group:</span>
+                    <span className="font-black text-red-600 bg-red-50 border border-red-200/80 px-1.5 py-0.2 rounded">
+                      {rec.blood_group || "—"}
+                    </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="opacity-60">Mobile Number:</span>{" "}
-                    <span className="font-bold font-mono">{rec.mobile_number || "—"}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 font-semibold">Mobile Number:</span>
+                    <span className="font-black font-mono text-slate-900">{rec.mobile_number || "—"}</span>
                   </div>
                 </>
               )}
@@ -2917,29 +2921,32 @@ export function IDCardComponent({
           </div>
 
           {/* Footer Section */}
-          <div
-            className={`p-1.5 border-t flex items-center justify-between gap-1 bg-white ${theme === "premium-corporate" || theme === "gold-premium" ? "border-slate-800" : "border-border"}`}
-          >
-            <div className="flex-1 flex flex-col justify-end min-w-0">
-              <Barcode value={identifier} />
+          <div className="p-2 border-t border-slate-200 bg-white flex items-center justify-between gap-1.5">
+            <div className="flex-1 flex flex-col justify-center min-w-0 pr-1">
+              <div className="bg-slate-50 p-1 rounded border border-slate-200/80 flex items-center justify-center">
+                <Barcode value={identifier} />
+              </div>
               {signature && !isVisitor && (
-                <div className="h-3.5 mt-0.5 flex items-end opacity-75 grayscale">
+                <div className="h-3 mt-1 flex items-center justify-start gap-1">
+                  <span className="text-[5px] uppercase font-bold text-slate-400">Sign:</span>
                   <img
                     src={signature}
                     alt="Sig"
-                    className="h-full object-contain"
+                    className="h-full object-contain grayscale"
                     crossOrigin="anonymous"
                   />
                 </div>
               )}
             </div>
             <div className="flex flex-col items-center flex-shrink-0">
-              <QRCodeImage
-                value={verificationLink}
-                className="size-9 bg-white p-0.5 rounded border border-border"
-              />
-              <span className="text-[5px] font-bold text-slate-500 mt-0.5 uppercase tracking-tighter">
-                Scan to Verify
+              <div className="p-1 bg-white rounded-lg border border-slate-200 shadow-2xs">
+                <QRCodeImage
+                  value={verificationLink}
+                  className="size-8"
+                />
+              </div>
+              <span className="text-[4.5px] font-black text-slate-500 mt-0.5 uppercase tracking-widest">
+                VERIFIED ID
               </span>
             </div>
           </div>
@@ -2949,113 +2956,127 @@ export function IDCardComponent({
       // Portrait Back side
       return (
         <div
-          className={`w-full h-full border rounded-xl flex flex-col justify-between overflow-hidden shadow-md ${themeCls}`}
+          className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden relative select-none ${themeCls}`}
         >
           {/* Back Header */}
-          <div
-            className={`px-2 py-1.5 flex items-center gap-2 border-b relative min-h-[56px] ${headerCls}`}
-          >
-            {schoolLogoNode}
-            <div className="text-left min-w-0 flex-1 leading-tight">
-              <h2 className="text-[13.5px] font-extrabold uppercase tracking-wide leading-tight break-words whitespace-normal">
-                {school?.name || "School Name"}
-              </h2>
-              <p className="text-[7.5px] opacity-85 break-words whitespace-normal leading-tight mt-0.5">
-                {school?.address || "Address Detail"}
-              </p>
+          <div className="relative">
+            <div
+              className={`px-2.5 py-2 flex items-center gap-2 relative min-h-[58px] ${headerCls}`}
+            >
+              {schoolLogoNode}
+              <div className="text-left min-w-0 flex-1 leading-tight">
+                <h2 className="text-[12px] font-black uppercase tracking-wider leading-tight line-clamp-2 text-white">
+                  {school?.name || "School Campus"}
+                </h2>
+                <p className="text-[7px] opacity-80 line-clamp-1 leading-tight mt-0.5 text-slate-200">
+                  {school?.address || "School Campus"}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-slate-900 text-white font-black text-[7px] text-center uppercase tracking-widest py-1 shadow-xs">
+              TERMS & INSTRUCTIONS
             </div>
           </div>
 
-          <div className="bg-slate-900 text-white font-extrabold text-[7px] text-center uppercase tracking-wider py-0.5">
-            TERMS & GUIDELINES
-          </div>
-
           {/* Back Body */}
-          <div className="flex-1 p-3 flex flex-col justify-between space-y-2 text-[7.5px]">
+          <div className="flex-1 p-2.5 flex flex-col justify-between space-y-2 text-[7px]">
             {isStudent ? (
-              <div className="space-y-1.5">
-                <div className="flex flex-col">
-                  <span className="opacity-60 text-[6.5px] uppercase font-semibold">
-                    Emergency Contact:
+              <div className="space-y-2">
+                {/* Emergency Block */}
+                <div className="bg-amber-50/80 border border-amber-200/80 rounded-lg p-2">
+                  <span className="text-[6.5px] font-black text-amber-900 uppercase tracking-wide block mb-1 flex items-center gap-1">
+                    <span className="size-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    EMERGENCY CONTACT
                   </span>
-                  <span className="font-bold font-mono text-[8.5px]">
-                    {rec.emergency_contact || rec.parent_phone || "—"}
-                  </span>
+                  <div className="flex justify-between items-center text-[7.5px]">
+                    <span className="text-slate-600 font-semibold">Guardian:</span>
+                    <span className="font-bold text-slate-900">{rec.parent_name || "—"}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-[7.5px] mt-0.5">
+                    <span className="text-slate-600 font-semibold">Phone:</span>
+                    <span className="font-black font-mono text-slate-900">
+                      {rec.emergency_contact || rec.parent_phone || "—"}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="opacity-60 text-[6.5px] uppercase font-semibold">
-                    Parent/Guardian Contact:
+
+                {/* School Contact Block */}
+                <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-2 space-y-1">
+                  <span className="text-[6.5px] font-black text-slate-700 uppercase tracking-wide block">
+                    SCHOOL ADMINISTRATION
                   </span>
-                  <span className="font-bold text-[8.5px]">{rec.parent_name || "—"}</span>
-                  <span className="font-bold font-mono text-[8px]">{rec.parent_phone || "—"}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="opacity-60 text-[6.5px] uppercase font-semibold">
-                    School Contact Details:
-                  </span>
-                  <span className="font-semibold font-mono">Ph: {school?.phone_number || "—"}</span>
-                  <span className="font-semibold truncate">
-                    Web: {school?.email || "www.hezo.in"}
-                  </span>
+                  <div className="flex justify-between text-[7px]">
+                    <span className="text-slate-500 font-semibold">Phone:</span>
+                    <span className="font-bold font-mono text-slate-800">{school?.phone_number || "—"}</span>
+                  </div>
+                  <div className="flex justify-between text-[7px]">
+                    <span className="text-slate-500 font-semibold">Email:</span>
+                    <span className="font-bold truncate max-w-[120px] text-slate-800">
+                      {school?.email || "info@school.com"}
+                    </span>
+                  </div>
                 </div>
               </div>
             ) : isVisitor ? (
-              <div className="space-y-2 text-center p-2 bg-white/20 rounded border border-border/10">
-                <span className="text-[9.5px] font-bold text-red-550 block">
+              <div className="space-y-2 text-center p-3 bg-red-50/80 rounded-lg border border-red-200/80">
+                <span className="text-[9px] font-black text-red-600 uppercase block tracking-wider">
                   TEMPORARY GUEST PASS
                 </span>
-                <p className="text-[7.5px] leading-normal opacity-90">
-                  This visitor badge is temporary and issued strictly for verification. Return it to
-                  reception upon checkout.
+                <p className="text-[7px] leading-relaxed text-slate-700 font-medium">
+                  This visitor badge is temporary and issued strictly for official campus access. Return it to reception upon departure.
                 </p>
               </div>
             ) : (
-              <div className="space-y-1.5">
-                <div className="flex flex-col">
-                  <span className="opacity-60 text-[6.5px] uppercase font-semibold">
-                    Emergency Contact:
+              <div className="space-y-2">
+                <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-2 space-y-1">
+                  <span className="text-[6.5px] font-black text-slate-700 uppercase tracking-wide block">
+                    STAFF CREDENTIALS
                   </span>
-                  <span className="font-bold font-mono text-[8.5px]">
-                    {rec.emergency_contact || "—"}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="opacity-60 text-[6.5px] uppercase font-semibold">
-                    Residential Address:
-                  </span>
-                  <p className="font-semibold leading-normal line-clamp-3">{rec.address || "—"}</p>
-                </div>
-                <div className="flex flex-col">
-                  <span className="opacity-60 text-[6.5px] uppercase font-semibold">Notes:</span>
-                  <p className="italic text-[7px] leading-tight line-clamp-2 opacity-85">
-                    {rec.notes ||
-                      "This card belongs to the school administration. If found, please return immediately."}
-                  </p>
+                  <div className="flex justify-between text-[7px]">
+                    <span className="text-slate-500 font-semibold">Emergency:</span>
+                    <span className="font-bold font-mono text-slate-900">{rec.emergency_contact || "—"}</span>
+                  </div>
+                  <div className="flex justify-between text-[7px]">
+                    <span className="text-slate-500 font-semibold">Address:</span>
+                    <span className="font-medium truncate max-w-[130px] text-slate-800">{rec.address || "—"}</span>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Return statement */}
-            <div className="text-center font-bold text-[7px] text-red-650 bg-red-50 py-0.5 rounded border border-red-200 uppercase tracking-tighter">
-              "If found please return to school."
+            {/* Return statement & Signature Box */}
+            <div className="space-y-1.5">
+              <div className="border border-slate-200 rounded-lg p-2 bg-white flex justify-between items-end">
+                <div>
+                  <span className="text-[5.5px] uppercase font-bold text-slate-400 block">CARD VALIDITY</span>
+                  <span className="text-[7px] font-bold text-slate-800">{rec.academic_year || currentAcademicYear}</span>
+                </div>
+                <div className="text-right">
+                  <div className="w-16 border-b border-dashed border-slate-300 pb-1 mb-0.5"></div>
+                  <span className="text-[5.5px] uppercase font-bold text-slate-500 block">PRINCIPAL / ADMIN</span>
+                </div>
+              </div>
+
+              <div className="text-center font-bold text-[6.5px] text-red-700 bg-red-50/90 py-1 rounded-md border border-red-200 uppercase tracking-tight">
+                "If found, please return to School Office"
+              </div>
             </div>
           </div>
 
           {/* Back Footer */}
-          <div className="p-1.5 bg-slate-50 border-t border-slate-200/80 flex items-center justify-between">
-            <span className="text-[5.5px] font-mono opacity-60">
-              Secure Badge HZ-{rec.id?.slice(0, 8) || rec.user_id?.slice(0, 8) || "000000"}
+          <div className="p-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+            <span className="text-[5.5px] font-mono text-slate-500 font-bold">
+              ID: HZ-{rec.id?.slice(0, 8) || rec.user_id?.slice(0, 8) || "000000"}
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <QRCodeImage
                 value={verificationLink}
-                className="size-7 bg-white p-0.5 rounded border border-border"
+                className="size-7 bg-white p-0.5 rounded border border-slate-200 shadow-2xs"
               />
-              <div className="leading-none text-left">
-                <span className="text-[5px] block font-bold text-slate-500 uppercase tracking-tighter">
-                  Scan to Verify
-                </span>
-              </div>
+              <span className="text-[5px] font-black text-slate-600 uppercase tracking-widest">
+                VERIFY
+              </span>
             </div>
           </div>
         </div>
@@ -3066,164 +3087,145 @@ export function IDCardComponent({
     if (side === "front") {
       return (
         <div
-          className={`w-full h-full border rounded-xl flex flex-col justify-between overflow-hidden shadow-md relative ${themeCls}`}
+          className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden relative select-none ${themeCls}`}
         >
           {/* Header */}
-          <div
-            className={`px-3 py-1.5 flex items-center gap-2.5 border-b relative min-h-[56px] ${headerCls}`}
-          >
-            {schoolLogoNode}
-            <div className="text-left min-w-0 flex-1 leading-tight">
-              <h2 className="text-[15.5px] font-extrabold uppercase tracking-wide leading-tight break-words whitespace-normal">
-                {school?.name || "School Name"}
-              </h2>
-              <p className="text-[8px] opacity-85 break-words whitespace-normal leading-tight mt-0.5">
-                {school?.address || "Address Detail"}
-              </p>
+          <div className="relative">
+            <div
+              className={`px-3 py-2 flex items-center gap-2.5 relative min-h-[58px] ${headerCls}`}
+            >
+              {schoolLogoNode}
+              <div className="text-left min-w-0 flex-1 leading-tight">
+                <h2 className="text-[13.5px] font-black uppercase tracking-wider leading-tight line-clamp-2 text-white">
+                  {school?.name || "School Campus"}
+                </h2>
+                <p className="text-[7.5px] opacity-80 line-clamp-1 leading-tight mt-0.5 text-slate-200">
+                  {school?.address || "School Campus"}
+                </p>
+              </div>
+              <div className="text-right leading-none flex-shrink-0">
+                <span className="inline-block bg-white/15 backdrop-blur-md px-2 py-0.5 rounded text-[7px] font-mono font-bold text-white border border-white/20">
+                  {rec.academic_year || currentAcademicYear}
+                </span>
+              </div>
             </div>
-            <div className="text-right leading-none flex-shrink-0 font-mono text-[8px] opacity-85 font-semibold ml-1">
-              <div>{rec.academic_year || currentAcademicYear}</div>
-            </div>
-          </div>
 
-          <div
-            className={`font-extrabold text-[7px] text-center uppercase tracking-wider py-0.5 ${subBannerCls}`}
-          >
-            {isStudent ? "STUDENT IDENTITY CARD" : isVisitor ? "VISITOR PASS" : "IDENTITY CARD"}
+            <div
+              className={`font-black text-[7px] text-center uppercase tracking-widest py-1 shadow-xs flex items-center justify-center gap-1.5 ${subBannerCls}`}
+            >
+              <span className="size-1 rounded-full bg-white/70"></span>
+              {isStudent ? "STUDENT IDENTITY CARD" : isVisitor ? "VISITOR PASS" : "STAFF IDENTITY CARD"}
+              <span className="size-1 rounded-full bg-white/70"></span>
+            </div>
           </div>
 
           {/* Body */}
-          <div className="flex-1 p-2 flex items-center justify-center gap-4 min-h-0 relative bg-white/10">
+          <div className="flex-1 p-2.5 flex items-center justify-between gap-3 min-h-0 relative bg-white">
             {/* Left Section: Details */}
-            <div className="w-[125px] flex-shrink-0 text-[7px] space-y-0.5">
-              {isStudent ? (
-                <>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">Student ID:</span>{" "}
-                    <span className="font-bold font-mono">{identifier}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">Class-Sec:</span>{" "}
-                    <span className="font-bold">{displayClassOrDesignation}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">Roll No:</span>{" "}
-                    <span className="font-bold">{rec.roll_number || "—"}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">DOB:</span>{" "}
-                    <span className="font-bold">{rec.date_of_birth || "—"}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">Blood Grp:</span>{" "}
-                    <span className="font-bold text-red-500">{rec.blood_group || "—"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="opacity-60 font-semibold">Parent Mob:</span>{" "}
-                    <span className="font-bold font-mono">{rec.parent_phone || "—"}</span>
-                  </div>
-                </>
-              ) : isVisitor ? (
-                <>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">Pass No:</span>{" "}
-                    <span className="font-bold font-mono">{identifier}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">Visitor Phone:</span>{" "}
-                    <span className="font-bold font-mono">{rec.contact_number}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="opacity-60 font-semibold">Host:</span>{" "}
-                    <span className="font-bold truncate max-w-[80px]">{rec.host_name || "—"}</span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">Emp ID:</span>{" "}
-                    <span className="font-bold font-mono">{identifier}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">Dept:</span>{" "}
-                    <span className="font-bold">{rec.department || "—"}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">Blood Grp:</span>{" "}
-                    <span className="font-bold text-red-550">{rec.blood_group || "—"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="opacity-60 font-semibold">Mobile:</span>{" "}
-                    <span className="font-bold font-mono">{rec.mobile_number || "—"}</span>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Center Section: Photo and Name */}
-            <div className="flex-1 flex flex-col items-center justify-center min-w-0">
-              {/* Photo frame (35-40% height: 92px of 250px) */}
-              <div
-                className={`w-[72px] h-[92px] rounded border bg-white overflow-hidden shadow-sm flex items-center justify-center flex-shrink-0 relative ${accentBorder}`}
-              >
-                {rec.photo_url ? (
-                  <img
-                    src={rec.photo_url}
-                    alt=""
-                    className="size-full object-cover"
-                    crossOrigin="anonymous"
-                  />
-                ) : (
-                  <img
-                    src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNjYmQ1ZTEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjAgMjF2LTJhNCA0IDAgMCAwLTQtNEg4YTQgNCAwIDAgMC00IDR2MiI+PC9wYXRoPjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCI+PC9jaXJjbGU+PC9zdmc+"
-                    alt=""
-                    style={{ width: "48px", height: "48px" }}
-                    className="w-12 h-12 object-contain opacity-60"
-                  />
-                )}
-              </div>
-
-              {/* Student Name */}
+            <div className="flex-1 min-w-0">
               <h4
-                className={`${nameFontSize} font-bold text-center leading-tight whitespace-normal break-words w-full px-1 mt-1.5`}
+                className="font-black uppercase tracking-tight text-slate-900 text-[12px] leading-tight truncate"
                 title={displayName}
               >
                 {displayName}
               </h4>
+              <div className="mt-0.5 mb-1.5">
+                <span className="inline-block bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.2 rounded-full font-bold text-[7.5px] uppercase tracking-wide">
+                  {displayClassOrDesignation}
+                </span>
+              </div>
+
+              <div className="bg-slate-50/90 border border-slate-200/80 rounded-lg p-1.5 text-[6.8px] space-y-0.8 shadow-2xs">
+                {isStudent ? (
+                  <>
+                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                      <span className="text-slate-500 font-semibold">Admission No:</span>
+                      <span className="font-black font-mono text-slate-900">{identifier}</span>
+                    </div>
+                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                      <span className="text-slate-500 font-semibold">Roll No:</span>
+                      <span className="font-bold text-slate-900">{rec.roll_number || "—"}</span>
+                    </div>
+                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                      <span className="text-slate-500 font-semibold">Blood Group:</span>
+                      <span className="font-black text-red-600 bg-red-50 border border-red-200/80 px-1 rounded">
+                        {rec.blood_group || "—"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-semibold">Parent Mob:</span>
+                      <span className="font-black font-mono text-slate-900">{rec.parent_phone || "—"}</span>
+                    </div>
+                  </>
+                ) : isVisitor ? (
+                  <>
+                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                      <span className="text-slate-500 font-semibold">Pass No:</span>
+                      <span className="font-black font-mono text-slate-900">{identifier}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-semibold">Visitor Mob:</span>
+                      <span className="font-black font-mono text-slate-900">{rec.contact_number}</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                      <span className="text-slate-500 font-semibold">Emp ID:</span>
+                      <span className="font-black font-mono text-slate-900">{identifier}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-semibold">Dept:</span>
+                      <span className="font-bold text-slate-900">{rec.department || "—"}</span>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
-            {/* Right Section: Barcode, QR Code & Signature */}
-            <div className="w-[100px] flex-shrink-0 flex flex-col items-center justify-between h-full py-0.5">
-              <Barcode value={identifier} />
+            {/* Middle Section: Photo */}
+            <div
+              className={`w-[85px] h-[105px] rounded-xl border-2 border-white overflow-hidden shadow-md flex items-center justify-center flex-shrink-0 bg-slate-100 ${accentBorder}`}
+            >
+              {rec.photo_url ? (
+                <img
+                  src={rec.photo_url}
+                  alt=""
+                  className="size-full object-cover"
+                  crossOrigin="anonymous"
+                />
+              ) : (
+                <img
+                  src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTRhM2I4IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48cGF0aCBkPSJNMjAgMjF2LTJhNCA0IDAgMCAwLTQtNEg4YTQgNCAwIDAgMC00IDR2MiI+PC9wYXRoPjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCI+PC9jaXJjbGU+PC9zdmc+"
+                  alt=""
+                  style={{ width: "48px", height: "48px" }}
+                  className="w-12 h-12 object-contain opacity-50"
+                />
+              )}
+            </div>
 
-              {signature && !isVisitor && (
-                <div className="h-3.5 flex items-end opacity-75 grayscale mt-1">
-                  <img
-                    src={signature}
-                    alt="Sig"
-                    className="h-full object-contain"
-                    crossOrigin="anonymous"
+            {/* Right Section: Verification & Barcode */}
+            <div className="w-[85px] flex-shrink-0 flex flex-col items-center justify-between h-[105px] bg-slate-50/90 border border-slate-200/80 rounded-lg p-1.5 shadow-2xs">
+              <div className="w-full bg-white p-0.5 rounded border border-slate-200/80 flex items-center justify-center">
+                <Barcode value={identifier} />
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="p-0.5 bg-white rounded border border-slate-200">
+                  <QRCodeImage
+                    value={verificationLink}
+                    className="size-7"
                   />
                 </div>
-              )}
-
-              <div className="flex flex-col items-center mt-1">
-                <QRCodeImage
-                  value={verificationLink}
-                  className="size-9 bg-white p-0.5 rounded border border-border"
-                />
-                <span className="text-[5px] font-bold text-slate-500 mt-0.5 uppercase tracking-tighter">
-                  Scan to Verify
+                <span className="text-[4.5px] font-black text-slate-500 mt-0.5 uppercase tracking-widest">
+                  VERIFIED
                 </span>
               </div>
             </div>
           </div>
 
           {/* Footer strip branding */}
-          <div
-            className={`h-4 px-3 bg-slate-50 border-t flex items-center justify-between text-[5.5px] font-mono opacity-60 ${theme === "premium-corporate" || theme === "gold-premium" ? "border-slate-800" : "border-border"}`}
-          >
-            <span>Secure Badge System · {school?.name || "School ERP"}</span>
+          <div className="h-4 px-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[5.5px] font-mono text-slate-500 font-bold">
+            <span>SMART INSTITUTION ID</span>
             <span>HZ-{rec.id?.slice(0, 8) || rec.user_id?.slice(0, 8) || "000000"}</span>
           </div>
         </div>
@@ -3232,100 +3234,81 @@ export function IDCardComponent({
       // Landscape Back Side
       return (
         <div
-          className={`w-full h-full border rounded-xl flex flex-col justify-between overflow-hidden p-2.5 shadow-md ${themeCls}`}
+          className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden p-3 relative select-none ${themeCls}`}
         >
           {/* Header */}
-          <div
-            className={`text-center pb-1.5 border-b flex justify-between items-center ${theme === "premium-corporate" || theme === "gold-premium" ? "border-slate-800" : "border-border"}`}
-          >
-            <span className="text-[9px] font-bold uppercase font-sans">TERMS & INSTRUCTIONS</span>
-            <span className="text-[6.5px] opacity-75 truncate max-w-[180px]">
-              {school?.name || "School Name"}
+          <div className="text-center pb-1.5 border-b border-slate-200 flex justify-between items-center">
+            <span className="text-[8px] font-black uppercase tracking-wider text-slate-900">TERMS & INSTRUCTIONS</span>
+            <span className="text-[7px] font-bold text-slate-600 truncate max-w-[180px]">
+              {school?.name || "School Campus"}
             </span>
           </div>
 
           {/* Details */}
           <div className="flex-1 flex items-center justify-between gap-3 py-1.5 min-h-0">
-            <div className="flex-1 text-[7.5px] space-y-1">
+            <div className="flex-1 text-[7px] space-y-1">
               {isStudent ? (
                 <>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">Emergency Contact:</span>
-                    <span className="font-bold font-mono">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                    <span className="text-slate-500 font-semibold">Emergency Contact:</span>
+                    <span className="font-black font-mono text-slate-900">
                       {rec.emergency_contact || rec.parent_phone || "—"}
                     </span>
                   </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">Parent/Guardian:</span>
-                    <span className="font-bold">{rec.parent_name || "—"}</span>
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                    <span className="text-slate-500 font-semibold">Parent / Guardian:</span>
+                    <span className="font-bold text-slate-900">{rec.parent_name || "—"}</span>
                   </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">Parent Mob. Contact:</span>
-                    <span className="font-bold font-mono">{rec.parent_phone || "—"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="opacity-60 font-semibold">School Address:</span>
-                    <span className="font-semibold truncate max-w-[120px]">
-                      {school?.address || "—"}
-                    </span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 font-semibold">School Phone:</span>
+                    <span className="font-bold font-mono text-slate-900">{school?.phone_number || "—"}</span>
                   </div>
                 </>
-              ) : isVisitor ? (
-                <div className="space-y-1 p-1 bg-white/10 rounded">
-                  <span className="text-[8px] font-bold text-red-550 uppercase">
-                    visitor badge terms
-                  </span>
-                  <p className="text-[6.5px] leading-normal opacity-90">
-                    This temporary pass allows access strictly for official visitations. Report to
-                    reception if any assistance is required. Please return pass before checking out.
-                  </p>
-                </div>
               ) : (
-                <>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">Emergency Contact:</span>
-                    <span className="font-bold font-mono">{rec.emergency_contact || "—"}</span>
+                <div className="text-[7px] space-y-1">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                    <span className="text-slate-500 font-semibold">Emergency Phone:</span>
+                    <span className="font-black font-mono text-slate-900">{rec.emergency_contact || "—"}</span>
                   </div>
-                  <div className="flex justify-between border-b border-dashed border-slate-200/50 pb-0.5">
-                    <span className="opacity-60 font-semibold">Residential Address:</span>
-                    <span className="font-semibold truncate max-w-[120px]">
-                      {rec.address || "—"}
-                    </span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 font-semibold">School Contact:</span>
+                    <span className="font-bold font-mono text-slate-900">{school?.phone_number || "—"}</span>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="opacity-60 font-semibold">Notes:</span>
-                    <p className="italic text-[6.5px] leading-tight line-clamp-2 opacity-85">
-                      {rec.notes || "This card belongs to the school administration."}
-                    </p>
-                  </div>
-                </>
+                </div>
               )}
             </div>
 
-            {/* Back QR */}
-            <div
-              className={`flex flex-col items-center justify-center border-l pl-3 h-full ${theme === "premium-corporate" || theme === "gold-premium" ? "border-slate-800" : "border-border"}`}
-            >
-              <QRCodeImage
-                value={verificationLink}
-                className="size-9 bg-white p-0.5 rounded border border-border"
-              />
-              <span className="text-[5px] block font-bold text-slate-500 uppercase tracking-tighter mt-1">
-                Scan to Verify
-              </span>
+            {/* Principal Signature Box */}
+            <div className="w-[100px] border border-slate-200 rounded-lg p-2 bg-white flex flex-col items-center justify-between text-center">
+              <span className="text-[5px] uppercase font-bold text-slate-400 block">AUTHORIZED ISSUER</span>
+              {signature ? (
+                <div className="h-6 w-full flex items-center justify-center my-0.5">
+                  <img
+                    src={signature}
+                    alt="Sig"
+                    className="max-h-full max-w-full object-contain grayscale"
+                    crossOrigin="anonymous"
+                  />
+                </div>
+              ) : (
+                <div className="w-16 border-b border-dashed border-slate-300 my-1"></div>
+              )}
+              <span className="text-[6px] font-bold text-slate-700 uppercase">PRINCIPAL</span>
             </div>
           </div>
 
-          {/* Footer return text & branding */}
-          <div
-            className={`border-t pt-1 flex justify-between items-center text-[6.5px] ${theme === "premium-corporate" || theme === "gold-premium" ? "border-slate-800" : "border-border"}`}
-          >
-            <span className="font-bold text-red-600 animate-pulse uppercase tracking-tighter font-sans">
-              "If found please return to school."
+          {/* Footer */}
+          <div className="border-t border-slate-200 pt-1 flex justify-between items-center">
+            <span className="text-[6px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">
+              "If found, please return to School Office"
             </span>
-            <span className="font-mono opacity-60">
-              HZ-{rec.id?.slice(0, 8) || rec.user_id?.slice(0, 8) || "00000"}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <QRCodeImage
+                value={verificationLink}
+                className="size-6 bg-white p-0.5 rounded border border-slate-200"
+              />
+              <span className="text-[5px] font-black text-slate-600 uppercase">VERIFIED</span>
+            </div>
           </div>
         </div>
       );

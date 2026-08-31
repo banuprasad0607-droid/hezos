@@ -24,7 +24,12 @@ import {
   Plus,
   ArrowRightLeft,
   Wallet,
+  Pencil,
+  Camera,
+  Image as ImageIcon,
 } from "lucide-react";
+import { EditStaffModal, type StaffEditData } from "@/components/EditStaffModal";
+import { SchoolLogoUploadModal } from "@/components/SchoolLogoUploadModal";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPanel,
@@ -32,8 +37,16 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 type Staff = {
   user_id: string;
+  school_id: string;
   full_name: string;
   email: string | null;
+  mobile_number?: string | null;
+  designation?: string | null;
+  department?: string | null;
+  employee_id?: string | null;
+  blood_group?: string | null;
+  address?: string | null;
+  emergency_contact?: string | null;
   roles: ("admin" | "teacher" | "parent")[];
 };
 
@@ -61,8 +74,11 @@ function AdminPanel() {
   const isAdmin = (roles ?? []).includes("admin") || (roles ?? []).includes("super_admin");
 
   const [schoolName, setSchoolName] = useState("");
+  const [schoolLogo, setSchoolLogo] = useState<string | null>(null);
+  const [logoModalOpen, setLogoModalOpen] = useState(false);
   const [savingSchool, setSavingSchool] = useState(false);
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [editingStaff, setEditingStaff] = useState<StaffEditData | null>(null);
   const [counts, setCounts] = useState<Counts | null>(null);
   const [loading, setLoading] = useState(true);
   const [ownedSchools, setOwnedSchools] = useState<{ id: string; name: string }[]>([]);
@@ -89,10 +105,10 @@ function AdminPanel() {
       homework,
       owned,
     ] = await Promise.all([
-      supabase.from("schools").select("school_name").eq("id", effectiveSchoolId!).maybeSingle(),
+      (supabase as any).from("schools").select("name, school_name, logo_url, school_logo").eq("id", effectiveSchoolId!).maybeSingle(),
       supabase
         .from("profiles")
-        .select("user_id, full_name, email")
+        .select("user_id, full_name, email, mobile_number, designation, department, employee_id, blood_group, address, emergency_contact")
         .eq("school_id", effectiveSchoolId!),
       supabase.from("user_roles").select("user_id, role").eq("school_id", effectiveSchoolId!),
       supabase
@@ -125,7 +141,8 @@ function AdminPanel() {
     ]);
 
     setOwnedSchools((owned.data ?? []).map((s) => ({ id: s.id, name: s.school_name })));
-    setSchoolName(school.data?.school_name ?? "");
+    setSchoolName(school.data?.school_name || school.data?.name || "");
+    setSchoolLogo(school.data?.logo_url || school.data?.school_logo || null);
 
     const rolesByUser = new Map<string, Staff["roles"]>();
     (userRoles.data ?? []).forEach((r) => {
@@ -137,8 +154,16 @@ function AdminPanel() {
     const list: Staff[] = (profiles.data ?? [])
       .map((p) => ({
         user_id: p.user_id,
+        school_id: effectiveSchoolId!,
         full_name: p.full_name || "—",
         email: p.email,
+        mobile_number: p.mobile_number,
+        designation: p.designation,
+        department: p.department,
+        employee_id: p.employee_id,
+        blood_group: p.blood_group,
+        address: p.address,
+        emergency_contact: p.emergency_contact,
         roles: rolesByUser.get(p.user_id) ?? [],
       }))
       .filter((s) => (s.roles ?? []).includes("admin") || (s.roles ?? []).includes("teacher"))
@@ -351,7 +376,7 @@ function AdminPanel() {
         }
       />
 
-      <div className="flex-1 overflow-y-auto p-8 space-y-8">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
         {/* KPIs */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Stat label="Students" value={counts?.students ?? "—"} />
@@ -448,8 +473,43 @@ function AdminPanel() {
             >
               <div className="flex items-center gap-2">
                 <Building2 className="size-4 text-brand" />
-                <h2 className="text-sm font-semibold">School settings</h2>
+                <h2 className="text-sm font-semibold">School settings & Branding</h2>
               </div>
+
+              {/* School Logo Section */}
+              <div>
+                <label className="text-xs font-medium block mb-1.5">School Logo</label>
+                <div className="flex items-center gap-3.5 p-3 rounded-xl bg-muted/30 border border-border">
+                  {schoolLogo ? (
+                    <img
+                      src={schoolLogo}
+                      alt="School Logo"
+                      className="size-12 rounded-xl object-cover border border-border shadow-sm"
+                    />
+                  ) : (
+                    <div className="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-lg border border-primary/20">
+                      {schoolName ? schoolName.charAt(0).toUpperCase() : "S"}
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold text-foreground">
+                      {schoolLogo ? "Custom Logo Active" : "No Logo (Initial Badge)"}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Used on ID cards, report cards & sidebar
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLogoModalOpen(true)}
+                    className="px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-foreground text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
+                  >
+                    <Camera className="size-3.5 text-primary" />
+                    {schoolLogo ? "Change" : "Upload"}
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <label className="text-xs font-medium">School name</label>
                 <input
@@ -521,6 +581,13 @@ function AdminPanel() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setEditingStaff(s)}
+                          className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 border border-border rounded-md hover:bg-primary/10 hover:text-primary font-medium transition-colors cursor-pointer"
+                          title="Edit Staff Profile"
+                        >
+                          <Pencil className="size-3" /> Edit
+                        </button>
                         {isAdminRole ? (
                           <button
                             onClick={() => revokeAdmin(s.user_id)}
@@ -555,6 +622,30 @@ function AdminPanel() {
           </div>
         </div>
       </div>
+
+      {/* Edit Staff Profile Modal */}
+      <EditStaffModal
+        staff={editingStaff}
+        isOpen={!!editingStaff}
+        onClose={() => setEditingStaff(null)}
+        onUpdated={() => void loadAll()}
+      />
+
+      {/* School Logo Upload Modal */}
+      {effectiveSchoolId && (
+        <SchoolLogoUploadModal
+          isOpen={logoModalOpen}
+          onClose={() => setLogoModalOpen(false)}
+          schoolId={effectiveSchoolId}
+          currentLogoUrl={schoolLogo}
+          schoolName={schoolName}
+          onLogoUpdated={(newUrl) => {
+            setSchoolLogo(newUrl);
+            void loadAll();
+            void refresh();
+          }}
+        />
+      )}
     </>
   );
 }

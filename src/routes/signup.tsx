@@ -86,7 +86,7 @@ function SignupPage() {
         <p className="text-xs text-sidebar-muted">© HEZO SCHOOL</p>
       </div>
 
-      <div className="flex items-center justify-center p-8 bg-card text-foreground">
+      <div className="flex items-center justify-center p-4 sm:p-8 bg-card text-foreground">
         <form onSubmit={handleSubmit(onSubmitForm)} className="w-full max-w-sm space-y-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">

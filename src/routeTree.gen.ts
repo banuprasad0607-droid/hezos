@@ -23,6 +23,7 @@ import { Route as AuthenticatedStudentsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedReportCardsRouteImport } from './routes/_authenticated/report-cards'
 import { Route as AuthenticatedRemarksRouteImport } from './routes/_authenticated/remarks'
 import { Route as AuthenticatedRecycleBinRouteImport } from './routes/_authenticated/recycle-bin'
+import { Route as AuthenticatedPlatformRouteImport } from './routes/_authenticated/platform'
 import { Route as AuthenticatedPayrollRouteImport } from './routes/_authenticated/payroll'
 import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated/parent'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -40,7 +41,16 @@ import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAchievementsRouteImport } from './routes/_authenticated/achievements'
+import { Route as AuthenticatedPlatformIndexRouteImport } from './routes/_authenticated/platform/index'
+import { Route as VerifyTeacherTokenRouteImport } from './routes/verify.teacher.$token'
 import { Route as AuthenticatedStudentsStudentIdRouteImport } from './routes/_authenticated/students.$studentId'
+import { Route as AuthenticatedPlatformTeachersRouteImport } from './routes/_authenticated/platform/teachers'
+import { Route as AuthenticatedPlatformSubscriptionsRouteImport } from './routes/_authenticated/platform/subscriptions'
+import { Route as AuthenticatedPlatformStaffRouteImport } from './routes/_authenticated/platform/staff'
+import { Route as AuthenticatedPlatformSettingsRouteImport } from './routes/_authenticated/platform/settings'
+import { Route as AuthenticatedPlatformSchoolsRouteImport } from './routes/_authenticated/platform/schools'
+import { Route as AuthenticatedPlatformBulkImportRouteImport } from './routes/_authenticated/platform/bulk-import'
+import { Route as AuthenticatedPlatformAuditLogsRouteImport } from './routes/_authenticated/platform/audit-logs'
 import { Route as AuthenticatedAdminWhatsappRouteImport } from './routes/_authenticated/admin/whatsapp'
 import { Route as AuthenticatedAdminBillingRouteImport } from './routes/_authenticated/admin/billing'
 
@@ -113,6 +123,11 @@ const AuthenticatedRemarksRoute = AuthenticatedRemarksRouteImport.update({
 const AuthenticatedRecycleBinRoute = AuthenticatedRecycleBinRouteImport.update({
   id: '/recycle-bin',
   path: '/recycle-bin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPlatformRoute = AuthenticatedPlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedPayrollRoute = AuthenticatedPayrollRouteImport.update({
@@ -205,11 +220,64 @@ const AuthenticatedAchievementsRoute =
     path: '/achievements',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPlatformIndexRoute =
+  AuthenticatedPlatformIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedPlatformRoute,
+  } as any)
+const VerifyTeacherTokenRoute = VerifyTeacherTokenRouteImport.update({
+  id: '/verify/teacher/$token',
+  path: '/verify/teacher/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedStudentsStudentIdRoute =
   AuthenticatedStudentsStudentIdRouteImport.update({
     id: '/$studentId',
     path: '/$studentId',
     getParentRoute: () => AuthenticatedStudentsRoute,
+  } as any)
+const AuthenticatedPlatformTeachersRoute =
+  AuthenticatedPlatformTeachersRouteImport.update({
+    id: '/teachers',
+    path: '/teachers',
+    getParentRoute: () => AuthenticatedPlatformRoute,
+  } as any)
+const AuthenticatedPlatformSubscriptionsRoute =
+  AuthenticatedPlatformSubscriptionsRouteImport.update({
+    id: '/subscriptions',
+    path: '/subscriptions',
+    getParentRoute: () => AuthenticatedPlatformRoute,
+  } as any)
+const AuthenticatedPlatformStaffRoute =
+  AuthenticatedPlatformStaffRouteImport.update({
+    id: '/staff',
+    path: '/staff',
+    getParentRoute: () => AuthenticatedPlatformRoute,
+  } as any)
+const AuthenticatedPlatformSettingsRoute =
+  AuthenticatedPlatformSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedPlatformRoute,
+  } as any)
+const AuthenticatedPlatformSchoolsRoute =
+  AuthenticatedPlatformSchoolsRouteImport.update({
+    id: '/schools',
+    path: '/schools',
+    getParentRoute: () => AuthenticatedPlatformRoute,
+  } as any)
+const AuthenticatedPlatformBulkImportRoute =
+  AuthenticatedPlatformBulkImportRouteImport.update({
+    id: '/bulk-import',
+    path: '/bulk-import',
+    getParentRoute: () => AuthenticatedPlatformRoute,
+  } as any)
+const AuthenticatedPlatformAuditLogsRoute =
+  AuthenticatedPlatformAuditLogsRouteImport.update({
+    id: '/audit-logs',
+    path: '/audit-logs',
+    getParentRoute: () => AuthenticatedPlatformRoute,
   } as any)
 const AuthenticatedAdminWhatsappRoute =
   AuthenticatedAdminWhatsappRouteImport.update({
@@ -249,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/parent': typeof AuthenticatedParentRoute
   '/payroll': typeof AuthenticatedPayrollRoute
+  '/platform': typeof AuthenticatedPlatformRouteWithChildren
   '/recycle-bin': typeof AuthenticatedRecycleBinRoute
   '/remarks': typeof AuthenticatedRemarksRoute
   '/report-cards': typeof AuthenticatedReportCardsRoute
@@ -257,7 +326,16 @@ export interface FileRoutesByFullPath {
   '/teacher-allocations': typeof AuthenticatedTeacherAllocationsRoute
   '/admin/billing': typeof AuthenticatedAdminBillingRoute
   '/admin/whatsapp': typeof AuthenticatedAdminWhatsappRoute
+  '/platform/audit-logs': typeof AuthenticatedPlatformAuditLogsRoute
+  '/platform/bulk-import': typeof AuthenticatedPlatformBulkImportRoute
+  '/platform/schools': typeof AuthenticatedPlatformSchoolsRoute
+  '/platform/settings': typeof AuthenticatedPlatformSettingsRoute
+  '/platform/staff': typeof AuthenticatedPlatformStaffRoute
+  '/platform/subscriptions': typeof AuthenticatedPlatformSubscriptionsRoute
+  '/platform/teachers': typeof AuthenticatedPlatformTeachersRoute
   '/students/$studentId': typeof AuthenticatedStudentsStudentIdRoute
+  '/verify/teacher/$token': typeof VerifyTeacherTokenRoute
+  '/platform/': typeof AuthenticatedPlatformIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -292,7 +370,16 @@ export interface FileRoutesByTo {
   '/teacher-allocations': typeof AuthenticatedTeacherAllocationsRoute
   '/admin/billing': typeof AuthenticatedAdminBillingRoute
   '/admin/whatsapp': typeof AuthenticatedAdminWhatsappRoute
+  '/platform/audit-logs': typeof AuthenticatedPlatformAuditLogsRoute
+  '/platform/bulk-import': typeof AuthenticatedPlatformBulkImportRoute
+  '/platform/schools': typeof AuthenticatedPlatformSchoolsRoute
+  '/platform/settings': typeof AuthenticatedPlatformSettingsRoute
+  '/platform/staff': typeof AuthenticatedPlatformStaffRoute
+  '/platform/subscriptions': typeof AuthenticatedPlatformSubscriptionsRoute
+  '/platform/teachers': typeof AuthenticatedPlatformTeachersRoute
   '/students/$studentId': typeof AuthenticatedStudentsStudentIdRoute
+  '/verify/teacher/$token': typeof VerifyTeacherTokenRoute
+  '/platform': typeof AuthenticatedPlatformIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -321,6 +408,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/parent': typeof AuthenticatedParentRoute
   '/_authenticated/payroll': typeof AuthenticatedPayrollRoute
+  '/_authenticated/platform': typeof AuthenticatedPlatformRouteWithChildren
   '/_authenticated/recycle-bin': typeof AuthenticatedRecycleBinRoute
   '/_authenticated/remarks': typeof AuthenticatedRemarksRoute
   '/_authenticated/report-cards': typeof AuthenticatedReportCardsRoute
@@ -329,7 +417,16 @@ export interface FileRoutesById {
   '/_authenticated/teacher-allocations': typeof AuthenticatedTeacherAllocationsRoute
   '/_authenticated/admin/billing': typeof AuthenticatedAdminBillingRoute
   '/_authenticated/admin/whatsapp': typeof AuthenticatedAdminWhatsappRoute
+  '/_authenticated/platform/audit-logs': typeof AuthenticatedPlatformAuditLogsRoute
+  '/_authenticated/platform/bulk-import': typeof AuthenticatedPlatformBulkImportRoute
+  '/_authenticated/platform/schools': typeof AuthenticatedPlatformSchoolsRoute
+  '/_authenticated/platform/settings': typeof AuthenticatedPlatformSettingsRoute
+  '/_authenticated/platform/staff': typeof AuthenticatedPlatformStaffRoute
+  '/_authenticated/platform/subscriptions': typeof AuthenticatedPlatformSubscriptionsRoute
+  '/_authenticated/platform/teachers': typeof AuthenticatedPlatformTeachersRoute
   '/_authenticated/students/$studentId': typeof AuthenticatedStudentsStudentIdRoute
+  '/verify/teacher/$token': typeof VerifyTeacherTokenRoute
+  '/_authenticated/platform/': typeof AuthenticatedPlatformIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -358,6 +455,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/parent'
     | '/payroll'
+    | '/platform'
     | '/recycle-bin'
     | '/remarks'
     | '/report-cards'
@@ -366,7 +464,16 @@ export interface FileRouteTypes {
     | '/teacher-allocations'
     | '/admin/billing'
     | '/admin/whatsapp'
+    | '/platform/audit-logs'
+    | '/platform/bulk-import'
+    | '/platform/schools'
+    | '/platform/settings'
+    | '/platform/staff'
+    | '/platform/subscriptions'
+    | '/platform/teachers'
     | '/students/$studentId'
+    | '/verify/teacher/$token'
+    | '/platform/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -401,7 +508,16 @@ export interface FileRouteTypes {
     | '/teacher-allocations'
     | '/admin/billing'
     | '/admin/whatsapp'
+    | '/platform/audit-logs'
+    | '/platform/bulk-import'
+    | '/platform/schools'
+    | '/platform/settings'
+    | '/platform/staff'
+    | '/platform/subscriptions'
+    | '/platform/teachers'
     | '/students/$studentId'
+    | '/verify/teacher/$token'
+    | '/platform'
   id:
     | '__root__'
     | '/'
@@ -429,6 +545,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/parent'
     | '/_authenticated/payroll'
+    | '/_authenticated/platform'
     | '/_authenticated/recycle-bin'
     | '/_authenticated/remarks'
     | '/_authenticated/report-cards'
@@ -437,7 +554,16 @@ export interface FileRouteTypes {
     | '/_authenticated/teacher-allocations'
     | '/_authenticated/admin/billing'
     | '/_authenticated/admin/whatsapp'
+    | '/_authenticated/platform/audit-logs'
+    | '/_authenticated/platform/bulk-import'
+    | '/_authenticated/platform/schools'
+    | '/_authenticated/platform/settings'
+    | '/_authenticated/platform/staff'
+    | '/_authenticated/platform/subscriptions'
+    | '/_authenticated/platform/teachers'
     | '/_authenticated/students/$studentId'
+    | '/verify/teacher/$token'
+    | '/_authenticated/platform/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -449,6 +575,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
   VerifyIdRoute: typeof VerifyIdRoute
+  VerifyTeacherTokenRoute: typeof VerifyTeacherTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -549,6 +676,13 @@ declare module '@tanstack/react-router' {
       path: '/recycle-bin'
       fullPath: '/recycle-bin'
       preLoaderRoute: typeof AuthenticatedRecycleBinRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/platform': {
+      id: '/_authenticated/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof AuthenticatedPlatformRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/payroll': {
@@ -670,12 +804,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAchievementsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/platform/': {
+      id: '/_authenticated/platform/'
+      path: '/'
+      fullPath: '/platform/'
+      preLoaderRoute: typeof AuthenticatedPlatformIndexRouteImport
+      parentRoute: typeof AuthenticatedPlatformRoute
+    }
+    '/verify/teacher/$token': {
+      id: '/verify/teacher/$token'
+      path: '/verify/teacher/$token'
+      fullPath: '/verify/teacher/$token'
+      preLoaderRoute: typeof VerifyTeacherTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/students/$studentId': {
       id: '/_authenticated/students/$studentId'
       path: '/$studentId'
       fullPath: '/students/$studentId'
       preLoaderRoute: typeof AuthenticatedStudentsStudentIdRouteImport
       parentRoute: typeof AuthenticatedStudentsRoute
+    }
+    '/_authenticated/platform/teachers': {
+      id: '/_authenticated/platform/teachers'
+      path: '/teachers'
+      fullPath: '/platform/teachers'
+      preLoaderRoute: typeof AuthenticatedPlatformTeachersRouteImport
+      parentRoute: typeof AuthenticatedPlatformRoute
+    }
+    '/_authenticated/platform/subscriptions': {
+      id: '/_authenticated/platform/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/platform/subscriptions'
+      preLoaderRoute: typeof AuthenticatedPlatformSubscriptionsRouteImport
+      parentRoute: typeof AuthenticatedPlatformRoute
+    }
+    '/_authenticated/platform/staff': {
+      id: '/_authenticated/platform/staff'
+      path: '/staff'
+      fullPath: '/platform/staff'
+      preLoaderRoute: typeof AuthenticatedPlatformStaffRouteImport
+      parentRoute: typeof AuthenticatedPlatformRoute
+    }
+    '/_authenticated/platform/settings': {
+      id: '/_authenticated/platform/settings'
+      path: '/settings'
+      fullPath: '/platform/settings'
+      preLoaderRoute: typeof AuthenticatedPlatformSettingsRouteImport
+      parentRoute: typeof AuthenticatedPlatformRoute
+    }
+    '/_authenticated/platform/schools': {
+      id: '/_authenticated/platform/schools'
+      path: '/schools'
+      fullPath: '/platform/schools'
+      preLoaderRoute: typeof AuthenticatedPlatformSchoolsRouteImport
+      parentRoute: typeof AuthenticatedPlatformRoute
+    }
+    '/_authenticated/platform/bulk-import': {
+      id: '/_authenticated/platform/bulk-import'
+      path: '/bulk-import'
+      fullPath: '/platform/bulk-import'
+      preLoaderRoute: typeof AuthenticatedPlatformBulkImportRouteImport
+      parentRoute: typeof AuthenticatedPlatformRoute
+    }
+    '/_authenticated/platform/audit-logs': {
+      id: '/_authenticated/platform/audit-logs'
+      path: '/audit-logs'
+      fullPath: '/platform/audit-logs'
+      preLoaderRoute: typeof AuthenticatedPlatformAuditLogsRouteImport
+      parentRoute: typeof AuthenticatedPlatformRoute
     }
     '/_authenticated/admin/whatsapp': {
       id: '/_authenticated/admin/whatsapp'
@@ -706,6 +903,34 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedPlatformRouteChildren {
+  AuthenticatedPlatformAuditLogsRoute: typeof AuthenticatedPlatformAuditLogsRoute
+  AuthenticatedPlatformBulkImportRoute: typeof AuthenticatedPlatformBulkImportRoute
+  AuthenticatedPlatformSchoolsRoute: typeof AuthenticatedPlatformSchoolsRoute
+  AuthenticatedPlatformSettingsRoute: typeof AuthenticatedPlatformSettingsRoute
+  AuthenticatedPlatformStaffRoute: typeof AuthenticatedPlatformStaffRoute
+  AuthenticatedPlatformSubscriptionsRoute: typeof AuthenticatedPlatformSubscriptionsRoute
+  AuthenticatedPlatformTeachersRoute: typeof AuthenticatedPlatformTeachersRoute
+  AuthenticatedPlatformIndexRoute: typeof AuthenticatedPlatformIndexRoute
+}
+
+const AuthenticatedPlatformRouteChildren: AuthenticatedPlatformRouteChildren = {
+  AuthenticatedPlatformAuditLogsRoute: AuthenticatedPlatformAuditLogsRoute,
+  AuthenticatedPlatformBulkImportRoute: AuthenticatedPlatformBulkImportRoute,
+  AuthenticatedPlatformSchoolsRoute: AuthenticatedPlatformSchoolsRoute,
+  AuthenticatedPlatformSettingsRoute: AuthenticatedPlatformSettingsRoute,
+  AuthenticatedPlatformStaffRoute: AuthenticatedPlatformStaffRoute,
+  AuthenticatedPlatformSubscriptionsRoute:
+    AuthenticatedPlatformSubscriptionsRoute,
+  AuthenticatedPlatformTeachersRoute: AuthenticatedPlatformTeachersRoute,
+  AuthenticatedPlatformIndexRoute: AuthenticatedPlatformIndexRoute,
+}
+
+const AuthenticatedPlatformRouteWithChildren =
+  AuthenticatedPlatformRoute._addFileChildren(
+    AuthenticatedPlatformRouteChildren,
+  )
 
 interface AuthenticatedStudentsRouteChildren {
   AuthenticatedStudentsStudentIdRoute: typeof AuthenticatedStudentsStudentIdRoute
@@ -738,6 +963,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedParentRoute: typeof AuthenticatedParentRoute
   AuthenticatedPayrollRoute: typeof AuthenticatedPayrollRoute
+  AuthenticatedPlatformRoute: typeof AuthenticatedPlatformRouteWithChildren
   AuthenticatedRecycleBinRoute: typeof AuthenticatedRecycleBinRoute
   AuthenticatedRemarksRoute: typeof AuthenticatedRemarksRoute
   AuthenticatedReportCardsRoute: typeof AuthenticatedReportCardsRoute
@@ -764,6 +990,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedParentRoute: AuthenticatedParentRoute,
   AuthenticatedPayrollRoute: AuthenticatedPayrollRoute,
+  AuthenticatedPlatformRoute: AuthenticatedPlatformRouteWithChildren,
   AuthenticatedRecycleBinRoute: AuthenticatedRecycleBinRoute,
   AuthenticatedRemarksRoute: AuthenticatedRemarksRoute,
   AuthenticatedReportCardsRoute: AuthenticatedReportCardsRoute,
@@ -785,6 +1012,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
   VerifyIdRoute: VerifyIdRoute,
+  VerifyTeacherTokenRoute: VerifyTeacherTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

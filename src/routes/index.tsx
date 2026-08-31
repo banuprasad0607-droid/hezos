@@ -27,9 +27,10 @@ function Landing() {
   useEffect(() => {
     if (loading) return;
     if (!session) return;
-    if ((roles ?? []).includes("super_admin") && !schoolId) navigate({ to: "/super-admin" });
-    else if (!schoolId && !(roles ?? []).includes("parent")) navigate({ to: "/onboarding" });
-    else navigate({ to: "/dashboard" });
+    if ((roles ?? []).includes("super_admin")) navigate({ to: "/platform" });
+    else if ((roles ?? []).includes("parent")) navigate({ to: "/parent" });
+    else if (schoolId) navigate({ to: "/dashboard" });
+    else navigate({ to: "/onboarding" });
   }, [session, loading, schoolId, roles, navigate]);
 
   return (

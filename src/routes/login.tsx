@@ -85,9 +85,49 @@ function LoginPage() {
         }
       }
 
+      // Fetch roles to decide optimal redirect destination
+      let dest = "/dashboard";
+      if (res.user) {
+        try {
+          const { data: roleRows } = await supabase
+            .from("user_roles")
+            .select("role, school_id")
+            .eq("user_id", res.user.id);
+          const roles = (roleRows || []).map((r) => r.role);
+          if (roles.includes("super_admin")) {
+            dest = "/platform";
+          } else if (
+            roles.includes("parent") &&
+            !roles.includes("admin") &&
+            !roles.includes("teacher")
+          ) {
+            dest = "/parent";
+          } else if (!roleRows || roleRows.length === 0 || !roleRows.some((r) => r.school_id)) {
+            const { data: prof } = await supabase
+              .from("profiles")
+              .select("school_id")
+              .eq("user_id", res.user.id)
+              .maybeSingle();
+            if (prof?.school_id) {
+              dest = "/dashboard";
+            } else {
+              const { data: std } = await supabase
+                .from("students")
+                .select("id")
+                .eq("parent_user_id", res.user.id)
+                .maybeSingle();
+              if (std) dest = "/parent";
+              else dest = "/onboarding";
+            }
+          }
+        } catch (rErr) {
+          console.error("Role lookup error on login:", rErr);
+        }
+      }
+
       setLoading(false);
       toast.success("Welcome back");
-      navigate({ to: "/dashboard" });
+      navigate({ to: dest });
     } catch (err: any) {
       setLoading(false);
       let msg = err.message || "Could not sign in";
@@ -127,7 +167,7 @@ function LoginPage() {
         <p className="text-xs text-sidebar-muted">© {cachedSchoolName || "HEZO SCHOOL"}</p>
       </div>
 
-      <div className="flex items-center justify-center p-8 bg-card text-foreground">
+      <div className="flex items-center justify-center p-4 sm:p-8 bg-card text-foreground">
         <form onSubmit={handleSubmit(onSubmitForm)} className="w-full max-w-sm space-y-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">Sign in</h1>

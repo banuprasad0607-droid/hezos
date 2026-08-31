@@ -25,6 +25,7 @@ function ReportCardsPage() {
     (roles ?? []).includes("super_admin") ||
     (roles ?? []).includes("admin") ||
     (roles ?? []).includes("principal");
+  const isParent = (roles ?? []).includes("parent") && !isStaff;
 
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
@@ -59,12 +60,14 @@ function ReportCardsPage() {
         .eq("school_id", schoolId);
       setTeacherAllocations(allocData || []);
 
-      const { data: classesData } = await supabase
+      let classesQuery = supabase
         .from("classes")
         .select("*")
         .eq("school_id", schoolId)
         .is("deleted_at", null)
         .order("name");
+
+      const { data: classesData } = await classesQuery;
       setClasses(classesData || []);
 
       const { data: examsData } = await supabase
@@ -79,7 +82,11 @@ function ReportCardsPage() {
         .select("*, subjects(name, code)")
         .eq("school_id", schoolId);
       setExamSubjects(examSubjData || []);
+
+      if (classesData?.[0]) setSelectedClassId(classesData[0].id);
+      if (examsData?.[0]) setSelectedExamId(examsData[0].id);
     } catch (err: any) {
+      console.error("Error loading base report card data:", err);
       toast.error("Error loading data: " + err.message);
     } finally {
       setIsLoading(false);
@@ -100,12 +107,18 @@ function ReportCardsPage() {
 
     const fetchDetails = async () => {
       try {
-        const { data: studentsData } = await supabase
+        let sQuery = supabase
           .from("students")
           .select("*")
           .eq("school_id", schoolId)
           .eq("class_id", selectedClassId)
           .is("deleted_at", null);
+
+        if (isParent && user) {
+          sQuery = sQuery.eq("parent_user_id", user.id);
+        }
+
+        const { data: studentsData } = await sQuery;
         setStudents(studentsData || []);
 
         const studentIds = (studentsData || []).map((s) => s.id);
@@ -126,10 +139,11 @@ function ReportCardsPage() {
     };
 
     void fetchDetails();
-  }, [selectedClassId, selectedExamId, schoolId]);
+  }, [selectedClassId, selectedExamId, schoolId, isParent, user]);
 
   const filteredClasses = classes.filter((c) => {
     if (isStaff) return true;
+    if (isParent && user) return true;
     return (
       teacherAllocations.some((ta) => ta.class_id === c.id && ta.teacher_id === user?.id) ||
       c.class_teacher_id === user?.id
@@ -271,72 +285,74 @@ function ReportCardsPage() {
             <div className="p-4 border-b border-border dark:border-slate-800 flex justify-between items-center">
               <h3 className="font-bold">Students</h3>
             </div>
-            <table className="w-full text-sm text-left">
-              <thead className="bg-slate-50 dark:bg-slate-800/40 text-muted-foreground border-b border-border dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-6 font-semibold">Roll No</th>
-                  <th className="py-3 px-6 font-semibold">Name</th>
-                  <th className="py-3 px-6 font-semibold text-center">Marks Entered</th>
-                  <th className="py-3 px-6 font-semibold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border dark:divide-slate-800">
-                {students.length === 0 ? (
+            <div className="overflow-x-auto w-full">
+              <table className="w-full min-w-[500px] text-sm text-left">
+                <thead className="bg-slate-50 dark:bg-slate-800/40 text-muted-foreground border-b border-border dark:border-slate-800">
                   <tr>
-                    <td colSpan={4} className="p-6 text-center text-muted-foreground">
-                      No students found.
-                    </td>
+                    <th className="py-3 px-6 font-semibold">Roll No</th>
+                    <th className="py-3 px-6 font-semibold">Name</th>
+                    <th className="py-3 px-6 font-semibold text-center">Marks Entered</th>
+                    <th className="py-3 px-6 font-semibold text-right">Actions</th>
                   </tr>
-                ) : (
-                  students.map((student) => {
-                    const studentMarksCount = markEntries.filter(
-                      (m) => m.student_id === student.id,
-                    ).length;
+                </thead>
+                <tbody className="divide-y divide-border dark:divide-slate-800">
+                  {students.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="p-6 text-center text-muted-foreground">
+                        No students found.
+                      </td>
+                    </tr>
+                  ) : (
+                    students.map((student) => {
+                      const studentMarksCount = markEntries.filter(
+                        (m) => m.student_id === student.id,
+                      ).length;
 
-                    return (
-                      <tr
-                        key={student.id}
-                        className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50"
-                      >
-                        <td className="py-3 px-6 text-slate-500 font-mono font-bold">
-                          #{student.roll_number || "—"}
-                        </td>
-                        <td className="py-3 px-6 font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                          <div className="size-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden shrink-0">
-                            {student.photo_url ? (
-                              <img
-                                src={student.photo_url}
-                                alt=""
-                                className="size-full object-cover"
-                              />
-                            ) : (
-                              <span className="text-[10px]">{student.full_name.charAt(0)}</span>
-                            )}
-                          </div>
-                          {student.full_name}
-                        </td>
-                        <td className="py-3 px-6 text-center">
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs font-bold ${studentMarksCount > 0 ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}
-                          >
-                            {studentMarksCount} Subjects
-                          </span>
-                        </td>
-                        <td className="py-3 px-6 text-right">
-                          <button
-                            disabled={isExporting || studentMarksCount === 0}
-                            onClick={() => exportSinglePDF(student)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white text-xs font-bold rounded shadow-sm hover:bg-brand/90 disabled:opacity-50 transition-all cursor-pointer"
-                          >
-                            <Download className="size-3" /> PDF
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                      return (
+                        <tr
+                          key={student.id}
+                          className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50"
+                        >
+                          <td className="py-3 px-6 text-slate-500 font-mono font-bold">
+                            #{student.roll_number || "—"}
+                          </td>
+                          <td className="py-3 px-6 font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                            <div className="size-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                              {student.photo_url ? (
+                                <img
+                                  src={student.photo_url}
+                                  alt=""
+                                  className="size-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-[10px]">{student.full_name.charAt(0)}</span>
+                              )}
+                            </div>
+                            {student.full_name}
+                          </td>
+                          <td className="py-3 px-6 text-center">
+                            <span
+                              className={`px-2 py-0.5 rounded text-xs font-bold ${studentMarksCount > 0 ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}
+                            >
+                              {studentMarksCount} Subjects
+                            </span>
+                          </td>
+                          <td className="py-3 px-6 text-right">
+                            <button
+                              disabled={isExporting || studentMarksCount === 0}
+                              onClick={() => exportSinglePDF(student)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white text-xs font-bold rounded shadow-sm hover:bg-brand/90 disabled:opacity-50 transition-all cursor-pointer"
+                            >
+                              <Download className="size-3" /> PDF
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : (
           <div className="bg-white dark:bg-slate-900 p-12 text-center text-muted-foreground rounded-2xl border border-border dark:border-slate-800">

@@ -38,26 +38,26 @@ async function run() {
       });
     }
 
-    // 2. Verify users view/table & columns
+    // 2. Verify user_roles table & columns
     const usersColsRes = await client.query(`
       SELECT column_name, data_type 
       FROM information_schema.columns 
-      WHERE table_schema = 'public' AND table_name = 'users';
+      WHERE table_schema = 'public' AND table_name = 'user_roles';
     `);
     const usersCols = usersColsRes.rows.map((r) => r.column_name);
-    const requiredUsersCols = ["id", "role", "school_id"];
+    const requiredUsersCols = ["id", "role", "school_id", "user_id"];
     const missingUsersCols = requiredUsersCols.filter((c) => !usersCols.includes(c));
 
     if (missingUsersCols.length === 0) {
       report.details.push({
-        check: "users view/table columns",
+        check: "user_roles table columns",
         status: "PASS",
         info: "All columns present: " + requiredUsersCols.join(", "),
       });
     } else {
       report.status = "FAIL";
       report.details.push({
-        check: "users view/table columns",
+        check: "user_roles table columns",
         status: "FAIL",
         info: "Missing columns: " + missingUsersCols.join(", "),
       });

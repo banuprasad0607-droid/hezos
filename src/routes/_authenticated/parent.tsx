@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -16,6 +16,14 @@ import {
   Award,
   Share2,
   User,
+  GraduationCap,
+  Calendar,
+  Clock,
+  Plus,
+  FileText,
+  CheckCircle2,
+  Clock3,
+  XCircle,
 } from "lucide-react";
 import { safeHtml2Canvas } from "@/lib/pdf-helper";
 import { jsPDF } from "jspdf";
@@ -109,6 +117,23 @@ interface AnnouncementRow {
   body: string;
   created_at: string;
 }
+interface ExamRow {
+  id: string;
+  name: string;
+  term: string;
+  start_date: string;
+  end_date: string;
+  exam_subjects?: Array<{ name: string; exam_date: string | null; max_marks: number | null }>;
+}
+interface LeaveRow {
+  id: string;
+  start_date: string;
+  end_date: string;
+  reason: string;
+  status: string;
+  review_note: string | null;
+  created_at: string;
+}
 
 function ParentDashboard() {
   const { user, profile } = useAuth();
@@ -120,6 +145,8 @@ function ParentDashboard() {
   const [homework, setHomework] = useState<HomeworkRow[]>([]);
   const [remarks, setRemarks] = useState<RemarkRow[]>([]);
   const [announcements, setAnnouncements] = useState<AnnouncementRow[]>([]);
+  const [exams, setExams] = useState<ExamRow[]>([]);
+  const [leaves, setLeaves] = useState<LeaveRow[]>([]);
 
   // Achievements states
   const [childRank, setChildRank] = useState<{
@@ -167,6 +194,8 @@ function ParentDashboard() {
       setHomework([]);
       setRemarks([]);
       setAnnouncements([]);
+      setExams([]);
+      setLeaves([]);
       setChildRank(null);
       setChildAwards([]);
       return;
@@ -176,7 +205,7 @@ function ParentDashboard() {
     const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
 
     (async () => {
-      const [att, hw, rem, ann, rnk, awd] = await Promise.all([
+      const [att, hw, rem, ann, rnk, awd, exm, lvs] = await Promise.all([
         supabase
           .from("attendance")
           .select("date, status")
@@ -215,6 +244,19 @@ function ParentDashboard() {
           .eq("student_id", child.id)
           .eq("is_published", true)
           .order("issued_at", { ascending: false }),
+        (supabase as any)
+          .from("exams")
+          .select("id, name, term, start_date, end_date, is_published, exam_subjects(name, exam_date, max_marks)")
+          .eq("school_id", child.school_id)
+          .is("deleted_at", null)
+          .order("start_date", { ascending: true })
+          .limit(6),
+        supabase
+          .from("leave_requests")
+          .select("id, start_date, end_date, reason, status, review_note, created_at")
+          .eq("student_id", child.id)
+          .order("created_at", { ascending: false })
+          .limit(5),
       ]);
       setAttendance(att.data ?? []);
       setHomework((hw.data ?? []) as HomeworkRow[]);
@@ -222,6 +264,8 @@ function ParentDashboard() {
       setAnnouncements(ann.data ?? []);
       setChildRank(rnk.data || null);
       setChildAwards((awd.data || []) as any[]);
+      setExams((exm.data ?? []) as ExamRow[]);
+      setLeaves((lvs.data ?? []) as LeaveRow[]);
 
       // unused today guard
       void today;
@@ -348,7 +392,7 @@ function ParentDashboard() {
         }
       />
 
-      <div className="flex-1 overflow-y-auto p-8 space-y-8">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
         {children.length === 0 ? (
           <div className="bg-card border border-dashed border-border rounded-xl p-16 text-center">
             <h3 className="font-semibold">No children linked yet</h3>
@@ -476,25 +520,154 @@ function ParentDashboard() {
               )}
             </section>
 
+            {/* Grid for Core Parent Features */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Upcoming Exams & Timetable */}
+              <div className="lg:col-span-2 bg-card border border-border rounded-xl p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold flex items-center gap-2 text-foreground">
+                    <GraduationCap className="size-4 text-brand" /> Upcoming Exams & Assessment Schedule
+                  </h3>
+                  <Link
+                    to="/report-cards"
+                    className="text-xs text-brand hover:underline font-medium"
+                  >
+                    View Report Cards →
+                  </Link>
+                </div>
+
+                {exams.length === 0 ? (
+                  <div className="p-6 text-center border border-dashed border-border rounded-xl text-xs text-muted-foreground">
+                    No active or scheduled exams at this time.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {exams.map((ex) => (
+                      <div
+                        key={ex.id}
+                        className="p-4 rounded-xl border border-border bg-muted/20 space-y-2 hover:border-brand/30 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h4 className="text-sm font-bold text-foreground">{ex.name}</h4>
+                            <p className="text-xs text-muted-foreground capitalize">{ex.term || "Regular Term"}</p>
+                          </div>
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-brand/10 text-brand">
+                            {ex.start_date ? new Date(ex.start_date).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "TBA"}
+                            {ex.end_date && ` - ${new Date(ex.end_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`}
+                          </span>
+                        </div>
+
+                        {ex.exam_subjects && ex.exam_subjects.length > 0 && (
+                          <div className="pt-2 border-t border-border/50 space-y-1">
+                            <p className="text-[11px] font-medium text-muted-foreground">Subjects & Schedule:</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {ex.exam_subjects.slice(0, 4).map((sub, idx) => (
+                                <span
+                                  key={idx}
+                                  className="text-[10px] bg-background px-2 py-0.5 rounded border border-border text-foreground font-medium"
+                                >
+                                  {sub.name} {sub.exam_date && `(${new Date(sub.exam_date).toLocaleDateString(undefined, { month: "numeric", day: "numeric" })})`}
+                                </span>
+                              ))}
+                              {ex.exam_subjects.length > 4 && (
+                                <span className="text-[10px] text-muted-foreground px-1 self-center">
+                                  +{ex.exam_subjects.length - 4} more
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Leave Requests Status & Quick Request */}
+              <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold flex items-center gap-2 text-foreground">
+                    <Calendar className="size-4 text-brand" /> Leave Requests
+                  </h3>
+                  <Link
+                    to="/leaves"
+                    className="text-xs bg-brand text-brand-foreground px-2.5 py-1 rounded-md font-medium hover:opacity-90 flex items-center gap-1"
+                  >
+                    <Plus className="size-3" /> Request Leave
+                  </Link>
+                </div>
+
+                {leaves.length === 0 ? (
+                  <div className="p-6 text-center border border-dashed border-border rounded-xl text-xs text-muted-foreground">
+                    No leave requests submitted yet.
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {leaves.map((lv) => (
+                      <div
+                        key={lv.id}
+                        className="p-3 rounded-lg border border-border bg-muted/10 space-y-1"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-foreground">
+                            {new Date(lv.start_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                            {lv.end_date !== lv.start_date && ` - ${new Date(lv.end_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`}
+                          </span>
+                          <span
+                            className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
+                              lv.status === "approved"
+                                ? "bg-success-soft text-success"
+                                : lv.status === "rejected"
+                                  ? "bg-danger-soft text-danger"
+                                  : "bg-warning-soft text-warning"
+                            }`}
+                          >
+                            {lv.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-1">
+                          {lv.reason || "No reason specified"}
+                        </p>
+                        {lv.review_note && (
+                          <p className="text-[11px] text-brand bg-brand-soft/40 p-1.5 rounded mt-1">
+                            Note: {lv.review_note}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Homework */}
               <div className="lg:col-span-2 bg-card border border-border rounded-xl p-6">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <BookOpen className="size-4 text-brand" /> Recent Homework
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <BookOpen className="size-4 text-brand" /> Assigned Homework
+                  </h3>
+                  <Link to="/homework" className="text-xs text-brand hover:underline font-medium">
+                    View All Homework →
+                  </Link>
+                </div>
                 {homework.length === 0 ? (
-                  <p className="text-sm text-muted-foreground mt-4">No homework posted recently.</p>
+                  <p className="text-sm text-muted-foreground mt-2">No homework posted recently.</p>
                 ) : (
-                  <div className="space-y-3 mt-4">
+                  <div className="space-y-3">
                     {homework.map((h) => (
                       <div
                         key={h.id}
-                        className="flex items-center justify-between p-3 rounded-lg border border-border"
+                        className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-brand/30 transition-colors"
                       >
                         <div>
-                          <p className="text-sm font-medium">{h.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {h.subject ?? "—"} · Due {h.due_date ?? "—"}
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-brand/10 text-brand">
+                              {h.subject || "General"}
+                            </span>
+                            <p className="text-sm font-semibold text-foreground">{h.title}</p>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Due date: {h.due_date ? new Date(h.due_date).toLocaleDateString() : "No deadline"}
                           </p>
                         </div>
                         {h.file_url && (
@@ -502,9 +675,9 @@ function ParentDashboard() {
                             href={h.file_url}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-xs text-brand font-medium inline-flex items-center gap-1"
+                            className="text-xs px-2.5 py-1 rounded-md border border-border hover:bg-muted text-brand font-medium inline-flex items-center gap-1"
                           >
-                            <Download className="size-3" /> {h.file_type}
+                            <Download className="size-3" /> Download {h.file_type || "File"}
                           </a>
                         )}
                       </div>
@@ -515,19 +688,24 @@ function ParentDashboard() {
 
               {/* Remarks */}
               <div className="bg-card border border-border rounded-xl p-6">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <MessageSquare className="size-4 text-brand" /> Teacher Remarks
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <MessageSquare className="size-4 text-brand" /> Teacher Remarks
+                  </h3>
+                  <Link to="/remarks" className="text-xs text-brand hover:underline font-medium">
+                    View All →
+                  </Link>
+                </div>
                 {remarks.length === 0 ? (
-                  <p className="text-sm text-muted-foreground mt-4">No remarks yet.</p>
+                  <p className="text-sm text-muted-foreground mt-2">No remarks yet.</p>
                 ) : (
-                  <div className="space-y-3 mt-4">
+                  <div className="space-y-3">
                     {remarks.map((r) => (
-                      <div key={r.id} className="border-l-2 border-brand pl-3">
+                      <div key={r.id} className="border-l-2 border-brand pl-3 py-1">
                         <p className="text-[10px] uppercase tracking-wider font-bold text-brand">
                           {r.category}
                         </p>
-                        <p className="text-sm italic mt-1">"{r.content}"</p>
+                        <p className="text-sm italic mt-1 text-foreground">"{r.content}"</p>
                         <p className="text-[10px] text-muted-foreground mt-1">
                           {new Date(r.created_at).toLocaleDateString()}
                         </p>
@@ -539,10 +717,15 @@ function ParentDashboard() {
 
               {/* Attendance history */}
               <div className="bg-card border border-border rounded-xl p-6">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <CalendarCheck className="size-4 text-brand" /> Last 30 Days
-                </h3>
-                <div className="mt-4 flex flex-wrap gap-1">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <CalendarCheck className="size-4 text-brand" /> Attendance (Last 30 Days)
+                  </h3>
+                  <Link to="/attendance" className="text-xs text-brand hover:underline font-medium">
+                    Monthly Calendar →
+                  </Link>
+                </div>
+                <div className="flex flex-wrap gap-1">
                   {attendance
                     .slice(0, 30)
                     .reverse()
@@ -563,22 +746,27 @@ function ParentDashboard() {
                     ))}
                 </div>
                 <p className="text-xs text-muted-foreground mt-3">
-                  {last30Present} present out of {attendance.length} marked days
+                  {last30Present} present out of {attendance.length} marked days ({attRate}% rate)
                 </p>
               </div>
 
               {/* Announcements */}
               <div className="lg:col-span-2 bg-card border border-border rounded-xl p-6">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <Megaphone className="size-4 text-brand" /> School Announcements
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Megaphone className="size-4 text-brand" /> School Announcements
+                  </h3>
+                  <Link to="/announcements" className="text-xs text-brand hover:underline font-medium">
+                    View All →
+                  </Link>
+                </div>
                 {announcements.length === 0 ? (
-                  <p className="text-sm text-muted-foreground mt-4">No announcements.</p>
+                  <p className="text-sm text-muted-foreground mt-2">No announcements.</p>
                 ) : (
-                  <div className="space-y-3 mt-4">
+                  <div className="space-y-3">
                     {announcements.map((a) => (
-                      <div key={a.id} className="p-3 rounded-lg border border-border">
-                        <p className="text-sm font-medium">{a.title}</p>
+                      <div key={a.id} className="p-3 rounded-lg border border-border bg-muted/10">
+                        <p className="text-sm font-semibold text-foreground">{a.title}</p>
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.body}</p>
                         <p className="text-[10px] text-muted-foreground mt-1">
                           {new Date(a.created_at).toLocaleString()}

@@ -19,11 +19,13 @@ import {
   ShieldAlert,
   Download,
   Trash,
+  Pencil,
 } from "lucide-react";
 import { whatsappLink } from "@/lib/notify";
 import { provisionStudent } from "@/lib/platform.functions";
 import { exportToCSV, exportToExcel, exportToPDF } from "@/lib/export-helper";
 import { optimizeImage } from "@/lib/image-optimizer";
+import { EditStudentModal, type StudentEditData } from "@/components/EditStudentModal";
 
 function KpiWidget({
   title,
@@ -62,6 +64,7 @@ interface Klass {
 }
 interface Student {
   id: string;
+  school_id: string;
   full_name: string;
   roll_number: string | null;
   admission_number: string | null;
@@ -70,6 +73,11 @@ interface Student {
   parent_name: string | null;
   parent_user_id: string | null;
   class_id: string | null;
+  date_of_birth: string | null;
+  gender: string | null;
+  blood_group: string | null;
+  address: string | null;
+  emergency_contact: string | null;
   photo_url: string | null;
   classes: { name: string } | null;
 }
@@ -85,6 +93,7 @@ function StudentsPage() {
   const [classes, setClasses] = useState<Klass[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [open, setOpen] = useState(false);
+  const [editingStudent, setEditingStudent] = useState<StudentEditData | null>(null);
   const [busy, setBusy] = useState(false);
 
   // Search and Pagination States
@@ -148,7 +157,7 @@ function StudentsPage() {
       let query = supabase
         .from("students")
         .select(
-          "id, full_name, roll_number, admission_number, photo_url, parent_email, parent_phone, parent_name, parent_user_id, class_id, classes(name)",
+          "id, school_id, full_name, roll_number, admission_number, photo_url, date_of_birth, gender, blood_group, address, emergency_contact, parent_email, parent_phone, parent_name, parent_user_id, class_id, classes(name)",
           { count: "exact" },
         )
         .eq("school_id", effectiveSchoolId)
@@ -705,18 +714,19 @@ function StudentsPage() {
           </div>
         ) : (
           <div className="bg-card border border-border rounded-xl overflow-hidden shadow-xs text-card-foreground">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-secondary/50 text-xs text-muted-foreground">
-                <tr>
-                  <th className="px-6 py-3 font-medium">Admission #</th>
-                  <th className="px-6 py-3 font-medium">Student</th>
-                  <th className="px-6 py-3 font-medium">Class</th>
-                  <th className="px-6 py-3 font-medium">Roll</th>
-                  <th className="px-6 py-3 font-medium">Parent</th>
-                  <th className="px-6 py-3 font-medium text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
+            <div className="overflow-x-auto w-full">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead className="bg-secondary/50 text-xs text-muted-foreground">
+                  <tr>
+                    <th className="px-6 py-3 font-medium">Admission #</th>
+                    <th className="px-6 py-3 font-medium">Student</th>
+                    <th className="px-6 py-3 font-medium">Class</th>
+                    <th className="px-6 py-3 font-medium">Roll</th>
+                    <th className="px-6 py-3 font-medium">Parent</th>
+                    <th className="px-6 py-3 font-medium text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
                 {students.map((s) => {
                   const wa = whatsappLink(
                     s.parent_phone,
@@ -792,6 +802,13 @@ function StudentsPage() {
                               WhatsApp
                             </a>
                           )}
+                          <button
+                            onClick={() => setEditingStudent(s as any)}
+                            className="text-xs font-semibold text-primary hover:text-primary/80 inline-flex items-center gap-1 cursor-pointer bg-primary/10 hover:bg-primary/20 px-2 py-1 rounded-md transition-colors"
+                            title="Edit Student Profile"
+                          >
+                            <Pencil className="size-3" /> Edit
+                          </button>
                           <Link
                             to="/students/$studentId"
                             params={{ studentId: s.id }}
@@ -802,7 +819,7 @@ function StudentsPage() {
                           {isAdmin && (
                             <button
                               onClick={() => handleSoftDelete(s.id, s.full_name)}
-                              className="text-xs font-medium text-danger hover:text-red-700 inline-flex items-center gap-1 cursor-pointer"
+                              className="text-xs font-medium text-danger hover:text-red-700 inline-flex items-center gap-1 cursor-pointer p-1 rounded hover:bg-danger-soft transition-colors"
                               title="Delete Student"
                             >
                               <Trash className="size-3.5" />
@@ -815,6 +832,7 @@ function StudentsPage() {
                 })}
               </tbody>
             </table>
+            </div>
 
             {/* Pagination Controls */}
             <div className="flex items-center justify-between p-4 bg-secondary/10 border-t border-border">
@@ -1157,6 +1175,18 @@ function StudentsPage() {
           </form>
         </div>
       )}
+
+      {/* Edit Student Profile Modal */}
+      <EditStudentModal
+        student={editingStudent}
+        isOpen={!!editingStudent}
+        onClose={() => setEditingStudent(null)}
+        onUpdated={() => {
+          void load();
+          void loadKPIs();
+        }}
+        classes={classes}
+      />
     </>
   );
 }

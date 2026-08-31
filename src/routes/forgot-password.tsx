@@ -76,7 +76,7 @@ function ForgotPasswordPage() {
         <p className="text-xs text-sidebar-muted">© HEZO SCHOOL</p>
       </div>
 
-      <div className="flex items-center justify-center p-8 bg-card text-foreground">
+      <div className="flex items-center justify-center p-4 sm:p-8 bg-card text-foreground">
         <div className="w-full max-w-sm space-y-6">
           <div className="flex items-center">
             <Link

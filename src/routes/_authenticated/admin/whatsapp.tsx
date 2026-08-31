@@ -428,17 +428,20 @@ function WhatsAppManagementPage() {
 
       for (const parent of targetParents) {
         try {
-          const phone =
-            parent.phone_number || "+91 90000 " + Math.floor(10000 + Math.random() * 90000);
+          const phone = parent.phone_number || parent.parent_phone;
+          if (!phone) {
+            failedCount++;
+            continue;
+          }
 
           // Map dynamic variables (e.g. mapping Rohan for child name)
           const resolvedVars = campVariables.map((v) => {
             if (v === "{student_name}") return parent.full_name;
             if (v === "{class_name}") {
               const cls = classesList.find((c) => c.id === parent.class_id);
-              return cls ? cls.name : "Class 1";
+              return cls ? cls.name : "General Class";
             }
-            if (v === "{due_date}") return "June 30, 2026";
+            if (v === "{due_date}") return new Date().toLocaleDateString();
             return v;
           });
 
@@ -452,7 +455,6 @@ function WhatsAppManagementPage() {
             camp.id!,
           );
           sentCount++;
-          readCount += Math.random() > 0.4 ? 1 : 0;
         } catch (err) {
           failedCount++;
         }
@@ -472,7 +474,7 @@ function WhatsAppManagementPage() {
 
       setCampName("");
       setCampVariables([]);
-      toast.success(`Campaign "${campName}" completed! ${sentCount} messages sent successfully.`);
+      toast.success(`Campaign "${campName}" completed! ${sentCount} messages dispatched.`);
       void loadData();
       setCreatingCamp(false);
     } catch (err: any) {
