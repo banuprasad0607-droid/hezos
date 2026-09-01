@@ -3,6 +3,13 @@
   publish = "dist"
   functions = "dist/server"
 
+[build.environment]
+  VITE_SUPABASE_URL = "https://gzhoeihogdvvtwillihs.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "sb_publishable_Uh1FODaxgjuD99id8nlimw_PO0tg8nB"
+  VITE_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Uh1FODaxgjuD99id8nlimw_PO0tg8nB"
+  SUPABASE_URL = "https://gzhoeihogdvvtwillihs.supabase.co"
+  SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Uh1FODaxgjuD99id8nlimw_PO0tg8nB"
+
 [functions]
   node_bundler = "none"
 
