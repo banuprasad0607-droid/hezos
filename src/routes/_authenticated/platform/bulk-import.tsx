@@ -29,10 +29,10 @@ type ParsedRow = Record<string, string>;
 // CSV Templates
 const TEMPLATES: Record<ImportType, { headers: string[]; sample: string[][] }> = {
   students: {
-    headers: ["full_name", "roll_number", "admission_number", "parent_name", "parent_email", "parent_phone", "gender", "date_of_birth", "blood_group", "address"],
+    headers: ["Name", "Mobile No", "Address", "City", "Email", "Password", "Roll No", "Class", "blood_group"],
     sample: [
-      ["Aarav Sharma", "101", "ADM-2024-001", "Rajesh Sharma", "rajesh@email.com", "+91 98765 43210", "male", "2010-06-15", "B+", "123 MG Road"],
-      ["Priya Verma", "102", "ADM-2024-002", "Sunita Verma", "sunita@email.com", "+91 98765 43211", "female", "2010-08-20", "A+", "456 Lake View"],
+      ["SHARAN KUMAR KODUPUGANTI", "9701762140", "FLAT NO 103, A BLOCK", "HYDERABAD", "sharankumarkodupuganti2@hezoschool.test", "Hezo@2140", "R-0001", "Class 5", "B+"],
+      ["JAYANTI PAVAN KUMAR", "8056043637", "H NO A-105 FORTUNE GREEN", "HYDERABAD", "jayantipavankumar3@hezoschool.test", "Hezo@3637", "R-0002", "Class 10", "A+"],
     ],
   },
   teachers: {
@@ -53,7 +53,7 @@ const TEMPLATES: Record<ImportType, { headers: string[]; sample: string[][] }> =
 
 function downloadTemplate(type: ImportType) {
   const { headers, sample } = TEMPLATES[type];
-  const csv = [headers.join(","), ...sample.map((r) => r.join(","))].join("\n");
+  const csv = [headers.join(","), ...sample.map((r) => r.map(c => `"${c.replace(/"/g, '""')}"`).join(","))].join("\n");
   const a = document.createElement("a");
   a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
   a.download = `hezo_${type}_import_template.csv`;
@@ -61,12 +61,42 @@ function downloadTemplate(type: ImportType) {
   toast.success(`Template downloaded: hezo_${type}_import_template.csv`);
 }
 
+function normalizeKey(key: string): string {
+  const k = key.trim().toLowerCase().replace(/[\s\-_]+/g, "_");
+  if (["name", "student_name", "student", "full_name"].includes(k)) return "full_name";
+  if (["mobile", "mobile_no", "phone", "phone_number", "contact", "parent_mobile", "parent_phone"].includes(k)) return "parent_phone";
+  if (["mail", "email", "email_id", "parent_mail", "parent_email"].includes(k)) return "parent_email";
+  if (["pass", "password", "parent_password", "pwd"].includes(k)) return "password";
+  if (["roll", "roll_no", "rollno", "roll_number"].includes(k)) return "roll_number";
+  if (["admission_no", "admission_number", "adm_no", "adm"].includes(k)) return "admission_number";
+  if (["class", "class_name", "grade", "standard", "sec", "section"].includes(k)) return "class_name";
+  if (["blood_group", "bloodgroup", "blood"].includes(k)) return "blood_group";
+  if (["city", "location"].includes(k)) return "city";
+  if (["address", "residence", "home_address"].includes(k)) return "address";
+  if (["parent", "parent_name", "guardian"].includes(k)) return "parent_name";
+  if (["gender", "sex"].includes(k)) return "gender";
+  if (["dob", "date_of_birth", "birth_date"].includes(k)) return "date_of_birth";
+  return k;
+}
+
 function parseCSV(text: string): ParsedRow[] {
-  const lines = text.trim().split("\n");
+  const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) return [];
-  const headers = lines[0].split(",").map((h) => h.trim().replace(/^"|"$/g, "").toLowerCase().replace(/\s+/g, "_"));
-  return lines.slice(1).map((line) => {
-    const vals = line.split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
+  const headers = lines[0].split(",").map((h) => normalizeKey(h.trim().replace(/^"|"$/g, "")));
+  return lines.slice(1).filter(l => l.trim().length > 0).map((line) => {
+    // Regex to properly parse CSV cells containing commas or quotes
+    const regex = /(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*|(?:\n|$))/g;
+    const vals: string[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(line)) !== null) {
+      if (match.index === regex.lastIndex) regex.lastIndex++;
+      let val = match[1] ?? "";
+      if (val.startsWith('"') && val.endsWith('"')) {
+        val = val.slice(1, -1).replace(/""/g, '"');
+      }
+      vals.push(val.trim());
+      if (vals.length >= headers.length) break;
+    }
     const row: ParsedRow = {};
     headers.forEach((h, i) => { row[h] = vals[i] || ""; });
     return row;
@@ -87,10 +117,11 @@ function validateRows(rows: ParsedRow[], type: ImportType): { valid: ParsedRow[]
   rows.forEach((row, i) => {
     const issues: string[] = [];
     required.forEach((f) => { if (!row[f]) issues.push(`Missing ${f}`); });
-    if (row.email) {
-      if (!row.email.includes("@")) issues.push("Invalid email");
-      if (emails.has(row.email)) issues.push("Duplicate email");
-      else emails.add(row.email);
+    const emailVal = row.email || row.parent_email;
+    if (emailVal) {
+      if (!emailVal.includes("@")) issues.push("Invalid email");
+      else if (emails.has(emailVal)) issues.push("Duplicate email");
+      else emails.add(emailVal);
     }
     if (issues.length > 0) errors.push({ row: i + 2, issues });
     else valid.push(row);
@@ -146,20 +177,58 @@ function BulkImportPage() {
     setStep("importing");
 
     let success = 0;
-    let failed = 0;
-    let duplicates = 0;
+    // Pre-fetch classes for student class mapping
+    let classMap: Record<string, string> = {};
+    if (importType === "students") {
+      const { data: clsList } = await supabase
+        .from("classes")
+        .select("id, name")
+        .eq("school_id", targetSchoolId);
+      (clsList || []).forEach((c) => {
+        classMap[c.name.toLowerCase().trim()] = c.id;
+      });
+    }
 
     for (const row of validRows) {
       try {
         if (importType === "students") {
+          let classId = null;
+          if (row.class_name) {
+            const normalizedClass = row.class_name.toLowerCase().trim();
+            if (classMap[normalizedClass]) {
+              classId = classMap[normalizedClass];
+            } else {
+              // Auto-create class if not exists
+              const { data: newCls } = await supabase
+                .from("classes")
+                .insert({
+                  school_id: targetSchoolId,
+                  name: row.class_name.trim(),
+                  grade: row.class_name.replace(/[^0-9a-zA-Z]/g, "").trim() || "1",
+                })
+                .select("id")
+                .maybeSingle();
+              if (newCls?.id) {
+                classId = newCls.id;
+                classMap[normalizedClass] = newCls.id;
+              }
+            }
+          }
+
+          const fullAddress = [row.address, row.city].filter(Boolean).join(", ");
+
           const { error } = await supabase.from("students").insert({
             school_id: targetSchoolId,
             full_name: row.full_name,
             roll_number: row.roll_number || null,
-            admission_number: row.admission_number || null,
-            parent_name: row.parent_name || null,
+            admission_number: row.admission_number || row.roll_number || null,
+            class_id: classId,
+            parent_name: row.parent_name || row.full_name + " Parent",
             parent_email: row.parent_email || null,
             parent_phone: row.parent_phone || null,
+            blood_group: row.blood_group || null,
+            address: fullAddress || null,
+            gender: row.gender || "male",
           });
           if (error) {
             if (error.code === "23505") duplicates++;
