@@ -231,35 +231,40 @@ function BulkImportPage() {
       });
     }
 
-    for (const row of validRows) {
-      try {
-        if (importType === "students") {
+    const CHUNK_SIZE = 50;
+    for (let i = 0; i < validRows.length; i += CHUNK_SIZE) {
+      const chunk = validRows.slice(i, i + CHUNK_SIZE);
+      if (importType === "students") {
+        const studentPayloads = [];
+        for (const row of chunk) {
           let classId = null;
           if (row.class_name) {
             const normalizedClass = row.class_name.toLowerCase().trim();
             if (classMap[normalizedClass]) {
               classId = classMap[normalizedClass];
             } else {
-              // Auto-create class if not exists
-              const { data: newCls } = await supabase
-                .from("classes")
-                .insert({
-                  school_id: targetSchoolId,
-                  name: row.class_name.trim(),
-                  grade: row.class_name.replace(/[^0-9a-zA-Z]/g, "").trim() || "1",
-                })
-                .select("id")
-                .maybeSingle();
-              if (newCls?.id) {
-                classId = newCls.id;
-                classMap[normalizedClass] = newCls.id;
+              try {
+                const { data: newCls } = await supabase
+                  .from("classes")
+                  .insert({
+                    school_id: targetSchoolId,
+                    name: row.class_name.trim(),
+                    grade: row.class_name.replace(/[^0-9a-zA-Z]/g, "").trim() || "1",
+                  })
+                  .select("id")
+                  .maybeSingle();
+                if (newCls?.id) {
+                  classId = newCls.id;
+                  classMap[normalizedClass] = newCls.id;
+                }
+              } catch (clsErr) {
+                console.warn("Class creation fallback:", clsErr);
               }
             }
           }
 
           const fullAddress = [row.address, row.city].filter(Boolean).join(", ");
-
-          const { error } = await supabase.from("students").insert({
+          studentPayloads.push({
             school_id: targetSchoolId,
             full_name: row.full_name,
             roll_number: row.roll_number || null,
@@ -272,30 +277,34 @@ function BulkImportPage() {
             address: fullAddress || null,
             gender: row.gender || "male",
           });
-          if (error) {
-            if (error.code === "23505") duplicates++;
-            else failed++;
-          } else success++;
-        } else if (importType === "staff") {
-          const { error } = await (supabase.from as any)("staff").insert({
-            school_id: targetSchoolId,
-            full_name: row.full_name,
-            email: row.email || null,
-            phone: row.phone || null,
-            staff_category: row.staff_category || "other",
-            designation: row.designation || null,
-            employee_id: row.employee_id || null,
-          });
-          if (error) {
-            if (error.code === "23505") duplicates++;
-            else failed++;
-          } else success++;
-        } else {
-          // Teachers — just track for now; actual teacher creation requires auth account
-          success++;
         }
-      } catch {
-        failed++;
+
+        const { error } = await supabase.from("students").insert(studentPayloads);
+        if (error) {
+          if (error.code === "23505") duplicates += studentPayloads.length;
+          else failed += studentPayloads.length;
+        } else {
+          success += studentPayloads.length;
+        }
+      } else if (importType === "staff") {
+        const staffPayloads = chunk.map((row) => ({
+          school_id: targetSchoolId,
+          full_name: row.full_name,
+          email: row.email || null,
+          phone: row.phone || null,
+          staff_category: row.staff_category || "other",
+          designation: row.designation || null,
+          employee_id: row.employee_id || null,
+        }));
+        const { error } = await (supabase.from as any)("staff").insert(staffPayloads);
+        if (error) {
+          if (error.code === "23505") duplicates += staffPayloads.length;
+          else failed += staffPayloads.length;
+        } else {
+          success += staffPayloads.length;
+        }
+      } else {
+        success += chunk.length;
       }
     }
 
