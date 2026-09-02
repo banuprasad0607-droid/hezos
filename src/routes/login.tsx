@@ -47,21 +47,42 @@ function LoginPage() {
   const onSubmitForm = async (fields: LoginFields) => {
     setLoading(true);
     try {
-      const res = await loginAttemptFn({
-        data: { email: fields.email, password: fields.password },
-      });
-      if (!res.session) throw new Error("Authentication failed: No session returned.");
+      let authUser: any = null;
 
-      const { error: sessionErr } = await supabase.auth.setSession(res.session);
-      if (sessionErr) throw sessionErr;
+      // 1. Direct client-side authentication with Supabase
+      const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
+        email: fields.email,
+        password: fields.password,
+      });
+
+      if (authErr) {
+        // Fallback to server function if available
+        try {
+          const res = await loginAttemptFn({
+            data: { email: fields.email, password: fields.password },
+          });
+          if (res?.session) {
+            await supabase.auth.setSession(res.session);
+            authUser = res.user;
+          } else {
+            throw authErr;
+          }
+        } catch {
+          throw authErr;
+        }
+      } else {
+        authUser = authData?.user;
+      }
+
+      if (!authUser) throw new Error("Authentication failed: No user returned.");
 
       // Cache school details for dynamic whitelabel on return
-      if (res.user) {
+      if (authUser) {
         try {
           const { data: prof } = await supabase
             .from("profiles")
             .select("school_id")
-            .eq("user_id", res.user.id)
+            .eq("user_id", authUser.id)
             .maybeSingle();
 
           if (prof?.school_id) {
@@ -87,12 +108,12 @@ function LoginPage() {
 
       // Fetch roles to decide optimal redirect destination
       let dest = "/dashboard";
-      if (res.user) {
+      if (authUser) {
         try {
           const { data: roleRows } = await supabase
             .from("user_roles")
             .select("role, school_id")
-            .eq("user_id", res.user.id);
+            .eq("user_id", authUser.id);
           const roles = (roleRows || []).map((r) => r.role);
           if (roles.includes("super_admin")) {
             dest = "/platform";
@@ -106,7 +127,7 @@ function LoginPage() {
             const { data: prof } = await supabase
               .from("profiles")
               .select("school_id")
-              .eq("user_id", res.user.id)
+              .eq("user_id", authUser.id)
               .maybeSingle();
             if (prof?.school_id) {
               dest = "/dashboard";
@@ -114,7 +135,7 @@ function LoginPage() {
               const { data: std } = await supabase
                 .from("students")
                 .select("id")
-                .eq("parent_user_id", res.user.id)
+                .eq("parent_user_id", authUser.id)
                 .maybeSingle();
               if (std) dest = "/parent";
               else dest = "/onboarding";
