@@ -47,3 +47,6 @@ scratch/
 # Vercel output and local configurations
 .vercel/
 
+# Submodules or separate apps
+hezoscl/
+
