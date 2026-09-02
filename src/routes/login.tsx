@@ -188,34 +188,56 @@ function LoginPage() {
         <p className="text-xs text-sidebar-muted">© {cachedSchoolName || "HEZO SCHOOL"}</p>
       </div>
 
-      <div className="flex items-center justify-center p-4 sm:p-8 bg-card text-foreground">
+      <div className="flex items-center justify-center p-6 sm:p-10 bg-card text-foreground">
         <form onSubmit={handleSubmit(onSubmitForm)} className="w-full max-w-sm space-y-6">
+          {/* Mobile-only Branding Header */}
+          <div className="flex lg:hidden items-center gap-3 mb-2">
+            {cachedSchoolLogo ? (
+              <img
+                src={cachedSchoolLogo}
+                alt="School Logo"
+                className="size-9 rounded-xl object-cover bg-white p-0.5 border border-border shadow-sm"
+              />
+            ) : (
+              <div className="size-9 bg-primary rounded-xl flex items-center justify-center text-primary-foreground shadow-sm">
+                <GraduationCap className="size-5" />
+              </div>
+            )}
+            <span className="font-bold text-lg tracking-tight text-foreground">
+              {cachedSchoolName || "HEZO SCHOOL"}
+            </span>
+          </div>
+
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Sign in</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Sign in</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Welcome back to {cachedSchoolName || "your school"}.
             </p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-foreground">Email</label>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Email address
+              </label>
               <input
                 type="email"
                 {...register("email")}
-                className="mt-1 w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-all"
                 placeholder="you@school.com"
               />
               {errors.email && (
-                <p className="text-xs text-danger mt-1 font-semibold">{errors.email.message}</p>
+                <p className="text-xs text-danger mt-1.5 font-semibold">{errors.email.message}</p>
               )}
             </div>
             <div>
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-foreground">Password</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Password
+                </label>
                 <Link
                   to="/forgot-password"
-                  className="text-xs text-brand font-medium hover:underline"
+                  className="text-xs text-primary font-medium hover:underline"
                 >
                   Forgot password?
                 </Link>
@@ -223,10 +245,10 @@ function LoginPage() {
               <input
                 type="password"
                 {...register("password")}
-                className="mt-1 w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-all"
               />
               {errors.password && (
-                <p className="text-xs text-danger mt-1 font-semibold">{errors.password.message}</p>
+                <p className="text-xs text-danger mt-1.5 font-semibold">{errors.password.message}</p>
               )}
             </div>
           </div>
@@ -234,14 +256,14 @@ function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-sm"
+            className="w-full py-3 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-sm transition-all flex items-center justify-center"
           >
             {loading ? "Signing in…" : "Sign in"}
           </button>
 
-          <p className="text-sm text-center text-muted-foreground">
+          <p className="text-sm text-center text-muted-foreground pt-1">
             New here?{" "}
-            <Link to="/signup" className="text-brand font-medium hover:underline">
+            <Link to="/signup" className="text-primary font-semibold hover:underline">
               Create your school account
             </Link>
           </p>
