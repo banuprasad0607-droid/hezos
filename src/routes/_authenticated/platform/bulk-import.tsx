@@ -62,45 +62,86 @@ function downloadTemplate(type: ImportType) {
 }
 
 function normalizeKey(key: string): string {
-  const k = key.trim().toLowerCase().replace(/[\s\-_]+/g, "_");
-  if (["name", "student_name", "student", "full_name"].includes(k)) return "full_name";
-  if (["mobile", "mobile_no", "phone", "phone_number", "contact", "parent_mobile", "parent_phone"].includes(k)) return "parent_phone";
-  if (["mail", "email", "email_id", "parent_mail", "parent_email"].includes(k)) return "parent_email";
+  const k = key.trim().toLowerCase().replace(/^[\uFEFF"'\s]+|[\uFEFF"'\s]+$/g, "").replace(/[\s\-_.]+/g, "_");
+  if (["name", "student_name", "student", "full_name", "studentname", "fullname"].includes(k)) return "full_name";
+  if (["mobile", "mobile_no", "mobileno", "phone", "phone_number", "contact", "parent_mobile", "parent_phone", "cell", "phone_no"].includes(k)) return "parent_phone";
+  if (["mail", "email", "email_id", "emailid", "parent_mail", "parent_email"].includes(k)) return "parent_email";
   if (["pass", "password", "parent_password", "pwd"].includes(k)) return "password";
-  if (["roll", "roll_no", "rollno", "roll_number"].includes(k)) return "roll_number";
-  if (["admission_no", "admission_number", "adm_no", "adm"].includes(k)) return "admission_number";
+  if (["roll", "roll_no", "rollno", "roll_number", "rollnum"].includes(k)) return "roll_number";
+  if (["admission_no", "admission_number", "adm_no", "adm", "admno"].includes(k)) return "admission_number";
   if (["class", "class_name", "grade", "standard", "sec", "section"].includes(k)) return "class_name";
-  if (["blood_group", "bloodgroup", "blood"].includes(k)) return "blood_group";
-  if (["city", "location"].includes(k)) return "city";
-  if (["address", "residence", "home_address"].includes(k)) return "address";
-  if (["parent", "parent_name", "guardian"].includes(k)) return "parent_name";
+  if (["blood_group", "bloodgroup", "blood", "bg"].includes(k)) return "blood_group";
+  if (["city", "location", "town"].includes(k)) return "city";
+  if (["address", "residence", "home_address", "addr"].includes(k)) return "address";
+  if (["parent", "parent_name", "guardian", "father_name", "mother_name"].includes(k)) return "parent_name";
   if (["gender", "sex"].includes(k)) return "gender";
   if (["dob", "date_of_birth", "birth_date"].includes(k)) return "date_of_birth";
   return k;
 }
 
 function parseCSV(text: string): ParsedRow[] {
-  const lines = text.trim().split(/\r?\n/);
-  if (lines.length < 2) return [];
-  const headers = lines[0].split(",").map((h) => normalizeKey(h.trim().replace(/^"|"$/g, "")));
-  return lines.slice(1).filter(l => l.trim().length > 0).map((line) => {
-    // Regex to properly parse CSV cells containing commas or quotes
-    const regex = /(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*|(?:\n|$))/g;
-    const vals: string[] = [];
-    let match: RegExpExecArray | null;
-    while ((match = regex.exec(line)) !== null) {
-      if (match.index === regex.lastIndex) regex.lastIndex++;
-      let val = match[1] ?? "";
-      if (val.startsWith('"') && val.endsWith('"')) {
-        val = val.slice(1, -1).replace(/""/g, '"');
+  // Strip BOM if present
+  let cleanText = text.replace(/^\uFEFF/, "");
+  if (!cleanText.trim()) return [];
+
+  const rows: string[][] = [];
+  let currentRow: string[] = [];
+  let currentCell = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < cleanText.length; i++) {
+    const char = cleanText[i];
+    const nextChar = cleanText[i + 1];
+
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        currentCell += '"';
+        i++; // skip escaped quote
+      } else {
+        inQuotes = !inQuotes;
       }
-      vals.push(val.trim());
-      if (vals.length >= headers.length) break;
+    } else if (char === ',' && !inQuotes) {
+      currentRow.push(currentCell.trim());
+      currentCell = "";
+    } else if ((char === '\r' || char === '\n') && !inQuotes) {
+      if (char === '\r' && nextChar === '\n') {
+        i++;
+      }
+      currentRow.push(currentCell.trim());
+      currentCell = "";
+      if (currentRow.some((c) => c.length > 0)) {
+        rows.push(currentRow);
+      }
+      currentRow = [];
+    } else {
+      currentCell += char;
     }
-    const row: ParsedRow = {};
-    headers.forEach((h, i) => { row[h] = vals[i] || ""; });
-    return row;
-  });
+  }
+
+  if (currentCell.length > 0 || currentRow.length > 0) {
+    currentRow.push(currentCell.trim());
+    if (currentRow.some((c) => c.length > 0)) {
+      rows.push(currentRow);
+    }
+  }
+
+  if (rows.length < 2) return [];
+
+  const headers = rows[0].map((h) => normalizeKey(h));
+  const result: ParsedRow[] = [];
+
+  for (let r = 1; r < rows.length; r++) {
+    const rowVals = rows[r];
+    const rowObj: ParsedRow = {};
+    headers.forEach((h, idx) => {
+      rowObj[h] = rowVals[idx] || "";
+    });
+    if (Object.values(rowObj).some((v) => v.trim().length > 0)) {
+      result.push(rowObj);
+    }
+  }
+
+  return result;
 }
 
 function validateRows(rows: ParsedRow[], type: ImportType): { valid: ParsedRow[]; errors: { row: number; issues: string[] }[] } {
@@ -108,20 +149,21 @@ function validateRows(rows: ParsedRow[], type: ImportType): { valid: ParsedRow[]
   const errors: { row: number; issues: string[] }[] = [];
   const requiredByType: Record<ImportType, string[]> = {
     students: ["full_name"],
-    teachers: ["full_name", "email"],
-    staff: ["full_name", "staff_category"],
+    teachers: ["full_name"],
+    staff: ["full_name"],
   };
   const required = requiredByType[type];
-  const emails = new Set<string>();
 
   rows.forEach((row, i) => {
     const issues: string[] = [];
-    required.forEach((f) => { if (!row[f]) issues.push(`Missing ${f}`); });
+    required.forEach((f) => {
+      if (!row[f] || !row[f].trim()) issues.push(`Missing ${f}`);
+    });
     const emailVal = row.email || row.parent_email;
-    if (emailVal) {
-      if (!emailVal.includes("@")) issues.push("Invalid email");
-      else if (emails.has(emailVal)) issues.push("Duplicate email");
-      else emails.add(emailVal);
+    if (emailVal && emailVal.trim()) {
+      if (!emailVal.includes("@") || !emailVal.includes(".")) {
+        issues.push(`Invalid email: ${emailVal}`);
+      }
     }
     if (issues.length > 0) errors.push({ row: i + 2, issues });
     else valid.push(row);
