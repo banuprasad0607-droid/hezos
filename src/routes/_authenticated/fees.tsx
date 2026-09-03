@@ -1452,9 +1452,9 @@ function Row({ k, v, bold }: { k: string; v: string; bold?: boolean }) {
 }
 
 function fmt(n: number) {
-  return new Intl.NumberFormat(undefined, {
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 0,
   }).format(n || 0);
 }

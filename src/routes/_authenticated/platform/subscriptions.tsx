@@ -106,12 +106,12 @@ function PlatformSubscriptionsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="bg-card border border-border rounded-2xl p-5 shadow-xs">
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Active MRR</span>
-          <h3 className="text-3xl font-bold mt-2 text-emerald-600 dark:text-emerald-400 font-mono">${totalMrr.toLocaleString()}</h3>
-          <p className="text-xs text-muted-foreground mt-1">ARR: ${(totalMrr * 12).toLocaleString()}</p>
+          <h3 className="text-3xl font-bold mt-2 text-emerald-600 dark:text-emerald-400 font-mono">₹{totalMrr.toLocaleString()}</h3>
+          <p className="text-xs text-muted-foreground mt-1">ARR: ₹{(totalMrr * 12).toLocaleString()}</p>
         </div>
 
         <div className="bg-card border border-border rounded-2xl p-5 shadow-xs">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Starter Tier ($)</span>
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Starter Tier (₹)</span>
           <h3 className="text-3xl font-bold mt-2 text-foreground">{starterCount} Tenants</h3>
           <p className="text-xs text-muted-foreground mt-1">Entry level subscription</p>
         </div>
@@ -169,7 +169,7 @@ function PlatformSubscriptionsPage() {
                       {s.billing_cycle || "monthly"}
                     </td>
                     <td className="px-6 py-4 font-mono font-medium text-foreground">
-                      ${Number(s.monthly_amount || 0).toLocaleString()} / mo
+                      ₹{Number(s.monthly_amount || 0).toLocaleString()} / mo
                     </td>
                     <td className="px-6 py-4">
                       <span
@@ -310,7 +310,7 @@ function EditSubscriptionModal({
           </div>
 
           <div>
-            <label className="block text-xs font-medium mb-1">Monthly Amount ($)</label>
+            <label className="block text-xs font-medium mb-1">Monthly Amount (₹)</label>
             <input
               type="number"
               min={0}

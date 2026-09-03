@@ -190,7 +190,7 @@ function BillingPage() {
               </p>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold">${sub.monthly_amount}</div>
+              <div className="text-3xl font-bold">₹{sub.monthly_amount}</div>
               <div className="text-xs text-muted-foreground uppercase tracking-wider">
                 Per{" "}
                 {sub.billing_cycle === "yearly"
@@ -268,7 +268,7 @@ function BillingPage() {
                       <td className="px-6 py-3 text-muted-foreground">
                         {new Date(inv.created_at).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-3">${inv.total_amount.toFixed(2)}</td>
+                      <td className="px-6 py-3">₹{inv.total_amount.toFixed(2)}</td>
                       <td className="px-6 py-3">
                         <span
                           className={`inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${

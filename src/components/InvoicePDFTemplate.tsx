@@ -117,7 +117,7 @@ export function InvoicePDFTemplate({ invoice, school, sub }: any) {
               </div>
             </td>
             <td style={{ padding: "16px 12px", textAlign: "right", fontWeight: "bold" }}>
-              ${Number(invoice.amount).toFixed(2)}
+              ₹{Number(invoice.amount).toFixed(2)}
             </td>
           </tr>
         </tbody>
@@ -134,7 +134,7 @@ export function InvoicePDFTemplate({ invoice, school, sub }: any) {
             }}
           >
             <span style={{ color: "#64748b" }}>Subtotal</span>
-            <span style={{ fontWeight: "bold" }}>${Number(invoice.amount).toFixed(2)}</span>
+            <span style={{ fontWeight: "bold" }}>₹{Number(invoice.amount).toFixed(2)}</span>
           </div>
           <div
             style={{
@@ -145,7 +145,7 @@ export function InvoicePDFTemplate({ invoice, school, sub }: any) {
             }}
           >
             <span style={{ color: "#64748b" }}>Tax (GST)</span>
-            <span style={{ fontWeight: "bold" }}>${Number(invoice.gst_amount).toFixed(2)}</span>
+            <span style={{ fontWeight: "bold" }}>₹{Number(invoice.gst_amount).toFixed(2)}</span>
           </div>
           <div
             style={{
@@ -159,7 +159,7 @@ export function InvoicePDFTemplate({ invoice, school, sub }: any) {
               Total Due
             </span>
             <span style={{ fontSize: "20px", fontWeight: "bold", color: "#3b82f6" }}>
-              ${Number(invoice.total_amount).toFixed(2)}
+              ₹{Number(invoice.total_amount).toFixed(2)}
             </span>
           </div>
         </div>
