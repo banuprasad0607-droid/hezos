@@ -206,7 +206,7 @@ type CardTheme =
   | "school-classic"
   | "minimal";
 type CardOrientation = "portrait" | "landscape";
-type PdfExportMode = "front-back" | "front-only" | "side-by-side";
+type PdfExportMode = "front-back" | "front-only" | "side-by-side" | "a4-sheet";
 
 const currentAcademicYear = (() => {
   const now = new Date();
@@ -224,7 +224,7 @@ function IdCardManagementPage() {
 
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [theme, setTheme] = useState<CardTheme>("modern-blue");
-  const [orientation, setOrientation] = useState<CardOrientation>("portrait");
+  const [orientation, setOrientation] = useState<CardOrientation>("landscape");
   const [pdfExportMode, setPdfExportMode] = useState<PdfExportMode>("front-back");
 
   // Data
@@ -691,28 +691,42 @@ function IdCardManagementPage() {
         backImg = backCanvas.toDataURL("image/jpeg", 0.95);
       }
 
-      const w = orientation === "portrait" ? 54 : 85.6;
-      const h = orientation === "portrait" ? 85.6 : 54;
+      const cardW = orientation === "portrait" ? 53.98 : 85.60;
+      const cardH = orientation === "portrait" ? 85.60 : 53.98;
 
       if (mode === "side-by-side") {
         const pdf = new jsPDF({
-          orientation: orientation === "portrait" ? "landscape" : "portrait",
+          orientation: "landscape",
           unit: "mm",
-          format: [w * 2, h],
+          format: [cardW * 2, cardH],
         });
-        pdf.addImage(frontImg, "JPEG", 0, 0, w, h);
-        if (backImg) pdf.addImage(backImg, "JPEG", w, 0, w, h);
+        pdf.addImage(frontImg, "JPEG", 0, 0, cardW, cardH);
+        if (backImg) pdf.addImage(backImg, "JPEG", cardW, 0, cardW, cardH);
         pdf.save(`${record.full_name || record.visitor_name || "id"}_card.pdf`);
+      } else if (mode === "a4-sheet") {
+        const pdf = new jsPDF({
+          orientation: "portrait",
+          unit: "mm",
+          format: "a4",
+        });
+        // Center on standard A4 (210 x 297 mm) with cut guide borders
+        const startX = (210 - cardW) / 2;
+        const startY = backImg ? 70 : (297 - cardH) / 2;
+        pdf.addImage(frontImg, "JPEG", startX, startY, cardW, cardH);
+        if (backImg) {
+          pdf.addImage(backImg, "JPEG", startX, startY + cardH + 12, cardW, cardH);
+        }
+        pdf.save(`${record.full_name || record.visitor_name || "id"}_card_a4.pdf`);
       } else {
         const pdf = new jsPDF({
           orientation: orientation,
           unit: "mm",
-          format: [w, h],
+          format: [cardW, cardH],
         });
-        pdf.addImage(frontImg, "JPEG", 0, 0, w, h);
+        pdf.addImage(frontImg, "JPEG", 0, 0, cardW, cardH);
         if (mode === "front-back" && backImg) {
-          pdf.addPage([w, h], orientation);
-          pdf.addImage(backImg, "JPEG", 0, 0, w, h);
+          pdf.addPage([cardW, cardH], orientation);
+          pdf.addImage(backImg, "JPEG", 0, 0, cardW, cardH);
         }
         pdf.save(`${record.full_name || record.visitor_name || "id"}_card.pdf`);
       }
@@ -726,7 +740,7 @@ function IdCardManagementPage() {
     }
   };
 
-  // Bulk PDF generation with chunked rendering to prevent main-thread freeze and JPEG compression to avoid Out-Of-Memory
+  // Bulk PDF generation supporting both Individual CR80 PVC Cards and A4 Printable Sheet Grid
   const downloadBulkPDF = async (type: "student" | "staff", mode: PdfExportMode) => {
     const list =
       type === "student"
@@ -747,81 +761,159 @@ function IdCardManagementPage() {
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     try {
-      const w = orientation === "portrait" ? 54 : 85.6;
-      const h = orientation === "portrait" ? 85.6 : 54;
+      const cardW = orientation === "portrait" ? 53.98 : 85.60;
+      const cardH = orientation === "portrait" ? 85.60 : 53.98;
 
-      let pdf: jsPDF;
-      if (mode === "side-by-side") {
-        pdf = new jsPDF({
-          orientation: orientation === "portrait" ? "landscape" : "portrait",
+      if (mode === "a4-sheet") {
+        const pdf = new jsPDF({
+          orientation: "portrait",
           unit: "mm",
-          format: [w * 2, h],
+          format: "a4",
         });
-      } else {
-        pdf = new jsPDF({
-          orientation: orientation,
-          unit: "mm",
-          format: [w, h],
-        });
-      }
 
-      const batchSize = 10;
-      let isFirstPage = true;
+        // 2 columns x 4 rows = 8 cards per A4 page (210 x 297 mm)
+        const cols = 2;
+        const rows = 4;
+        const perPage = cols * rows;
+        const startX = 14.4;
+        const gapX = 10.0;
+        const startY = 22.5;
+        const gapY = 8.0;
 
-      for (let i = 0; i < list.length; i++) {
-        if (cancelRef.current) {
-          toast.warning("PDF generation cancelled.");
-          break;
-        }
+        for (let chunkIdx = 0; chunkIdx < list.length; chunkIdx += perPage) {
+          if (cancelRef.current) break;
+          const chunk = list.slice(chunkIdx, chunkIdx + perPage);
+          if (chunkIdx > 0) pdf.addPage("a4", "portrait");
 
-        const rec = list[i];
-        const activeName = (rec as any).full_name || (rec as any).visitor_name || "Card";
-        setBulkProgress({ current: i + 1, total: list.length, activeName });
+          const frontImages: (string | null)[] = [];
+          const backImages: (string | null)[] = [];
 
-        const frontEl = document.getElementById(
-          `bulk-card-front-${(rec as any).id || (rec as any).user_id}`,
-        );
-        const backEl = document.getElementById(
-          `bulk-card-back-${(rec as any).id || (rec as any).user_id}`,
-        );
+          // Capture front and back cards
+          for (let i = 0; i < chunk.length; i++) {
+            const rec = chunk[i];
+            const activeName = (rec as any).full_name || (rec as any).visitor_name || "Card";
+            setBulkProgress({ current: chunkIdx + i + 1, total: list.length, activeName });
 
-        if (!frontEl) continue;
+            const frontEl = document.getElementById(
+              `bulk-card-front-${(rec as any).id || (rec as any).user_id}`,
+            );
+            const backEl = document.getElementById(
+              `bulk-card-back-${(rec as any).id || (rec as any).user_id}`,
+            );
 
-        const frontCanvas = await safeHtml2Canvas(frontEl, { scale: 4 });
-        const frontImg = frontCanvas.toDataURL("image/jpeg", 0.85);
+            const frontCanvas = frontEl ? await safeHtml2Canvas(frontEl, { scale: 4 }) : null;
+            const backCanvas = backEl ? await safeHtml2Canvas(backEl, { scale: 4 }) : null;
 
-        let backImg = null;
-        if (mode !== "front-only" && backEl) {
-          const backCanvas = await safeHtml2Canvas(backEl, { scale: 4 });
-          backImg = backCanvas.toDataURL("image/jpeg", 0.85);
-        }
+            frontImages.push(frontCanvas ? frontCanvas.toDataURL("image/jpeg", 0.88) : null);
+            backImages.push(backCanvas ? backCanvas.toDataURL("image/jpeg", 0.88) : null);
 
-        if (mode === "side-by-side") {
-          if (!isFirstPage)
-            pdf.addPage([w * 2, h], orientation === "portrait" ? "landscape" : "portrait");
-          pdf.addImage(frontImg, "JPEG", 0, 0, w, h);
-          if (backImg) pdf.addImage(backImg, "JPEG", w, 0, w, h);
-        } else {
-          if (!isFirstPage) pdf.addPage([w, h], orientation);
-          pdf.addImage(frontImg, "JPEG", 0, 0, w, h);
-          if (mode === "front-back" && backImg) {
-            pdf.addPage([w, h], orientation);
-            pdf.addImage(backImg, "JPEG", 0, 0, w, h);
+            // Draw front card on A4 sheet
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            const x = startX + col * (cardW + gapX);
+            const y = startY + row * (cardH + gapY);
+
+            if (frontImages[i]) {
+              pdf.addImage(frontImages[i]!, "JPEG", x, y, cardW, cardH);
+            }
+          }
+
+          // Draw duplex back page if back images exist
+          const hasBack = backImages.some(Boolean);
+          if (hasBack) {
+            pdf.addPage("a4", "portrait");
+            for (let i = 0; i < chunk.length; i++) {
+              if (backImages[i]) {
+                const col = i % cols;
+                const mirroredCol = (cols - 1) - col; // Mirror columns for duplex alignment
+                const row = Math.floor(i / cols);
+                const x = startX + mirroredCol * (cardW + gapX);
+                const y = startY + row * (cardH + gapY);
+                pdf.addImage(backImages[i]!, "JPEG", x, y, cardW, cardH);
+              }
+            }
           }
         }
-        isFirstPage = false;
 
-        void logReprint(type, (rec as any).id || (rec as any).user_id, "Bulk Download");
-
-        // Yield main thread in batches
-        if (i % batchSize === 0 && i > 0) {
-          await new Promise((resolve) => setTimeout(resolve, 80));
+        if (!cancelRef.current) {
+          pdf.save(`bulk_${type}_cards_a4_grid.pdf`);
+          toast.success(`Exported ${list.length} cards to printable A4 sheet.`);
         }
-      }
+      } else {
+        // Individual CR80 PVC card mode
+        let pdf: jsPDF;
+        if (mode === "side-by-side") {
+          pdf = new jsPDF({
+            orientation: "landscape",
+            unit: "mm",
+            format: [cardW * 2, cardH],
+          });
+        } else {
+          pdf = new jsPDF({
+            orientation: orientation,
+            unit: "mm",
+            format: [cardW, cardH],
+          });
+        }
 
-      if (!cancelRef.current) {
-        pdf.save(`bulk_${type}_cards.pdf`);
-        toast.success(`Exported ${list.length} cards successfully.`);
+        const batchSize = 10;
+        let isFirstPage = true;
+
+        for (let i = 0; i < list.length; i++) {
+          if (cancelRef.current) {
+            toast.warning("PDF generation cancelled.");
+            break;
+          }
+
+          const rec = list[i];
+          const activeName = (rec as any).full_name || (rec as any).visitor_name || "Card";
+          setBulkProgress({ current: i + 1, total: list.length, activeName });
+
+          const frontEl = document.getElementById(
+            `bulk-card-front-${(rec as any).id || (rec as any).user_id}`,
+          );
+          const backEl = document.getElementById(
+            `bulk-card-back-${(rec as any).id || (rec as any).user_id}`,
+          );
+
+          if (!frontEl) continue;
+
+          const frontCanvas = await safeHtml2Canvas(frontEl, { scale: 4 });
+          const frontImg = frontCanvas.toDataURL("image/jpeg", 0.88);
+
+          let backImg = null;
+          if (mode !== "front-only" && backEl) {
+            const backCanvas = await safeHtml2Canvas(backEl, { scale: 4 });
+            backImg = backCanvas.toDataURL("image/jpeg", 0.88);
+          }
+
+          if (mode === "side-by-side") {
+            if (!isFirstPage)
+              pdf.addPage([cardW * 2, cardH], "landscape");
+            pdf.addImage(frontImg, "JPEG", 0, 0, cardW, cardH);
+            if (backImg) pdf.addImage(backImg, "JPEG", cardW, 0, cardW, cardH);
+          } else {
+            if (!isFirstPage) pdf.addPage([cardW, cardH], orientation);
+            pdf.addImage(frontImg, "JPEG", 0, 0, cardW, cardH);
+            if (mode === "front-back" && backImg) {
+              pdf.addPage([cardW, cardH], orientation);
+              pdf.addImage(backImg, "JPEG", 0, 0, cardW, cardH);
+            }
+          }
+          isFirstPage = false;
+
+          void logReprint(type, (rec as any).id || (rec as any).user_id, "Bulk Download");
+
+          // Yield main thread in batches
+          if (i % batchSize === 0 && i > 0) {
+            await new Promise((resolve) => setTimeout(resolve, 80));
+          }
+        }
+
+        if (!cancelRef.current) {
+          pdf.save(`bulk_${type}_cards_cr80.pdf`);
+          toast.success(`Exported ${list.length} cards successfully.`);
+        }
       }
     } catch (err: any) {
       toast.error("Failed to export bulk PDF: " + err.message);
@@ -1192,9 +1284,10 @@ function IdCardManagementPage() {
                           className="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer appearance-none px-2.5 py-1.5"
                           title="PDF Layout Options"
                         >
-                          <option value="front-back" className="text-slate-900 bg-white">Front+Back</option>
-                          <option value="front-only" className="text-slate-900 bg-white">Front Only</option>
-                          <option value="side-by-side" className="text-slate-900 bg-white">Side-by-Side</option>
+                          <option value="front-back" className="text-slate-900 bg-white">Front+Back (CR80)</option>
+                          <option value="front-only" className="text-slate-900 bg-white">Front Only (CR80)</option>
+                          <option value="side-by-side" className="text-slate-900 bg-white">Side-by-Side (CR80)</option>
+                          <option value="a4-sheet" className="text-slate-900 bg-white">A4 Sheet Grid</option>
                         </select>
                         <button
                           onClick={() => downloadBulkPDF("student", pdfExportMode)}
@@ -1523,9 +1616,10 @@ function IdCardManagementPage() {
                         className="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer appearance-none px-2.5 py-1.5"
                         title="PDF Layout Options"
                       >
-                        <option value="front-back" className="text-slate-900 bg-white">Front+Back</option>
-                        <option value="front-only" className="text-slate-900 bg-white">Front Only</option>
-                        <option value="side-by-side" className="text-slate-900 bg-white">Side-by-Side</option>
+                        <option value="front-back" className="text-slate-900 bg-white">Front+Back (CR80)</option>
+                        <option value="front-only" className="text-slate-900 bg-white">Front Only (CR80)</option>
+                        <option value="side-by-side" className="text-slate-900 bg-white">Side-by-Side (CR80)</option>
+                        <option value="a4-sheet" className="text-slate-900 bg-white">A4 Sheet Grid</option>
                       </select>
                       <button
                         onClick={() => downloadBulkPDF("staff", pdfExportMode)}
@@ -2396,9 +2490,10 @@ function IdCardManagementPage() {
                     className="bg-brand text-white text-xs font-semibold focus:outline-none cursor-pointer appearance-none px-2"
                     style={{ WebkitAppearance: "none", MozAppearance: "none" }}
                   >
-                    <option value="front-back">Front+Back</option>
-                    <option value="front-only">Front Only</option>
-                    <option value="side-by-side">Side-by-Side</option>
+                    <option value="front-back">Front+Back (CR80)</option>
+                    <option value="front-only">Front Only (CR80)</option>
+                    <option value="side-by-side">Side-by-Side (CR80)</option>
+                    <option value="a4-sheet">A4 Sheet Grid</option>
                   </select>
                   <button
                     onClick={() =>
@@ -3324,35 +3419,36 @@ export function IDCardComponent({
       );
     }
   } else {
-    // Landscape Layout
+    // Landscape Layout (Standard CR80 85.60 x 53.98 mm)
     if (side === "front") {
       return (
         <div
-          className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden relative select-none ${themeCls}`}
+          className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden relative select-none box-border ${themeCls}`}
         >
           {/* Header */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <div
-              className={`px-3 py-2 flex items-center gap-2.5 relative min-h-[58px] ${headerCls}`}
+              className={`px-2.5 py-1.5 flex items-center gap-2 relative min-h-[46px] ${headerCls}`}
             >
               {schoolLogoNode}
               <div className="text-left min-w-0 flex-1 leading-tight">
-                <h2 className="text-[13.5px] font-black uppercase tracking-wider leading-tight line-clamp-2 text-white">
+                <h2 className={`${schoolNameFontSize} font-black uppercase tracking-wider leading-[1.15] line-clamp-2 text-white`}>
                   {school?.name || "School Campus"}
                 </h2>
-                <p className="text-[7.5px] opacity-80 line-clamp-1 leading-tight mt-0.5 text-slate-200">
+                <p className="text-[6.5px] opacity-80 line-clamp-1 leading-tight mt-0.5 text-slate-200">
                   {school?.address || "School Campus"}
                 </p>
               </div>
               <div className="text-right leading-none flex-shrink-0">
-                <span className="inline-block bg-white/15 backdrop-blur-md px-2 py-0.5 rounded text-[7px] font-mono font-bold text-white border border-white/20">
+                <span className="inline-block bg-white/15 backdrop-blur-md px-1.5 py-0.5 rounded text-[6px] font-mono font-bold text-white border border-white/20">
                   {rec.academic_year || currentAcademicYear}
                 </span>
               </div>
             </div>
 
+            {/* Sub-banner ribbon */}
             <div
-              className={`font-black text-[7px] text-center uppercase tracking-widest py-1 shadow-xs flex items-center justify-center gap-1.5 ${subBannerCls}`}
+              className={`font-black text-[6.5px] text-center uppercase tracking-widest py-0.5 shadow-2xs flex items-center justify-center gap-1 ${subBannerCls}`}
             >
               <span className="size-1 rounded-full bg-white/70"></span>
               {isStudent ? "STUDENT IDENTITY CARD" : isVisitor ? "VISITOR PASS" : "STAFF IDENTITY CARD"}
@@ -3360,74 +3456,17 @@ export function IDCardComponent({
             </div>
           </div>
 
-          {/* Body */}
-          <div className="flex-1 p-2.5 flex items-center justify-between gap-3 min-h-0 relative bg-white">
-            {/* Left Section: Details */}
-            <div className="flex-1 min-w-0">
-              <h4
-                className="font-black uppercase tracking-tight text-slate-900 text-[12px] leading-tight truncate"
-                title={displayName}
-              >
-                {displayName}
-              </h4>
-              <div className="mt-0.5 mb-1.5">
-                <span className="inline-block bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.2 rounded-full font-bold text-[7.5px] uppercase tracking-wide">
-                  {displayClassOrDesignation}
-                </span>
-              </div>
-
-              <div className="bg-slate-50/90 border border-slate-200/80 rounded-lg p-1.5 text-[6.8px] space-y-0.8 shadow-2xs">
-                {isStudent ? (
-                  <>
-                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                      <span className="text-slate-500 font-semibold">Admission No:</span>
-                      <span className="font-black font-mono text-slate-900">{identifier}</span>
-                    </div>
-                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                      <span className="text-slate-500 font-semibold">Roll No:</span>
-                      <span className="font-bold text-slate-900">{rec.roll_number || "—"}</span>
-                    </div>
-                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                      <span className="text-slate-500 font-semibold">Blood Group:</span>
-                      <span className="font-black text-red-600 bg-red-50 border border-red-200/80 px-1 rounded">
-                        {rec.blood_group || "—"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-semibold">Parent Mob:</span>
-                      <span className="font-black font-mono text-slate-900">{rec.parent_phone || "—"}</span>
-                    </div>
-                  </>
-                ) : isVisitor ? (
-                  <>
-                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                      <span className="text-slate-500 font-semibold">Pass No:</span>
-                      <span className="font-black font-mono text-slate-900">{identifier}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-semibold">Visitor Mob:</span>
-                      <span className="font-black font-mono text-slate-900">{rec.contact_number}</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                      <span className="text-slate-500 font-semibold">Emp ID:</span>
-                      <span className="font-black font-mono text-slate-900">{identifier}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-semibold">Dept:</span>
-                      <span className="font-bold text-slate-900">{rec.department || "—"}</span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Middle Section: Photo */}
+          {/* Body - 3 Column Landscape Layout: LEFT: Photo | CENTER: Details | RIGHT: QR & Verification */}
+          <div className="flex-1 px-2.5 py-1.5 flex items-center justify-between gap-2.5 min-h-0 relative bg-white">
+            {/* LEFT: Student Photograph */}
             <div
-              className={`w-[85px] h-[105px] rounded-xl border-2 border-white overflow-hidden shadow-md flex items-center justify-center flex-shrink-0 bg-slate-100 ${accentBorder}`}
+              className={`w-[76px] h-[95px] rounded-lg border-2 border-white overflow-hidden shadow-xs flex items-center justify-center flex-shrink-0 bg-slate-100 ${accentBorder} relative`}
             >
+              {topperRank && (
+                <div className="absolute top-0.5 right-0.5 bg-amber-400 text-slate-950 text-[5px] font-black px-1 rounded shadow-xs z-10">
+                  R{topperRank.rank_position}
+                </div>
+              )}
               {rec.photo_url ? (
                 <img
                   src={rec.photo_url}
@@ -3439,91 +3478,181 @@ export function IDCardComponent({
                 <img
                   src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTRhM2I4IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48cGF0aCBkPSJNMjAgMjF2LTJhNCA0IDAgMCAwLTQtNEg4YTQgNCAwIDAgMC00IDR2MiI+PC9wYXRoPjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCI+PC9jaXJjbGU+PC9zdmc+"
                   alt=""
-                  style={{ width: "48px", height: "48px" }}
-                  className="w-12 h-12 object-contain opacity-50"
+                  style={{ width: "42px", height: "42px" }}
+                  className="w-10 h-10 object-contain opacity-50"
                 />
               )}
             </div>
 
-            {/* Right Section: Verification & Barcode */}
-            <div className="w-[85px] flex-shrink-0 flex flex-col items-center justify-between h-[105px] bg-slate-50/90 border border-slate-200/80 rounded-lg p-1.5 shadow-2xs">
+            {/* CENTER: Student Name & Information */}
+            <div className="flex-1 min-w-0 flex flex-col justify-between h-[95px] py-0.5">
+              <div>
+                <h4
+                  className="font-black uppercase tracking-tight text-slate-900 text-[10.5px] leading-tight truncate"
+                  title={displayName}
+                >
+                  {displayName}
+                </h4>
+                <div className="mt-0.5">
+                  <span className="inline-block bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.1 rounded-full font-bold text-[6.5px] uppercase tracking-wide">
+                    {displayClassOrDesignation}
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-slate-50/90 border border-slate-200/80 rounded-md p-1 text-[6.2px] space-y-0.4 shadow-2xs">
+                {isStudent ? (
+                  <>
+                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                      <span className="text-slate-500 font-semibold">Admission No:</span>
+                      <span className="font-black font-mono text-slate-900">{identifier}</span>
+                    </div>
+                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                      <span className="text-slate-500 font-semibold">Roll Number:</span>
+                      <span className="font-bold text-slate-900">{rec.roll_number || "—"}</span>
+                    </div>
+                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                      <span className="text-slate-500 font-semibold">Date of Birth:</span>
+                      <span className="font-bold text-slate-900">{rec.date_of_birth || "—"}</span>
+                    </div>
+                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                      <span className="text-slate-500 font-semibold">Blood Group:</span>
+                      <span className="font-black text-red-600 bg-red-50 border border-red-200/80 px-1 py-0.1 rounded">
+                        {rec.blood_group || "—"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-semibold">Parent Contact:</span>
+                      <span className="font-black font-mono text-slate-900">{rec.parent_phone || "—"}</span>
+                    </div>
+                  </>
+                ) : isVisitor ? (
+                  <>
+                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                      <span className="text-slate-500 font-semibold">Pass Number:</span>
+                      <span className="font-black font-mono text-slate-900">{identifier}</span>
+                    </div>
+                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                      <span className="text-slate-500 font-semibold">Visitor Phone:</span>
+                      <span className="font-black font-mono text-slate-900">{rec.contact_number}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-semibold">Host:</span>
+                      <span className="font-bold truncate max-w-[90px] text-slate-900">{rec.host_name || "—"}</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                      <span className="text-slate-500 font-semibold">Employee ID:</span>
+                      <span className="font-black font-mono text-slate-900">{identifier}</span>
+                    </div>
+                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                      <span className="text-slate-500 font-semibold">Department:</span>
+                      <span className="font-bold text-slate-900">{rec.department || "—"}</span>
+                    </div>
+                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                      <span className="text-slate-500 font-semibold">Blood Group:</span>
+                      <span className="font-black text-red-600 bg-red-50 border border-red-200/80 px-1 py-0.1 rounded">
+                        {rec.blood_group || "—"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-semibold">Mobile:</span>
+                      <span className="font-black font-mono text-slate-900">{rec.mobile_number || "—"}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* RIGHT: QR Code & Verification */}
+            <div className="w-[68px] flex-shrink-0 flex flex-col items-center justify-between h-[95px] bg-slate-50/90 border border-slate-200/80 rounded-md p-1 shadow-2xs">
               <div className="w-full bg-white p-0.5 rounded border border-slate-200/80 flex items-center justify-center">
                 <Barcode value={identifier} />
               </div>
               <div className="flex flex-col items-center">
-                <div className="p-0.5 bg-white rounded border border-slate-200">
+                <div className="p-0.5 bg-white rounded-md border border-slate-200 shadow-2xs">
                   <QRCodeImage
                     value={verificationLink}
                     className="size-7"
                   />
                 </div>
-                <span className="text-[4.5px] font-black text-slate-500 mt-0.5 uppercase tracking-widest">
-                  VERIFIED
+                <span className="text-[4px] font-black text-slate-500 mt-0.5 uppercase tracking-widest">
+                  VERIFIED ID
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Footer strip branding */}
-          <div className="h-4 px-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[5.5px] font-mono text-slate-500 font-bold">
+          {/* Bottom branding ribbon */}
+          <div className="h-3.5 px-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[5px] font-mono text-slate-500 font-bold shrink-0">
             <span>SMART INSTITUTION ID</span>
             <span>HZ-{rec.id?.slice(0, 8) || rec.user_id?.slice(0, 8) || "000000"}</span>
           </div>
         </div>
       );
     } else {
-      // Landscape Back Side
+      // Landscape Back Side (Standard CR80 85.60 x 53.98 mm)
       return (
         <div
-          className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden p-3 relative select-none ${themeCls}`}
+          className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden p-2.5 relative select-none box-border ${themeCls}`}
         >
           {/* Header */}
-          <div className="text-center pb-1.5 border-b border-slate-200 flex justify-between items-center">
-            <span className="text-[8px] font-black uppercase tracking-wider text-slate-900">TERMS & INSTRUCTIONS</span>
-            <span className="text-[7px] font-bold text-slate-600 truncate max-w-[180px]">
+          <div className="text-center pb-1 border-b border-slate-200 flex justify-between items-center shrink-0">
+            <span className="text-[7.5px] font-black uppercase tracking-wider text-slate-900">TERMS & INSTRUCTIONS</span>
+            <span className="text-[6.5px] font-bold text-slate-600 truncate max-w-[180px]">
               {school?.name || "School Campus"}
             </span>
           </div>
 
-          {/* Details */}
-          <div className="flex-1 flex items-center justify-between gap-3 py-1.5 min-h-0">
-            <div className="flex-1 text-[7px] space-y-1">
+          {/* Details & Signature */}
+          <div className="flex-1 flex items-center justify-between gap-2.5 py-1 min-h-0">
+            <div className="flex-1 text-[6.5px] space-y-0.8">
               {isStudent ? (
                 <>
-                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Emergency Contact:</span>
                     <span className="font-black font-mono text-slate-900">
                       {rec.emergency_contact || rec.parent_phone || "—"}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Parent / Guardian:</span>
                     <span className="font-bold text-slate-900">{rec.parent_name || "—"}</span>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">School Phone:</span>
                     <span className="font-bold font-mono text-slate-900">{school?.phone_number || "—"}</span>
                   </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 font-semibold">School Email:</span>
+                    <span className="font-medium truncate max-w-[110px] text-slate-800">{school?.email || "info@school.com"}</span>
+                  </div>
                 </>
               ) : (
-                <div className="text-[7px] space-y-1">
-                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
+                <div className="text-[6.5px] space-y-0.8">
+                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Emergency Phone:</span>
                     <span className="font-black font-mono text-slate-900">{rec.emergency_contact || "—"}</span>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">School Contact:</span>
                     <span className="font-bold font-mono text-slate-900">{school?.phone_number || "—"}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 font-semibold">Address:</span>
+                    <span className="font-medium truncate max-w-[110px] text-slate-800">{school?.address || "—"}</span>
                   </div>
                 </div>
               )}
             </div>
 
             {/* Principal Signature Box */}
-            <div className="w-[100px] border border-slate-200 rounded-lg p-2 bg-white flex flex-col items-center justify-between text-center">
-              <span className="text-[5px] uppercase font-bold text-slate-400 block">AUTHORIZED ISSUER</span>
+            <div className="w-[95px] border border-slate-200 rounded-lg p-1.5 bg-slate-50 flex flex-col items-center justify-between text-center h-[80px]">
+              <span className="text-[4.8px] uppercase font-bold text-slate-400 block">AUTHORIZED ISSUER</span>
               {signature ? (
-                <div className="h-6 w-full flex items-center justify-center my-0.5">
+                <div className="h-5 w-full flex items-center justify-center my-0.5">
                   <img
                     src={signature}
                     alt="Sig"
@@ -3532,23 +3661,23 @@ export function IDCardComponent({
                   />
                 </div>
               ) : (
-                <div className="w-16 border-b border-dashed border-slate-300 my-1"></div>
+                <div className="w-14 border-b border-dashed border-slate-300 my-1"></div>
               )}
-              <span className="text-[6px] font-bold text-slate-700 uppercase">PRINCIPAL</span>
+              <span className="text-[5.5px] font-bold text-slate-700 uppercase">PRINCIPAL</span>
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="border-t border-slate-200 pt-1 flex justify-between items-center">
-            <span className="text-[6px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">
+          {/* Footer with return notice & QR */}
+          <div className="border-t border-slate-200 pt-1 flex justify-between items-center shrink-0">
+            <span className="text-[5.5px] font-bold text-red-700 bg-red-50 px-1.5 py-0.2 rounded border border-red-200">
               "If found, please return to School Office"
             </span>
             <div className="flex items-center gap-1.5">
               <QRCodeImage
                 value={verificationLink}
-                className="size-6 bg-white p-0.5 rounded border border-slate-200"
+                className="size-5.5 bg-white p-0.5 rounded border border-slate-200"
               />
-              <span className="text-[5px] font-black text-slate-600 uppercase">VERIFIED</span>
+              <span className="text-[4.5px] font-black text-slate-600 uppercase">VERIFIED</span>
             </div>
           </div>
         </div>
