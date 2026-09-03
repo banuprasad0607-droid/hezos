@@ -580,71 +580,273 @@ function SalariesTab({
 
       {editing && (
         <div
-          className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50 text-foreground"
+          className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 text-foreground overflow-y-auto"
           onClick={() => setEditing(null)}
         >
           <form
             onClick={(e) => e.stopPropagation()}
             onSubmit={save}
-            className="bg-card rounded-xl p-6 w-full max-w-md space-y-3 shadow-lg text-card-foreground"
+            className="bg-card border border-border rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl text-card-foreground my-8 animate-in fade-in zoom-in-95 duration-200"
           >
-            <h2 className="font-semibold text-lg text-foreground">
-              {teachers.find((t) => t.user_id === editing)?.full_name}
-            </h2>
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div>
+                <h2 className="font-bold text-lg text-foreground">
+                  {teachers.find((t) => t.user_id === editing)?.full_name}
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  {teachers.find((t) => t.user_id === editing)?.email || "Teacher Salary Profile"}
+                </p>
+              </div>
+              <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-primary/10 text-primary border border-primary/20">
+                Salary Setup
+              </span>
+            </div>
+
+            {/* Quick Auto-Compute Banner */}
+            <div className="bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-3.5 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  ⚡ Auto-Calculate Presets
+                </span>
+                <span className="text-[10px] text-muted-foreground font-medium">
+                  Based on Base Salary
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const base = Number(form.base || 0);
+                    if (base <= 0) return toast.error("Please enter a Base Salary first");
+                    const hra = Math.round(base * 0.2);
+                    const da = Math.round(base * 0.1);
+                    const pf = Math.min(Math.round(base * 0.12), 1800);
+                    const pt = 200;
+                    setForm((f) => ({
+                      ...f,
+                      allow: (hra + da).toString(),
+                      ded: (pf + pt).toString(),
+                    }));
+                    toast.success("Standard package applied: HRA (20%) + DA (10%) - PF & PT");
+                  }}
+                  className="px-2.5 py-1 text-[11px] font-semibold bg-primary text-primary-foreground rounded-lg shadow-xs hover:opacity-90 active:scale-[0.98] transition cursor-pointer"
+                >
+                  Standard (HRA 20% + DA 10% - PF & PT)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const base = Number(form.base || 0);
+                    if (base <= 0) return toast.error("Please enter a Base Salary first");
+                    const hra = Math.round(base * 0.4);
+                    const da = Math.round(base * 0.1);
+                    const pf = Math.round(base * 0.12);
+                    const pt = 200;
+                    setForm((f) => ({
+                      ...f,
+                      allow: (hra + da).toString(),
+                      ded: (pf + pt).toString(),
+                    }));
+                    toast.success("Metro structure applied: HRA (40%) + DA (10%) - 12% PF & PT");
+                  }}
+                  className="px-2.5 py-1 text-[11px] font-semibold bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-lg border border-border transition cursor-pointer"
+                >
+                  Metro (HRA 40% + DA 10%)
+                </button>
+              </div>
+            </div>
+
+            {/* Base Salary */}
             <Money
-              label="Base salary"
+              label="Base Salary (₹)"
               v={form.base}
               onChange={(v) => setForm((f) => ({ ...f, base: v }))}
             />
-            <Money
-              label="Allowances"
-              v={form.allow}
-              onChange={(v) => setForm((f) => ({ ...f, allow: v }))}
-            />
-            <Money
-              label="Deductions"
-              v={form.ded}
-              onChange={(v) => setForm((f) => ({ ...f, ded: v }))}
-            />
-            <div className="bg-secondary/60 border border-border rounded-md p-3 flex items-center justify-between text-foreground">
-              <div>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-                  Net salary (auto)
-                </p>
-                <p className="text-[11px] text-muted-foreground">Base + Allowances − Deductions</p>
+
+            {/* Allowances with Quick % Pills */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-foreground">Allowances (₹)</label>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const base = Number(form.base || 0);
+                      const current = Number(form.allow || 0);
+                      setForm((f) => ({ ...f, allow: (current + Math.round(base * 0.2)).toString() }));
+                    }}
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition cursor-pointer"
+                  >
+                    +20% HRA
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const base = Number(form.base || 0);
+                      const current = Number(form.allow || 0);
+                      setForm((f) => ({ ...f, allow: (current + Math.round(base * 0.1)).toString() }));
+                    }}
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition cursor-pointer"
+                  >
+                    +10% DA
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const base = Number(form.base || 0);
+                      const current = Number(form.allow || 0);
+                      setForm((f) => ({ ...f, allow: (current + Math.round(base * 0.05)).toString() }));
+                    }}
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition cursor-pointer"
+                  >
+                    +5% Med
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, allow: "0" }))}
+                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded text-muted-foreground hover:bg-muted transition cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                </div>
               </div>
-              <p className="text-xl font-bold font-mono">₹{netVal().toFixed(0)}</p>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={form.allow}
+                onChange={(e) => setForm((f) => ({ ...f, allow: e.target.value }))}
+                placeholder="0"
+                className="w-full px-3 py-2 text-sm font-mono border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
             </div>
+
+            {/* Deductions with Quick % Pills */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-foreground">Deductions (₹)</label>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const base = Number(form.base || 0);
+                      const pf = Math.min(Math.round(base * 0.12), 1800);
+                      const current = Number(form.ded || 0);
+                      setForm((f) => ({ ...f, ded: (current + pf).toString() }));
+                    }}
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition cursor-pointer"
+                  >
+                    +PF (12%)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = Number(form.ded || 0);
+                      setForm((f) => ({ ...f, ded: (current + 200).toString() }));
+                    }}
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition cursor-pointer"
+                  >
+                    +₹200 PT
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const base = Number(form.base || 0);
+                      const current = Number(form.ded || 0);
+                      setForm((f) => ({ ...f, ded: (current + Math.round(base * 0.05)).toString() }));
+                    }}
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition cursor-pointer"
+                  >
+                    +5% TDS
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, ded: "0" }))}
+                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded text-muted-foreground hover:bg-muted transition cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={form.ded}
+                onChange={(e) => setForm((f) => ({ ...f, ded: e.target.value }))}
+                placeholder="0"
+                className="w-full px-3 py-2 text-sm font-mono border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            {/* Live Auto-Calculated Net Salary & CTC Card */}
+            <div className="bg-secondary/70 border border-border rounded-xl p-3.5 space-y-2 text-foreground">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
+                    Net Monthly Take-Home (Auto)
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Base (₹{Number(form.base || 0).toLocaleString()}) + Allowances (+₹{Number(form.allow || 0).toLocaleString()}) − Deductions (-₹{Number(form.ded || 0).toLocaleString()})
+                  </p>
+                </div>
+                <p className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
+                  ₹{netVal().toLocaleString()}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border text-xs">
+                <div>
+                  <span className="text-muted-foreground">Gross Monthly:</span>{" "}
+                  <span className="font-mono font-semibold">
+                    ₹{(Number(form.base || 0) + Number(form.allow || 0)).toLocaleString()}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-muted-foreground">Annual CTC:</span>{" "}
+                  <span className="font-mono font-bold text-primary">
+                    ₹{((Number(form.base || 0) + Number(form.allow || 0)) * 12).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <div>
-              <label className="text-sm font-medium text-foreground">Bank account</label>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Bank Account Details
+              </label>
               <input
                 value={form.bank}
                 onChange={(e) => setForm({ ...form, bank: e.target.value })}
-                className="mt-1 w-full px-3 py-2 text-sm border border-border rounded-md bg-background text-foreground focus:outline-none"
+                placeholder="e.g. HDFC Bank - A/C 50100234567890 (IFSC: HDFC0001234)"
+                className="mt-1 w-full px-3 py-2 text-sm border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
+
             <div>
-              <label className="text-sm font-medium text-foreground">Notes</label>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Notes / Structure Remarks
+              </label>
               <textarea
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 rows={2}
-                className="mt-1 w-full px-3 py-2 text-sm border border-border rounded-md bg-background text-foreground focus:outline-none"
+                placeholder="Optional notes regarding allowances, appraisals, or increments..."
+                className="mt-1 w-full px-3 py-2 text-sm border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-            <div className="flex justify-end gap-2 pt-2">
+
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-border">
               <button
                 type="button"
                 onClick={() => setEditing(null)}
-                className="px-3 py-2 text-sm border border-border rounded-md hover:bg-secondary cursor-pointer"
+                className="px-4 py-2 text-sm font-semibold border border-border rounded-xl hover:bg-secondary active:scale-[0.98] transition cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-3 py-2 text-sm bg-primary text-primary-foreground rounded-md cursor-pointer"
+                className="px-5 py-2 text-sm font-semibold bg-primary text-primary-foreground rounded-xl shadow-sm hover:opacity-90 active:scale-[0.98] transition cursor-pointer"
               >
-                Save
+                Save Salary Profile
               </button>
             </div>
           </form>
