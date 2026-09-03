@@ -78,14 +78,14 @@ function AuthLayout() {
       {/* Sidebar Backdrop Overlay for Mobile/Tablet */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-xs lg:hidden transition-opacity duration-300"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Responsive Sidebar Container */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-sidebar-bg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-[82vw] max-w-[300px] lg:w-64 bg-sidebar-bg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-0 shadow-2xl lg:shadow-none flex ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

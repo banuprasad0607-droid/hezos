@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* HEZO SCHOOL — Linear academic premium design system */
+/* HEZO SCHOOL — Modern Vibrant Academic SaaS Design System */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -45,80 +45,89 @@
   --color-warning-soft: var(--warning-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Inter", "Segoe UI", sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 :root {
-  --radius: 0.75rem;
+  --radius: 0.875rem;
 
   /* Surfaces */
-  --background: #f8f8f8;
-  --foreground: #161616;
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #161616;
+  --card-foreground: #0f172a;
   --popover: #ffffff;
-  --popover-foreground: #161616;
+  --popover-foreground: #0f172a;
 
-  /* Brand — indigo accent */
-  --brand: #3c68d9; /* #6366F1 approx */
+  /* Primary Brand — Vibrant Royal / Electric Blue */
+  --brand: #2563eb;
   --brand-foreground: #ffffff;
-  --brand-soft: #e8f2ff;
+  --brand-soft: #eff6ff;
 
-  /* Primary = indigo */
-  --primary: #3c68d9;
+  --primary: #2563eb;
   --primary-foreground: #ffffff;
 
-  --secondary: #eef2f9;
-  --secondary-foreground: #161616;
-  --muted: #eef2f9;
-  --muted-foreground: #606369;
-  --accent: #eef2f9;
-  --accent-foreground: #161616;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #1e293b;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f8fafc;
+  --accent-foreground: #0f172a;
 
-  --destructive: #e62b34;
+  --destructive: #e11d48;
   --destructive-foreground: #ffffff;
 
-  --border: #e1e5eb;
-  --input: #e1e5eb;
-  --ring: #3c68d9;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #2563eb;
 
-  /* Sidebar */
-  --sidebar-bg: #0e1624; /* Deep slate #1c2434 */
-  --sidebar-fg: #ebeff5;
-  --sidebar-muted: #79818d;
+  /* Sidebar — Deep Rich Navy */
+  --sidebar-bg: #0b132b;
+  --sidebar-fg: #f8fafc;
+  --sidebar-muted: #94a3b8;
 
-  /* Status */
-  --success: #00a166;
-  --success-soft: #d3f9e3;
-  --warning: #e89d00;
-  --warning-soft: #ffedc6;
-  --danger: #e62b34;
-  --danger-soft: #ffe6e1;
+  /* Semantic Status Colors */
+  --success: #059669;
+  --success-soft: #ecfdf5;
+  --warning: #d97706;
+  --warning-soft: #fffbeb;
+  --danger: #e11d48;
+  --danger-soft: #fff1f2;
+  --info: #0284c7;
+  --info-soft: #f0f9ff;
+  --violet: #7c3aed;
+  --violet-soft: #f5f3ff;
 }
 
 .dark {
   --background: #090d16;
-  --foreground: #f3f4f6;
-  --card: #111827;
-  --card-foreground: #f3f4f6;
-  --popover: #111827;
-  --popover-foreground: #f3f4f6;
-  --secondary: #1f2937;
-  --secondary-foreground: #e5e7eb;
-  --muted: #1f2937;
-  --muted-foreground: #9ca3af;
-  --accent: #1f2937;
-  --accent-foreground: #e5e7eb;
-  --border: #374151;
-  --input: #374151;
-  --ring: #3c68d9;
-  --sidebar-bg: #05080e;
-  --sidebar-fg: #f3f4f6;
-  --sidebar-muted: #6b7280;
-  --success-soft: rgba(0, 161, 102, 0.15);
-  --warning-soft: rgba(232, 157, 0, 0.15);
-  --danger-soft: rgba(230, 43, 52, 0.15);
+  --foreground: #f8fafc;
+  --card: #0f172a;
+  --card-foreground: #f8fafc;
+  --popover: #0f172a;
+  --popover-foreground: #f8fafc;
+  --secondary: #1e293b;
+  --secondary-foreground: #f1f5f9;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e293b;
+  --accent-foreground: #f8fafc;
+  --border: #334155;
+  --input: #334155;
+  --ring: #3b82f6;
+  --sidebar-bg: #060b17;
+  --sidebar-fg: #f8fafc;
+  --sidebar-muted: #64748b;
+  --success-soft: rgba(5, 150, 105, 0.18);
+  --warning-soft: rgba(217, 119, 6, 0.18);
+  --danger-soft: rgba(225, 29, 72, 0.18);
+  --info-soft: rgba(2, 132, 199, 0.18);
+  --violet-soft: rgba(124, 58, 237, 0.18);
 }
 
 @layer base {
@@ -128,6 +137,7 @@
   html,
   body {
     height: 100%;
+    touch-action: manipulation;
   }
   body {
     background-color: var(--color-background);
@@ -135,6 +145,12 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+}
+
+/* Touch targets and smooth interaction utilities */
+.touch-target-44 {
+  min-height: 44px;
+  min-width: 44px;
 }
 
 /* Global Print Styles for White-Label Receipts, Invoices, and Report Cards */

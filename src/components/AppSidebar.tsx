@@ -113,71 +113,85 @@ export function AppSidebar({ onClose }: { onClose?: () => void }) {
   const logoUrl = activeSchool?.logo_url || currentSchool?.logo_url || currentSchool?.school_logo || null;
 
   const linkCls = (active: boolean) =>
-    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+    `flex items-center gap-3.5 px-3.5 py-2.5 min-h-[44px] rounded-xl text-sm font-semibold transition-all duration-150 select-none ${
       active
-        ? "bg-brand text-white shadow-sm"
-        : "text-sidebar-muted hover:bg-white/5 hover:text-white"
+        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 ring-1 ring-white/15"
+        : "text-slate-300 hover:bg-white/8 hover:text-white active:bg-white/12"
     }`;
 
   return (
-    <aside className="w-64 bg-sidebar-bg text-sidebar-fg flex flex-col shrink-0">
+    <aside className="w-full h-full bg-sidebar-bg text-sidebar-fg flex flex-col shrink-0">
       {/* School Header */}
-      <div className="p-6 flex items-center gap-3">
-        <div className="relative group">
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt="School logo"
-              className="size-9 rounded-xl object-cover border border-white/10 shadow-sm"
-            />
-          ) : (
-            <div className="size-9 bg-brand rounded-xl flex items-center justify-center font-bold text-base text-brand-foreground shadow-sm">
-              {logoLetter}
-            </div>
-          )}
+      <div className="p-5 sm:p-6 flex items-center justify-between gap-3 border-b border-white/8">
+        <div className="flex items-center gap-3 overflow-hidden flex-1">
+          <div className="relative group shrink-0">
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="School logo"
+                className="size-10 rounded-xl object-cover border border-white/15 shadow-sm"
+              />
+            ) : (
+              <div className="size-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center font-bold text-base text-white shadow-sm ring-1 ring-white/20">
+                {logoLetter}
+              </div>
+            )}
 
-          {isAdmin && effectiveSchoolId && (
-            <button
-              type="button"
-              onClick={() => setLogoModalOpen(true)}
-              className="absolute -bottom-1 -right-1 p-1 bg-primary text-primary-foreground rounded-full shadow-md hover:scale-110 transition border border-sidebar-bg opacity-80 group-hover:opacity-100"
-              title="Upload / Change School Logo"
-            >
-              <Camera className="size-2.5" />
-            </button>
-          )}
-        </div>
+            {isAdmin && effectiveSchoolId && (
+              <button
+                type="button"
+                onClick={() => setLogoModalOpen(true)}
+                className="absolute -bottom-1 -right-1 p-1 bg-primary text-primary-foreground rounded-full shadow-md hover:scale-110 transition border border-sidebar-bg opacity-80 group-hover:opacity-100 cursor-pointer"
+                title="Upload / Change School Logo"
+              >
+                <Camera className="size-2.5" />
+              </button>
+            )}
+          </div>
 
-        <div className="overflow-hidden flex-1">
-          <span className="text-base font-semibold tracking-tight block truncate">
-            {schoolDisplayName}
-          </span>
-          {inSchoolContext && (
-            <span className="text-[10px] text-sidebar-muted font-medium uppercase tracking-wider">
-              Viewing as Super Admin
+          <div className="overflow-hidden flex-1">
+            <span className="text-base font-bold tracking-tight block truncate text-white">
+              {schoolDisplayName}
             </span>
-          )}
+            {inSchoolContext && (
+              <span className="text-[10px] text-blue-300 font-semibold uppercase tracking-wider">
+                Super Admin Mode
+              </span>
+            )}
+          </div>
         </div>
+
+        {/* Mobile Close Button */}
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 lg:hidden cursor-pointer shrink-0"
+            aria-label="Close menu"
+          >
+            <ChevronLeft className="size-5" />
+          </button>
+        )}
       </div>
 
       {/* Back to Platform (Super Admin in a school) */}
       {inSchoolContext && (
-        <div className="px-4 pb-2">
+        <div className="px-4 pt-3 pb-1">
           <button
             onClick={() => {
               exitSchool();
               onClose?.();
               void navigate({ to: "/platform" });
             }}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-sidebar-muted hover:bg-white/5 hover:text-white transition-colors border border-white/10"
+            className="w-full flex items-center gap-2 px-3 py-2.5 min-h-[40px] rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 hover:text-white transition-colors border border-white/10 cursor-pointer"
           >
-            <ChevronLeft className="size-3.5" />
+            <ChevronLeft className="size-4" />
             Back to Platform
           </button>
         </div>
       )}
 
-      <nav className="flex-1 px-4 space-y-1 overflow-y-auto" onClick={onClose}>
+      <nav className="flex-1 px-3.5 py-3 space-y-1 overflow-y-auto" onClick={onClose}>
         {/* PARENT-ONLY view */}
         {isParentOnly ? (
           <>

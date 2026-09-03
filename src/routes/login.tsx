@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Eye, EyeOff } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { loginAttemptServer } from "@/lib/platform.functions";
 import { useForm } from "react-hook-form";
@@ -10,7 +10,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address." }).max(120),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email({ message: "Please enter a valid email address." })
+    .max(120),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }).max(72),
 });
 
@@ -24,6 +29,7 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [cachedSchoolName, setCachedSchoolName] = useState<string | null>(null);
   const [cachedSchoolLogo, setCachedSchoolLogo] = useState<string | null>(null);
 
@@ -46,20 +52,23 @@ function LoginPage() {
 
   const onSubmitForm = async (fields: LoginFields) => {
     setLoading(true);
+    const cleanEmail = fields.email.trim().toLowerCase();
+    const cleanPassword = fields.password;
+
     try {
       let authUser: any = null;
 
       // 1. Direct client-side authentication with Supabase
       const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
-        email: fields.email,
-        password: fields.password,
+        email: cleanEmail,
+        password: cleanPassword,
       });
 
       if (authErr) {
         // Fallback to server function if available
         try {
           const res = await loginAttemptFn({
-            data: { email: fields.email, password: fields.password },
+            data: { email: cleanEmail, password: cleanPassword },
           });
           if (res?.session) {
             await supabase.auth.setSession(res.session);
@@ -222,6 +231,11 @@ function LoginPage() {
               </label>
               <input
                 type="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                inputMode="email"
+                autoComplete="email"
                 {...register("email")}
                 className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-all"
                 placeholder="you@school.com"
@@ -242,11 +256,26 @@ function LoginPage() {
                   Forgot password?
                 </Link>
               </div>
-              <input
-                type="password"
-                {...register("password")}
-                className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-all"
-              />
+              <div className="relative mt-1.5">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  autoComplete="current-password"
+                  {...register("password")}
+                  className="w-full pl-3.5 pr-10 py-2.5 text-sm border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-all"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 cursor-pointer transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
               {errors.password && (
                 <p className="text-xs text-danger mt-1.5 font-semibold">{errors.password.message}</p>
               )}

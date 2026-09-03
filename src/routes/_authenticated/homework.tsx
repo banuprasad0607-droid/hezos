@@ -253,7 +253,7 @@ function HomeworkPage() {
             <button
               onClick={() => setOpen(true)}
               disabled={classes.length === 0}
-              className="px-4 py-1.5 text-sm font-medium bg-primary text-primary-foreground rounded-md inline-flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+              className="h-11 min-h-[44px] px-4 py-2 text-xs sm:text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl inline-flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-xs transition active:scale-[0.98]"
             >
               <Plus className="size-4" /> Create Homework
             </button>
@@ -263,10 +263,10 @@ function HomeworkPage() {
 
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
         {items.length === 0 ? (
-          <div className="bg-card border border-dashed border-border rounded-xl p-16 text-center">
+          <div className="bg-card border border-dashed border-border rounded-2xl p-12 text-center">
             <FileText className="size-10 mx-auto text-muted-foreground" />
-            <h3 className="font-semibold mt-3">No homework yet</h3>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h3 className="font-bold text-base mt-3">No homework yet</h3>
+            <p className="text-xs text-muted-foreground mt-1">
               {isParent
                 ? "No active assignments for your child's class right now."
                 : classes.length === 0
@@ -277,7 +277,7 @@ function HomeworkPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {items.map((h) => (
-              <article key={h.id} className="bg-card border border-border rounded-xl p-5 shadow-xs">
+              <article key={h.id} className="bg-card border border-border/80 rounded-2xl p-5 shadow-xs space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-bold text-muted-foreground">

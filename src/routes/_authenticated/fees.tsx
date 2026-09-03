@@ -187,9 +187,9 @@ function FeesPage() {
   return (
     <>
       <PageHeader title="Fees" breadcrumb="Finance" />
-      <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-background text-foreground">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 bg-background text-foreground">
         {/* KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4">
           <Kpi icon={CircleDollarSign} label="Billed" value={fmt(kpis.billed)} />
           <Kpi icon={CheckCircle2} label="Collected" value={fmt(kpis.collected)} tone="success" />
           <Kpi icon={TrendingUp} label="Outstanding" value={fmt(kpis.outstanding)} tone="brand" />
@@ -202,15 +202,15 @@ function FeesPage() {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-border flex gap-1 overflow-x-auto">
+        <div className="flex bg-secondary/80 rounded-xl p-1.5 overflow-x-auto max-w-full gap-1 min-h-[44px]">
           {(["overview", "structures", "invoices", "payments"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px capitalize transition cursor-pointer ${
+              className={`px-4 py-2 min-h-[38px] text-xs sm:text-sm font-bold rounded-lg capitalize transition-all shrink-0 cursor-pointer ${
                 tab === t
-                  ? "border-brand text-brand"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
+                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs"
+                  : "text-muted-foreground hover:text-foreground hover:bg-card/60"
               }`}
             >
               {t}

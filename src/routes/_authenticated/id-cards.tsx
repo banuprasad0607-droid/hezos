@@ -914,17 +914,17 @@ function IdCardManagementPage() {
         title="ID Cards"
         breadcrumb="Card & Visitor Passes"
         actions={
-          <div className="flex bg-secondary rounded-md p-0.5 overflow-x-auto max-w-full">
+          <div className="flex bg-secondary/80 rounded-xl p-1.5 overflow-x-auto max-w-full gap-1 min-h-[44px]">
             {(
               ["overview", "students", "staff", "visitors", "settings", "reports"] as TabType[]
             ).map((t) => (
               <button
                 key={t}
                 onClick={() => setActiveTab(t)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded capitalize transition shrink-0 ${
+                className={`px-4 py-2 min-h-[40px] text-xs sm:text-sm font-bold rounded-lg capitalize transition-all shrink-0 cursor-pointer ${
                   activeTab === t
-                    ? "bg-card shadow-sm text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-card/60"
                 }`}
               >
                 {t}
@@ -1117,112 +1117,239 @@ function IdCardManagementPage() {
         {activeTab === "students" && (
           <div className="space-y-6">
             {/* Filter controls */}
-            <div className="bg-card border border-border rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <input
-                  value={studentSearch}
-                  onChange={(e) => setStudentSearch(e.target.value)}
-                  placeholder="Search student name, adm #..."
-                  className="px-3 py-1.5 text-xs border border-border rounded-md bg-background w-48 focus:outline-none"
-                />
-                <select
-                  value={studentClassFilter}
-                  onChange={(e) => setStudentClassFilter(e.target.value)}
-                  className="px-3 py-1.5 text-xs border border-border rounded-md bg-background focus:outline-none"
-                >
-                  <option value="all">All Classes</option>
-                  {classes.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} {c.section ? ` · ${c.section}` : ""}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={studentPhotoFilter}
-                  onChange={(e) => setStudentPhotoFilter(e.target.value)}
-                  className="px-3 py-1.5 text-xs border border-border rounded-md bg-background focus:outline-none"
-                >
-                  <option value="all">All Photos</option>
-                  <option value="present">With Photo</option>
-                  <option value="missing">Missing Photo</option>
-                </select>
+            <div className="bg-card border border-border/80 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="relative flex-1">
+                  <input
+                    value={studentSearch}
+                    onChange={(e) => setStudentSearch(e.target.value)}
+                    placeholder="Search student name, admission #..."
+                    className="w-full h-11 min-h-[46px] px-4 py-2.5 text-sm border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
+                  />
+                </div>
+                <div className="grid grid-cols-2 sm:flex sm:items-center gap-2.5">
+                  <select
+                    value={studentClassFilter}
+                    onChange={(e) => setStudentClassFilter(e.target.value)}
+                    className="h-11 min-h-[46px] px-3.5 py-2 text-xs sm:text-sm font-medium border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
+                  >
+                    <option value="all">All Classes</option>
+                    {classes.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} {c.section ? ` · ${c.section}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={studentPhotoFilter}
+                    onChange={(e) => setStudentPhotoFilter(e.target.value)}
+                    className="h-11 min-h-[46px] px-3.5 py-2 text-xs sm:text-sm font-medium border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
+                  >
+                    <option value="all">All Photos</option>
+                    <option value="present">With Photo</option>
+                    <option value="missing">Missing Photo</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Bulk operations controls */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleSelectEntireClass}
-                  className="px-2.5 py-1.5 text-xs border border-border bg-secondary hover:bg-secondary/70 rounded-md font-semibold text-foreground inline-flex items-center gap-1"
-                >
-                  Select Class
-                </button>
-                <button
-                  onClick={handleSelectSchoolWide}
-                  className="px-2.5 py-1.5 text-xs border border-border bg-secondary hover:bg-secondary/70 rounded-md font-semibold text-foreground inline-flex items-center gap-1"
-                >
-                  Select School-wide
-                </button>
-                {selectedStudentIds.length > 0 && (
-                  <div className="flex items-center gap-2 ml-2">
-                    <span className="text-xs text-muted-foreground font-semibold">
-                      {selectedStudentIds.length} selected
-                    </span>
-                    <div className="flex items-center gap-1 bg-brand text-white rounded-md pl-1 pr-0.5 py-0.5">
-                      <select
-                        value={pdfExportMode}
-                        onChange={(e) => setPdfExportMode(e.target.value as PdfExportMode)}
-                        className="bg-brand text-white text-xs font-semibold focus:outline-none cursor-pointer appearance-none px-2"
-                        style={{ WebkitAppearance: "none", MozAppearance: "none" }}
-                        title="PDF Layout Options"
-                      >
-                        <option value="front-back">Front+Back</option>
-                        <option value="front-only">Front Only</option>
-                        <option value="side-by-side">Side-by-Side</option>
-                      </select>
+              {/* Bulk operations toolbar */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/60">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={handleSelectEntireClass}
+                    className="h-10 min-h-[42px] px-3.5 py-2 text-xs font-semibold border border-border bg-secondary hover:bg-secondary/80 rounded-xl text-foreground inline-flex items-center gap-1.5 cursor-pointer transition active:scale-[0.98]"
+                  >
+                    <CheckSquare className="size-3.5 text-primary" />
+                    Select Class
+                  </button>
+                  <button
+                    onClick={handleSelectSchoolWide}
+                    className="h-10 min-h-[42px] px-3.5 py-2 text-xs font-semibold border border-border bg-secondary hover:bg-secondary/80 rounded-xl text-foreground inline-flex items-center gap-1.5 cursor-pointer transition active:scale-[0.98]"
+                  >
+                    <Users className="size-3.5 text-primary" />
+                    Select School-wide
+                  </button>
+                  {selectedStudentIds.length > 0 && (
+                    <button
+                      onClick={() => setSelectedStudentIds([])}
+                      className="h-10 min-h-[42px] px-3 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl cursor-pointer"
+                    >
+                      Clear ({selectedStudentIds.length})
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 ml-auto">
+                  {selectedStudentIds.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="hidden sm:inline-block text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                        {selectedStudentIds.length} selected
+                      </span>
+                      <div className="flex items-center gap-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl p-1 shadow-sm">
+                        <select
+                          value={pdfExportMode}
+                          onChange={(e) => setPdfExportMode(e.target.value as PdfExportMode)}
+                          className="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer appearance-none px-2.5 py-1.5"
+                          title="PDF Layout Options"
+                        >
+                          <option value="front-back" className="text-slate-900 bg-white">Front+Back</option>
+                          <option value="front-only" className="text-slate-900 bg-white">Front Only</option>
+                          <option value="side-by-side" className="text-slate-900 bg-white">Side-by-Side</option>
+                        </select>
+                        <button
+                          onClick={() => downloadBulkPDF("student", pdfExportMode)}
+                          disabled={exporting}
+                          className="h-8 px-3 text-xs bg-white/20 hover:bg-white/30 rounded-lg inline-flex items-center gap-1.5 font-bold disabled:opacity-50 transition cursor-pointer"
+                        >
+                          <FileDown className="size-3.5" /> Export PDF
+                        </button>
+                      </div>
                       <button
-                        onClick={() => downloadBulkPDF("student", pdfExportMode)}
-                        disabled={exporting}
-                        className="px-2 py-1 text-xs bg-white/20 hover:bg-white/30 rounded inline-flex items-center gap-1 font-semibold disabled:opacity-50 transition"
+                        onClick={() => {
+                          const list = students.filter((s) =>
+                            (selectedStudentIds ?? []).includes(s.id),
+                          );
+                          handlePrint("student", list, "a4");
+                        }}
+                        className="h-10 min-h-[42px] px-3.5 py-2 text-xs bg-secondary border border-border hover:bg-secondary/80 rounded-xl inline-flex items-center gap-1.5 text-foreground font-semibold cursor-pointer transition active:scale-[0.98]"
                       >
-                        <FileDown className="size-3" /> Export
+                        <Printer className="size-3.5 text-muted-foreground" /> Print A4 Grid
                       </button>
                     </div>
+                  )}
+
+                  <div className="flex border border-border rounded-xl overflow-hidden bg-secondary p-0.5">
                     <button
-                      onClick={() => {
-                        const list = students.filter((s) =>
-                          (selectedStudentIds ?? []).includes(s.id),
-                        );
-                        handlePrint("student", list, "a4");
-                      }}
-                      className="px-3 py-1.5 text-xs bg-secondary border border-border rounded-md inline-flex items-center gap-1 text-foreground font-semibold"
+                      onClick={() => setOrientation("portrait")}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-lg cursor-pointer transition ${orientation === "portrait" ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"}`}
                     >
-                      <Printer className="size-3" /> A4 Grid Print
+                      Vert
+                    </button>
+                    <button
+                      onClick={() => setOrientation("landscape")}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-lg cursor-pointer transition ${orientation === "landscape" ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                      Horiz
                     </button>
                   </div>
-                )}
-                <div className="flex border border-border rounded-md overflow-hidden bg-secondary ml-2">
-                  <button
-                    onClick={() => setOrientation("portrait")}
-                    className={`px-2.5 py-1.5 text-xs font-semibold ${orientation === "portrait" ? "bg-white shadow-sm" : ""}`}
-                  >
-                    Vert
-                  </button>
-                  <button
-                    onClick={() => setOrientation("landscape")}
-                    className={`px-2.5 py-1.5 text-xs font-semibold ${orientation === "landscape" ? "bg-white shadow-sm" : ""}`}
-                  >
-                    Horiz
-                  </button>
                 </div>
               </div>
             </div>
 
-            {/* List grid */}
-            <div className="bg-card border border-border rounded-xl overflow-hidden">
+            {/* MOBILE CARD VIEW (< md) */}
+            <div className="block md:hidden space-y-3.5">
+              {filteredStudents.map((s) => {
+                const isTopper = s.rankings?.find((r) => r.rank_position <= 3);
+                const studentIdDisplay = getStudentIdFallback(s);
+                const isSelected = (selectedStudentIds ?? []).includes(s.id);
+                return (
+                  <div
+                    key={s.id}
+                    className={`bg-card border rounded-2xl p-4 shadow-xs transition-all space-y-3 ${
+                      isSelected ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border/80"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedStudentIds([...selectedStudentIds, s.id]);
+                            } else {
+                              setSelectedStudentIds(
+                                selectedStudentIds.filter((id) => id !== s.id),
+                              );
+                            }
+                          }}
+                          className="size-5 rounded-md text-primary focus:ring-primary cursor-pointer mt-0.5"
+                        />
+                        <div className="relative group size-12 rounded-xl bg-secondary border border-border overflow-hidden flex items-center justify-center shrink-0">
+                          {s.photo_url ? (
+                            <img src={s.photo_url} alt="" className="size-full object-cover" />
+                          ) : (
+                            <User className="size-6 text-slate-400" />
+                          )}
+                          <label className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer">
+                            <Camera className="size-4 text-white" />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handlePhotoUpload(e, "student", s.id)}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4 className="font-bold text-sm text-foreground">{s.full_name}</h4>
+                            {isTopper && (
+                              <span className="inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                <Trophy className="size-2.5" /> Rank {isTopper.rank_position}
+                              </span>
+                            )}
+                          </div>
+                          <p className="font-mono text-xs font-semibold text-muted-foreground mt-0.5">
+                            {studentIdDisplay}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setEditStudent(s)}
+                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg text-xs font-semibold cursor-pointer"
+                        title="Edit Student"
+                      >
+                        Edit
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <span className="inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-700 dark:text-blue-300">
+                        Class: {s.classes?.name || "—"} {s.classes?.section ? `(${s.classes.section})` : ""}
+                      </span>
+                      {s.blood_group && (
+                        <span className="inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-300">
+                          Blood: {s.blood_group}
+                        </span>
+                      )}
+                      {s.transport_route && (
+                        <span className="inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                          Bus: {s.transport_route}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="pt-2 border-t border-border/60">
+                      <button
+                        onClick={() => {
+                          setPreviewCard({ type: "student", data: s });
+                          setFlipped(false);
+                        }}
+                        className="w-full h-11 min-h-[44px] bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl text-xs font-bold shadow-xs hover:from-blue-700 hover:to-indigo-700 flex items-center justify-center gap-2 cursor-pointer transition active:scale-[0.98]"
+                      >
+                        <Eye className="size-4" />
+                        View Student ID Card
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {filteredStudents.length === 0 && (
+                <div className="bg-card border border-border rounded-2xl p-8 text-center text-muted-foreground">
+                  {loading ? "Loading ERP roster..." : "No student records matching your filters found."}
+                </div>
+              )}
+            </div>
+
+            {/* DESKTOP TABLE VIEW (>= md) */}
+            <div className="hidden md:block bg-card border border-border/80 rounded-2xl overflow-hidden shadow-xs">
               <table className="w-full text-left text-xs">
                 <thead className="bg-secondary text-muted-foreground">
                   <tr>
-                    <th className="px-6 py-3 w-10">
+                    <th className="px-6 py-3.5 w-10">
                       <input
                         type="checkbox"
                         checked={
@@ -1236,16 +1363,16 @@ function IdCardManagementPage() {
                             setSelectedStudentIds([]);
                           }
                         }}
-                        className="rounded"
+                        className="rounded cursor-pointer"
                       />
                     </th>
-                    <th className="px-6 py-3 font-medium">Photo</th>
-                    <th className="px-6 py-3 font-medium">Student ID #</th>
-                    <th className="px-6 py-3 font-medium">Student Name</th>
-                    <th className="px-6 py-3 font-medium">Class / Section</th>
-                    <th className="px-6 py-3 font-medium">Blood Group</th>
-                    <th className="px-6 py-3 font-medium">Transport / Bus</th>
-                    <th className="px-6 py-3 font-medium text-right">Actions</th>
+                    <th className="px-6 py-3.5 font-semibold">Photo</th>
+                    <th className="px-6 py-3.5 font-semibold">Student ID #</th>
+                    <th className="px-6 py-3.5 font-semibold">Student Name</th>
+                    <th className="px-6 py-3.5 font-semibold">Class / Section</th>
+                    <th className="px-6 py-3.5 font-semibold">Blood Group</th>
+                    <th className="px-6 py-3.5 font-semibold">Transport / Bus</th>
+                    <th className="px-6 py-3.5 font-semibold text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -1253,8 +1380,8 @@ function IdCardManagementPage() {
                     const isTopper = s.rankings?.find((r) => r.rank_position <= 3);
                     const studentIdDisplay = getStudentIdFallback(s);
                     return (
-                      <tr key={s.id} className="hover:bg-secondary/20">
-                        <td className="px-6 py-3">
+                      <tr key={s.id} className="hover:bg-secondary/40 transition">
+                        <td className="px-6 py-3.5">
                           <input
                             type="checkbox"
                             checked={(selectedStudentIds ?? []).includes(s.id)}
@@ -1267,18 +1394,18 @@ function IdCardManagementPage() {
                                 );
                               }
                             }}
-                            className="rounded"
+                            className="rounded cursor-pointer"
                           />
                         </td>
-                        <td className="px-6 py-3">
-                          <div className="relative group size-8 rounded bg-slate-100 border border-border overflow-hidden flex items-center justify-center flex-shrink-0">
+                        <td className="px-6 py-3.5">
+                          <div className="relative group size-9 rounded-xl bg-secondary border border-border overflow-hidden flex items-center justify-center shrink-0">
                             {s.photo_url ? (
                               <img src={s.photo_url} alt="" className="size-full object-cover" />
                             ) : (
                               <User className="size-4 text-slate-400" />
                             )}
                             <label className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer">
-                              <Camera className="size-3 text-white" />
+                              <Camera className="size-3.5 text-white" />
                               <input
                                 type="file"
                                 accept="image/*"
@@ -1288,41 +1415,41 @@ function IdCardManagementPage() {
                             </label>
                           </div>
                         </td>
-                        <td className="px-6 py-3 font-mono font-semibold">{studentIdDisplay}</td>
-                        <td className="px-6 py-3">
+                        <td className="px-6 py-3.5 font-mono font-bold text-foreground">{studentIdDisplay}</td>
+                        <td className="px-6 py-3.5">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-foreground">{s.full_name}</span>
+                            <span className="font-bold text-foreground">{s.full_name}</span>
                             {isTopper && (
-                              <span className="inline-flex items-center gap-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[9px] font-bold px-1 py-0.5 rounded">
-                                <Trophy className="size-2.5" /> Rank {isTopper.rank_position}
+                              <span className="inline-flex items-center gap-0.5 bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                <Trophy className="size-3" /> Rank {isTopper.rank_position}
                               </span>
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-3">
+                        <td className="px-6 py-3.5 font-medium">
                           {s.classes?.name || "—"}{" "}
                           {s.classes?.section ? `(${s.classes.section})` : ""}
                         </td>
-                        <td className="px-6 py-3">
-                          <span className="font-semibold text-red-500">{s.blood_group || "—"}</span>
+                        <td className="px-6 py-3.5">
+                          <span className="font-bold text-rose-600 dark:text-rose-400">{s.blood_group || "—"}</span>
                         </td>
-                        <td className="px-6 py-3 truncate max-w-[150px]">
+                        <td className="px-6 py-3.5 truncate max-w-[150px] text-muted-foreground font-medium">
                           {s.transport_route || "—"} {s.bus_number ? `(${s.bus_number})` : ""}
                         </td>
-                        <td className="px-6 py-3 text-right">
+                        <td className="px-6 py-3.5 text-right">
                           <div className="flex justify-end gap-2">
                             <button
                               onClick={() => {
                                 setPreviewCard({ type: "student", data: s });
                                 setFlipped(false);
                               }}
-                              className="text-brand hover:underline inline-flex items-center gap-0.5 font-semibold"
+                              className="px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/10 rounded-lg inline-flex items-center gap-1 cursor-pointer transition"
                             >
-                              <Eye className="size-3" /> Preview
+                              <Eye className="size-3.5" /> Preview
                             </button>
                             <button
                               onClick={() => setEditStudent(s)}
-                              className="text-brand hover:underline font-semibold"
+                              className="px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg cursor-pointer transition"
                             >
                               Edit
                             </button>
@@ -1333,7 +1460,7 @@ function IdCardManagementPage() {
                   })}
                   {filteredStudents.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="text-center py-12 text-slate-400">
+                      <td colSpan={8} className="text-center py-12 text-muted-foreground">
                         {loading
                           ? "Loading ERP roster..."
                           : "No student records matching your filters found."}
@@ -1350,18 +1477,20 @@ function IdCardManagementPage() {
         {activeTab === "staff" && (
           <div className="space-y-6">
             {/* Filter controls */}
-            <div className="bg-card border border-border rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <input
-                  value={staffSearch}
-                  onChange={(e) => setStaffSearch(e.target.value)}
-                  placeholder="Search staff name, emp id..."
-                  className="px-3 py-1.5 text-xs border border-border rounded-md bg-background w-48 focus:outline-none"
-                />
+            <div className="bg-card border border-border/80 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="relative flex-1">
+                  <input
+                    value={staffSearch}
+                    onChange={(e) => setStaffSearch(e.target.value)}
+                    placeholder="Search staff name, employee ID..."
+                    className="w-full h-11 min-h-[46px] px-4 py-2.5 text-sm border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
+                  />
+                </div>
                 <select
                   value={staffDeptFilter}
                   onChange={(e) => setStaffDeptFilter(e.target.value)}
-                  className="px-3 py-1.5 text-xs border border-border rounded-md bg-background focus:outline-none"
+                  className="h-11 min-h-[46px] px-3.5 py-2 text-xs sm:text-sm font-medium border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
                 >
                   <option value="all">All Departments</option>
                   {departmentsList.map((d) => (
@@ -1373,30 +1502,37 @@ function IdCardManagementPage() {
               </div>
 
               {/* Bulk actions */}
-              <div className="flex items-center gap-2">
-                {selectedStaffIds.length > 0 && (
-                  <div className="flex items-center gap-2 mr-2">
-                    <span className="text-xs text-muted-foreground font-semibold">
-                      {selectedStaffIds.length} selected
+              {selectedStaffIds.length > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/60">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                      {selectedStaffIds.length} staff selected
                     </span>
-                    <div className="flex items-center gap-1 bg-brand text-white rounded-md pl-1 pr-0.5 py-0.5">
+                    <button
+                      onClick={() => setSelectedStaffIds([])}
+                      className="h-9 px-2.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 ml-auto">
+                    <div className="flex items-center gap-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl p-1 shadow-sm">
                       <select
                         value={pdfExportMode}
                         onChange={(e) => setPdfExportMode(e.target.value as PdfExportMode)}
-                        className="bg-brand text-white text-xs font-semibold focus:outline-none cursor-pointer appearance-none px-2"
-                        style={{ WebkitAppearance: "none", MozAppearance: "none" }}
+                        className="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer appearance-none px-2.5 py-1.5"
                         title="PDF Layout Options"
                       >
-                        <option value="front-back">Front+Back</option>
-                        <option value="front-only">Front Only</option>
-                        <option value="side-by-side">Side-by-Side</option>
+                        <option value="front-back" className="text-slate-900 bg-white">Front+Back</option>
+                        <option value="front-only" className="text-slate-900 bg-white">Front Only</option>
+                        <option value="side-by-side" className="text-slate-900 bg-white">Side-by-Side</option>
                       </select>
                       <button
                         onClick={() => downloadBulkPDF("staff", pdfExportMode)}
                         disabled={exporting}
-                        className="px-2 py-1 text-xs bg-white/20 hover:bg-white/30 rounded inline-flex items-center gap-1 font-semibold disabled:opacity-50 transition"
+                        className="h-8 px-3 text-xs bg-white/20 hover:bg-white/30 rounded-lg inline-flex items-center gap-1.5 font-bold disabled:opacity-50 transition cursor-pointer"
                       >
-                        <FileDown className="size-3" /> Export
+                        <FileDown className="size-3.5" /> Export PDF
                       </button>
                     </div>
                     <button
@@ -1406,21 +1542,123 @@ function IdCardManagementPage() {
                         );
                         handlePrint("staff", list, "a4");
                       }}
-                      className="px-3 py-1.5 text-xs bg-secondary border border-border rounded-md inline-flex items-center gap-1 text-foreground font-semibold"
+                      className="h-10 min-h-[42px] px-3.5 py-2 text-xs bg-secondary border border-border hover:bg-secondary/80 rounded-xl inline-flex items-center gap-1.5 text-foreground font-semibold cursor-pointer transition active:scale-[0.98]"
                     >
-                      <Printer className="size-3" /> A4 Grid Print
+                      <Printer className="size-3.5 text-muted-foreground" /> Print A4 Grid
                     </button>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
-            {/* List grid */}
-            <div className="bg-card border border-border rounded-xl overflow-hidden">
+            {/* MOBILE STAFF CARDS (< md) */}
+            <div className="block md:hidden space-y-3.5">
+              {filteredStaff.map((t) => {
+                const staffIdDisplay = getStaffIdFallback(t);
+                const isSelected = (selectedStaffIds ?? []).includes(t.user_id);
+                return (
+                  <div
+                    key={t.user_id}
+                    className={`bg-card border rounded-2xl p-4 shadow-xs transition-all space-y-3 ${
+                      isSelected ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border/80"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedStaffIds([...selectedStaffIds, t.user_id]);
+                            } else {
+                              setSelectedStaffIds(
+                                selectedStaffIds.filter((id) => id !== t.user_id),
+                              );
+                            }
+                          }}
+                          className="size-5 rounded-md text-primary focus:ring-primary cursor-pointer mt-0.5"
+                        />
+                        <div className="relative group size-12 rounded-xl bg-secondary border border-border overflow-hidden flex items-center justify-center shrink-0">
+                          {t.photo_url ? (
+                            <img src={t.photo_url} alt="" className="size-full object-cover" />
+                          ) : (
+                            <User className="size-6 text-slate-400" />
+                          )}
+                          <label className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer">
+                            <Camera className="size-4 text-white" />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handlePhotoUpload(e, "staff", t.user_id)}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-sm text-foreground">{t.full_name}</h4>
+                          <p className="font-mono text-xs font-semibold text-muted-foreground mt-0.5">
+                            {staffIdDisplay}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setEditStaff(t)}
+                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg text-xs font-semibold cursor-pointer"
+                        title="Edit Staff"
+                      >
+                        Edit
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {t.designation && (
+                        <span className="inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-700 dark:text-blue-300">
+                          {t.designation}
+                        </span>
+                      )}
+                      {t.department && (
+                        <span className="inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-violet-500/10 text-violet-700 dark:text-violet-300">
+                          {t.department}
+                        </span>
+                      )}
+                      {t.mobile_number && (
+                        <span className="inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-secondary text-muted-foreground">
+                          {t.mobile_number}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="pt-2 border-t border-border/60">
+                      <button
+                        onClick={() => {
+                          setPreviewCard({ type: "staff", data: t });
+                          setFlipped(false);
+                        }}
+                        className="w-full h-11 min-h-[44px] bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl text-xs font-bold shadow-xs hover:from-blue-700 hover:to-indigo-700 flex items-center justify-center gap-2 cursor-pointer transition active:scale-[0.98]"
+                      >
+                        <Eye className="size-4" />
+                        View Staff ID Card
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {filteredStaff.length === 0 && (
+                <div className="bg-card border border-border rounded-2xl p-8 text-center text-muted-foreground">
+                  {loading ? "Querying ERP records..." : "No matching staff records found."}
+                </div>
+              )}
+            </div>
+
+            {/* DESKTOP TABLE VIEW (>= md) */}
+            <div className="hidden md:block bg-card border border-border/80 rounded-2xl overflow-hidden shadow-xs">
               <table className="w-full text-left text-xs">
                 <thead className="bg-secondary text-muted-foreground">
                   <tr>
-                    <th className="px-6 py-3 w-10">
+                    <th className="px-6 py-3.5 w-10">
                       <input
                         type="checkbox"
                         checked={
@@ -1434,24 +1672,24 @@ function IdCardManagementPage() {
                             setSelectedStaffIds([]);
                           }
                         }}
-                        className="rounded"
+                        className="rounded cursor-pointer"
                       />
                     </th>
-                    <th className="px-6 py-3 font-medium">Photo</th>
-                    <th className="px-6 py-3 font-medium">Employee ID #</th>
-                    <th className="px-6 py-3 font-medium">Name</th>
-                    <th className="px-6 py-3 font-medium">Designation</th>
-                    <th className="px-6 py-3 font-medium">Department</th>
-                    <th className="px-6 py-3 font-medium">Contact Number</th>
-                    <th className="px-6 py-3 font-medium text-right">Actions</th>
+                    <th className="px-6 py-3.5 font-semibold">Photo</th>
+                    <th className="px-6 py-3.5 font-semibold">Employee ID #</th>
+                    <th className="px-6 py-3.5 font-semibold">Name</th>
+                    <th className="px-6 py-3.5 font-semibold">Designation</th>
+                    <th className="px-6 py-3.5 font-semibold">Department</th>
+                    <th className="px-6 py-3.5 font-semibold">Contact Number</th>
+                    <th className="px-6 py-3.5 font-semibold text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filteredStaff.map((t) => {
                     const staffIdDisplay = getStaffIdFallback(t);
                     return (
-                      <tr key={t.user_id} className="hover:bg-secondary/20">
-                        <td className="px-6 py-3">
+                      <tr key={t.user_id} className="hover:bg-secondary/40 transition">
+                        <td className="px-6 py-3.5">
                           <input
                             type="checkbox"
                             checked={(selectedStaffIds ?? []).includes(t.user_id)}
@@ -1464,18 +1702,18 @@ function IdCardManagementPage() {
                                 );
                               }
                             }}
-                            className="rounded"
+                            className="rounded cursor-pointer"
                           />
                         </td>
-                        <td className="px-6 py-3">
-                          <div className="relative group size-8 rounded bg-slate-100 border border-border overflow-hidden flex items-center justify-center flex-shrink-0">
+                        <td className="px-6 py-3.5">
+                          <div className="relative group size-9 rounded-xl bg-secondary border border-border overflow-hidden flex items-center justify-center shrink-0">
                             {t.photo_url ? (
                               <img src={t.photo_url} alt="" className="size-full object-cover" />
                             ) : (
                               <User className="size-4 text-slate-400" />
                             )}
                             <label className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer">
-                              <Camera className="size-3 text-white" />
+                              <Camera className="size-3.5 text-white" />
                               <input
                                 type="file"
                                 accept="image/*"
@@ -1485,25 +1723,25 @@ function IdCardManagementPage() {
                             </label>
                           </div>
                         </td>
-                        <td className="px-6 py-3 font-mono font-semibold">{staffIdDisplay}</td>
-                        <td className="px-6 py-3 font-semibold text-foreground">{t.full_name}</td>
-                        <td className="px-6 py-3 font-medium">{t.designation || "—"}</td>
-                        <td className="px-6 py-3">{t.department || "—"}</td>
-                        <td className="px-6 py-3">{t.mobile_number || "—"}</td>
-                        <td className="px-6 py-3 text-right">
+                        <td className="px-6 py-3.5 font-mono font-bold text-foreground">{staffIdDisplay}</td>
+                        <td className="px-6 py-3.5 font-bold text-foreground">{t.full_name}</td>
+                        <td className="px-6 py-3.5 font-medium">{t.designation || "—"}</td>
+                        <td className="px-6 py-3.5 text-muted-foreground">{t.department || "—"}</td>
+                        <td className="px-6 py-3.5 font-mono text-muted-foreground">{t.mobile_number || "—"}</td>
+                        <td className="px-6 py-3.5 text-right">
                           <div className="flex justify-end gap-2">
                             <button
                               onClick={() => {
                                 setPreviewCard({ type: "staff", data: t });
                                 setFlipped(false);
                               }}
-                              className="text-brand hover:underline inline-flex items-center gap-0.5 font-semibold"
+                              className="px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/10 rounded-lg inline-flex items-center gap-1 cursor-pointer transition"
                             >
-                              <Eye className="size-3" /> Preview
+                              <Eye className="size-3.5" /> Preview
                             </button>
                             <button
                               onClick={() => setEditStaff(t)}
-                              className="text-brand hover:underline font-semibold"
+                              className="px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg cursor-pointer transition"
                             >
                               Edit
                             </button>
@@ -1514,7 +1752,7 @@ function IdCardManagementPage() {
                   })}
                   {filteredStaff.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="text-center py-12 text-slate-400">
+                      <td colSpan={8} className="text-center py-12 text-muted-foreground">
                         {loading ? "Querying ERP records..." : "No matching staff records found."}
                       </td>
                     </tr>

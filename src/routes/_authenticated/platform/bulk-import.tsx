@@ -219,6 +219,8 @@ function BulkImportPage() {
     setStep("importing");
 
     let success = 0;
+    let failed = 0;
+    let duplicates = 0;
     // Pre-fetch classes for student class mapping
     let classMap: Record<string, string> = {};
     if (importType === "students") {

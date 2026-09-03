@@ -208,35 +208,35 @@ function DashboardPage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#F9FAFB] dark:bg-background p-4 sm:p-6 lg:p-8 space-y-6 text-foreground">
+    <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8 space-y-6 text-foreground">
       {/* Header Area */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Welcome back, {profile?.full_name?.split(" ")[0] || "Admin"}
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="text-muted-foreground text-xs sm:text-sm mt-1">
             {(roles ?? []).includes("admin") ? "Admin Dashboard" : "Teacher Dashboard"} • School
             Management & Academics
           </p>
         </div>
         <Link
           to="/students"
-          className="bg-brand text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-brand/90 transition-colors shadow-sm inline-flex items-center gap-2"
+          className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 min-h-[44px] rounded-xl text-xs sm:text-sm font-bold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-xs inline-flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
         >
           <Users className="size-4" /> Manage Students
         </Link>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <KpiCard
           label="TOTAL STUDENTS"
           value={stats?.students ?? 0}
           subtext={`Enrolled`}
-          subtextColor="text-success"
-          icon={<Users className="size-5 text-brand" />}
-          iconBg="bg-brand/10"
+          subtextColor="text-emerald-600 dark:text-emerald-400 font-semibold"
+          icon={<Users className="size-5 text-blue-600 dark:text-blue-400" />}
+          iconBg="bg-blue-500/10"
         />
         <KpiCard
           label="ATTENDANCE TODAY"
@@ -246,56 +246,57 @@ function DashboardPage() {
               ? `of ${stats.attendanceToday.total} marked`
               : "Not marked yet"
           }
-          icon={<Clock className="size-5 text-warning" />}
-          iconBg="bg-warning/10"
+          subtextColor="text-amber-600 dark:text-amber-400 font-semibold"
+          icon={<Clock className="size-5 text-amber-600 dark:text-amber-400" />}
+          iconBg="bg-amber-500/10"
         />
         <KpiCard
           label="TEACHERS"
           value={stats?.teachers ?? 0}
           subtext="Active staff members"
-          icon={<Building2 className="size-5 text-brand" />}
-          iconBg="bg-brand/10"
+          icon={<Building2 className="size-5 text-indigo-600 dark:text-indigo-400" />}
+          iconBg="bg-indigo-500/10"
         />
         <KpiCard
           label="PENDING HOMEWORK"
           value={stats?.pendingHomework ?? 0}
           subtext="Due from today onwards"
-          icon={<FileText className="size-5 text-muted-foreground" />}
-          iconBg="bg-slate-200"
+          icon={<FileText className="size-5 text-violet-600 dark:text-violet-400" />}
+          iconBg="bg-violet-500/10"
         />
       </div>
 
       {/* Bottom Grid Panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
-        {/* Remarks Panel (similar to "Pending Employee Approvals") */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-bold">Recent Remarks & Feedback</h3>
-            <span className="bg-warning/15 text-warning text-xs font-semibold px-2 py-1 rounded-full">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+        {/* Remarks Panel */}
+        <div className="bg-card rounded-2xl p-5 sm:p-6 shadow-xs border border-border/80 text-card-foreground space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base sm:text-lg font-bold text-foreground">Recent Remarks & Feedback</h3>
+            <span className="bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full border border-amber-500/20">
               {remarks.length} recent
             </span>
           </div>
-          <p className="text-sm text-muted-foreground mb-6">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Review and acknowledge student remarks
           </p>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {remarks.length === 0 ? (
-              <div className="text-sm text-muted-foreground text-center py-4">
+              <div className="text-sm text-muted-foreground text-center py-6">
                 No recent remarks.
               </div>
             ) : (
               remarks.map((r) => (
                 <div
                   key={r.id}
-                  className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50/50"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 rounded-xl border border-border/70 bg-secondary/30 gap-3"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="size-10 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold text-sm uppercase">
+                    <div className="size-10 rounded-xl bg-blue-500/10 text-primary flex items-center justify-center font-bold text-sm uppercase shrink-0">
                       {r.student?.full_name?.slice(0, 1) || "S"}
                     </div>
                     <div>
-                      <p className="font-semibold text-sm">
+                      <p className="font-bold text-sm text-foreground">
                         {r.student?.full_name || "Unknown Student"}
                       </p>
                       <p className="text-xs text-muted-foreground capitalize mt-0.5">
@@ -304,11 +305,11 @@ function DashboardPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button className="bg-brand text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-brand/90 transition-colors">
+                  <div className="flex items-center gap-2 self-end sm:self-center">
+                    <button className="bg-primary text-primary-foreground px-3.5 py-2 min-h-[36px] rounded-lg text-xs font-bold hover:bg-primary/90 transition-colors cursor-pointer">
                       Acknowledge
                     </button>
-                    <button className="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-200 transition-colors">
+                    <button className="bg-secondary text-secondary-foreground px-3.5 py-2 min-h-[36px] rounded-lg text-xs font-bold hover:bg-secondary/80 transition-colors cursor-pointer">
                       Dismiss
                     </button>
                   </div>
@@ -318,25 +319,25 @@ function DashboardPage() {
           </div>
         </div>
 
-        {/* Academic Progress Panel (similar to "Onboarding Status") */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-bold">Academic Progress</h3>
+        {/* Academic Progress Panel */}
+        <div className="bg-card rounded-2xl p-5 sm:p-6 shadow-xs border border-border/80 text-card-foreground space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base sm:text-lg font-bold text-foreground">Academic Progress</h3>
             <Link
               to="/attendance"
-              className="text-sm font-medium flex items-center gap-1 hover:text-brand transition-colors"
+              className="text-xs sm:text-sm font-bold text-primary flex items-center gap-1 hover:underline"
             >
               View All <ArrowRight className="size-4" />
             </Link>
           </div>
-          <p className="text-sm text-muted-foreground mb-6">Daily school activity progress</p>
+          <p className="text-xs sm:text-sm text-muted-foreground">Daily school activity progress</p>
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Progress 1 */}
             <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-600">Overall Attendance</span>
-                <span className="font-semibold text-brand">
+              <div className="flex justify-between text-xs sm:text-sm font-semibold mb-2">
+                <span className="text-muted-foreground">Overall Attendance</span>
+                <span className="font-bold text-primary">
                   {stats?.attendanceToday.total
                     ? Math.round(
                         (stats.attendanceToday.present / stats.attendanceToday.total) * 100,
@@ -345,9 +346,9 @@ function DashboardPage() {
                   %
                 </span>
               </div>
-              <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-2.5 w-full bg-secondary rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-brand rounded-full transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full transition-all duration-500"
                   style={{
                     width: `${stats?.attendanceToday.total ? (stats.attendanceToday.present / stats.attendanceToday.total) * 100 : 0}%`,
                   }}
@@ -357,13 +358,13 @@ function DashboardPage() {
 
             {/* Progress 2 */}
             <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-600">Homework Assigned Today</span>
-                <span className="font-semibold text-success">{stats?.homeworkToday ?? 0}</span>
+              <div className="flex justify-between text-xs sm:text-sm font-semibold mb-2">
+                <span className="text-muted-foreground">Homework Assigned Today</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">{stats?.homeworkToday ?? 0}</span>
               </div>
-              <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-2.5 w-full bg-secondary rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-success rounded-full transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
                   style={{ width: `${Math.min(((stats?.homeworkToday ?? 0) / 10) * 100, 100)}%` }}
                 />
               </div>
@@ -371,26 +372,26 @@ function DashboardPage() {
 
             {/* Progress 3 */}
             <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-600">Pending Actions</span>
-                <span className="font-semibold text-danger">0</span>
+              <div className="flex justify-between text-xs sm:text-sm font-semibold mb-2">
+                <span className="text-muted-foreground">Pending Actions</span>
+                <span className="font-bold text-rose-600 dark:text-rose-400">0</span>
               </div>
-              <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden" />
+              <div className="h-2.5 w-full bg-secondary rounded-full overflow-hidden" />
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-slate-100">
+          <div className="grid grid-cols-3 gap-4 mt-6 pt-5 border-t border-border/70">
             <div className="text-center">
-              <p className="text-2xl font-bold">{stats?.attendanceToday.present ?? 0}</p>
-              <p className="text-xs text-muted-foreground mt-1">Present</p>
+              <p className="text-2xl font-bold text-foreground">{stats?.attendanceToday.present ?? 0}</p>
+              <p className="text-xs text-muted-foreground font-semibold mt-1">Present</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold">{stats?.homeworkToday ?? 0}</p>
-              <p className="text-xs text-muted-foreground mt-1">Homework</p>
+              <p className="text-2xl font-bold text-foreground">{stats?.homeworkToday ?? 0}</p>
+              <p className="text-xs text-muted-foreground font-semibold mt-1">Homework</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold">{remarks.length}</p>
-              <p className="text-xs text-muted-foreground mt-1">Remarks</p>
+              <p className="text-2xl font-bold text-foreground">{remarks.length}</p>
+              <p className="text-xs text-muted-foreground font-semibold mt-1">Remarks</p>
             </div>
           </div>
         </div>
@@ -415,14 +416,14 @@ function KpiCard({
   iconBg: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between">
+    <div className="bg-card rounded-2xl p-5 sm:p-6 shadow-xs border border-border/80 flex items-center justify-between text-card-foreground">
       <div>
-        <p className="text-xs font-semibold text-muted-foreground mb-1 tracking-wider uppercase">
+        <p className="text-xs font-bold text-muted-foreground mb-1 tracking-wider uppercase">
           {label}
         </p>
-        <div className="flex items-end gap-2">
-          <h3 className="text-3xl font-bold text-foreground">{value}</h3>
-          {subtext && <span className={`text-xs font-medium mb-1 ${subtextColor}`}>{subtext}</span>}
+        <div className="flex items-baseline gap-2">
+          <h3 className="text-2xl sm:text-3xl font-extrabold text-foreground">{value}</h3>
+          {subtext && <span className={`text-xs ${subtextColor}`}>{subtext}</span>}
         </div>
       </div>
       <div className={`size-12 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>

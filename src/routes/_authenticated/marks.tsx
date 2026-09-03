@@ -579,16 +579,16 @@ function MarksManagementPage() {
         }
       />
 
-      <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
         {/* Filters Panel */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-border dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="bg-card p-4 sm:p-5 rounded-2xl border border-border/80 shadow-xs flex flex-wrap items-center justify-between gap-4">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3 w-full sm:w-auto">
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-muted-foreground uppercase">Class</span>
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
-                className="mt-1 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none"
+                className="mt-1 bg-background border border-border rounded-xl px-3.5 py-2 h-11 min-h-[44px] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
               >
                 {filteredClasses.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -604,7 +604,7 @@ function MarksManagementPage() {
               <select
                 value={selectedSection}
                 onChange={(e) => setSelectedSection(e.target.value)}
-                className="mt-1 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none"
+                className="mt-1 bg-background border border-border rounded-xl px-3.5 py-2 h-11 min-h-[44px] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
               >
                 <option value="All">All Sections</option>
                 <option value="a">Section A</option>
@@ -619,7 +619,7 @@ function MarksManagementPage() {
               <select
                 value={selectedExamId}
                 onChange={(e) => setSelectedExamId(e.target.value)}
-                className="mt-1 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none"
+                className="mt-1 bg-background border border-border rounded-xl px-3.5 py-2 h-11 min-h-[44px] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
               >
                 {filteredExams.length === 0 && <option value="">-- No Exams --</option>}
                 {filteredExams.map((e) => (
@@ -635,7 +635,7 @@ function MarksManagementPage() {
               <select
                 value={selectedSubjectId}
                 onChange={(e) => setSelectedSubjectId(e.target.value)}
-                className="mt-1 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none"
+                className="mt-1 bg-background border border-border rounded-xl px-3.5 py-2 h-11 min-h-[44px] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
               >
                 {filteredSubjects.length === 0 && <option value="">-- No Subjects --</option>}
                 {filteredSubjects.map((s) => (

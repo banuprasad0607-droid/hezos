@@ -583,62 +583,62 @@ function StudentsPage() {
         title="Students & Parents"
         breadcrumb={`${totalEnrolled} enrolled`}
         actions={
-          <>
+          <div className="flex flex-wrap items-center gap-2.5">
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search name, admission #, parent…"
-              className="px-3 py-1.5 text-sm border border-border rounded-md bg-card w-64 text-foreground outline-none"
+              className="h-11 min-h-[44px] px-3.5 py-2 text-xs sm:text-sm border border-border rounded-xl bg-card w-full sm:w-64 text-foreground outline-none focus:ring-2 focus:ring-primary/40"
             />
             <button
               onClick={() => setBulkImportOpen(true)}
-              className="px-3 py-1.5 text-xs font-semibold border border-border bg-card text-card-foreground rounded-md inline-flex items-center gap-1 hover:bg-secondary cursor-pointer"
+              className="h-11 min-h-[44px] px-3.5 py-2 text-xs font-semibold border border-border bg-card text-card-foreground rounded-xl inline-flex items-center gap-1.5 hover:bg-secondary cursor-pointer transition active:scale-[0.98]"
             >
               Import CSV
             </button>
             <button
               onClick={() => setBulkPhotoOpen(true)}
-              className="px-3 py-1.5 text-xs font-semibold border border-border bg-card text-card-foreground rounded-md inline-flex items-center gap-1 hover:bg-secondary cursor-pointer"
+              className="h-11 min-h-[44px] px-3.5 py-2 text-xs font-semibold border border-border bg-card text-card-foreground rounded-xl inline-flex items-center gap-1.5 hover:bg-secondary cursor-pointer transition active:scale-[0.98]"
             >
               Upload Photos
             </button>
             <button
               onClick={() => setOpen(true)}
               disabled={classes.length === 0}
-              className="px-4 py-1.5 text-sm font-medium bg-primary text-primary-foreground rounded-md inline-flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+              className="h-11 min-h-[44px] px-4 py-2 text-xs sm:text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl inline-flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-xs transition active:scale-[0.98]"
             >
               <Plus className="size-4" /> Add Student
             </button>
-            <div className="flex gap-1 border border-border rounded-md overflow-hidden bg-card text-card-foreground shrink-0 shadow-xs">
+            <div className="flex border border-border rounded-xl overflow-hidden bg-card text-card-foreground shrink-0 shadow-xs h-11 min-h-[44px] items-center">
               <button
                 onClick={() => handleExport("csv")}
-                className="p-1.5 hover:bg-secondary transition-colors"
+                className="px-3 h-full hover:bg-secondary transition-colors inline-flex items-center justify-center cursor-pointer"
                 title="Export CSV"
               >
                 <Download className="size-4 text-muted-foreground" />
               </button>
               <button
                 onClick={() => handleExport("excel")}
-                className="p-1.5 hover:bg-secondary border-l border-border transition-colors text-xs font-bold"
+                className="px-3 h-full hover:bg-secondary border-l border-border transition-colors text-xs font-bold inline-flex items-center justify-center cursor-pointer"
                 title="Export Excel"
               >
                 XLS
               </button>
               <button
                 onClick={() => handleExport("pdf")}
-                className="p-1.5 hover:bg-secondary border-l border-border transition-colors text-xs font-bold"
+                className="px-3 h-full hover:bg-secondary border-l border-border transition-colors text-xs font-bold inline-flex items-center justify-center cursor-pointer"
                 title="Export PDF"
               >
                 PDF
               </button>
             </div>
-          </>
+          </div>
         }
       />
 
-      <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-background text-foreground">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 bg-background text-foreground">
         {/* Dashboard Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <KpiWidget
             title="Total Students"
             count={totalEnrolled}
@@ -660,8 +660,8 @@ function StudentsPage() {
         </div>
 
         {classes.length > 0 && (
-          <div className="mb-5">
-            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-2">
+          <div className="space-y-2">
+            <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
               Filter by class
             </p>
             <div className="flex flex-wrap gap-2">
@@ -670,9 +670,9 @@ function StudentsPage() {
                   setFilterClassId("all");
                   setPage(0);
                 }}
-                className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors cursor-pointer ${
+                className={`px-3.5 py-2 min-h-[36px] text-xs font-bold rounded-xl border transition-all cursor-pointer ${
                   filterClassId === "all"
-                    ? "bg-primary text-primary-foreground border-primary"
+                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-xs"
                     : "bg-card text-card-foreground border-border hover:bg-secondary"
                 }`}
               >
@@ -685,9 +685,9 @@ function StudentsPage() {
                     setFilterClassId(c.id);
                     setPage(0);
                   }}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors cursor-pointer ${
+                  className={`px-3.5 py-2 min-h-[36px] text-xs font-bold rounded-xl border transition-all cursor-pointer ${
                     filterClassId === c.id
-                      ? "bg-primary text-primary-foreground border-primary"
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-xs"
                       : "bg-card text-card-foreground border-border hover:bg-secondary"
                   }`}
                 >
@@ -703,140 +703,257 @@ function StudentsPage() {
             Loading records from database...
           </div>
         ) : students.length === 0 ? (
-          <div className="bg-card border border-dashed border-border rounded-xl p-16 text-center text-card-foreground">
+          <div className="bg-card border border-dashed border-border rounded-2xl p-12 text-center text-card-foreground">
             <Users className="size-10 mx-auto text-muted-foreground" />
-            <h3 className="font-semibold mt-3">
+            <h3 className="font-bold text-base mt-3">
               {totalEnrolled === 0 ? "No students yet" : "No matches"}
             </h3>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {classes.length === 0 ? "Create a class first." : "Add your first student."}
             </p>
           </div>
         ) : (
-          <div className="bg-card border border-border rounded-xl overflow-hidden shadow-xs text-card-foreground">
-            <div className="overflow-x-auto w-full">
-              <table className="w-full min-w-[640px] text-left text-sm">
-                <thead className="bg-secondary/50 text-xs text-muted-foreground">
-                  <tr>
-                    <th className="px-6 py-3 font-medium">Admission #</th>
-                    <th className="px-6 py-3 font-medium">Student</th>
-                    <th className="px-6 py-3 font-medium">Class</th>
-                    <th className="px-6 py-3 font-medium">Roll</th>
-                    <th className="px-6 py-3 font-medium">Parent</th>
-                    <th className="px-6 py-3 font-medium text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                {students.map((s) => {
-                  const wa = whatsappLink(
-                    s.parent_phone,
-                    `Hello ${s.parent_name ?? ""}, this is regarding ${s.full_name}.`,
-                  );
-                  return (
-                    <tr key={s.id} className="hover:bg-secondary/40 transition-colors">
-                      <td className="px-6 py-3 font-mono text-xs text-foreground">
-                        {s.admission_number ?? "—"}
-                      </td>
-                      <td className="px-6 py-3 font-medium text-foreground">
-                        <Link
-                          to="/students/$studentId"
-                          params={{ studentId: s.id }}
-                          className="hover:text-brand flex items-center gap-3"
-                        >
-                          <div className="size-8 rounded-full border border-border bg-slate-100 dark:bg-slate-800 overflow-hidden flex items-center justify-center shrink-0">
-                            {s.photo_url ? (
-                              <img
-                                src={s.photo_url}
-                                alt=""
-                                className="size-full object-cover"
-                                loading="lazy"
-                              />
-                            ) : (
-                              <User className="size-4 text-slate-400" />
-                            )}
-                          </div>
-                          <span>{s.full_name}</span>
-                        </Link>
-                      </td>
-                      <td className="px-6 py-3 text-muted-foreground">{s.classes?.name ?? "—"}</td>
-                      <td className="px-6 py-3 text-muted-foreground">{s.roll_number ?? "—"}</td>
-                      <td className="px-6 py-3">
-                        <div className="space-y-0.5">
-                          {s.parent_name && (
-                            <p className="text-xs font-medium text-foreground">{s.parent_name}</p>
-                          )}
-                          {s.parent_email && (
-                            <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                              <Mail className="size-3" /> {s.parent_email}
-                              {s.parent_user_id ? (
-                                <span className="ml-1 text-[10px] bg-success-soft text-success px-1.5 py-0.5 rounded font-semibold">
-                                  Linked
-                                </span>
-                              ) : (
-                                <span className="ml-1 text-[10px] bg-warning-soft text-warning px-1.5 py-0.5 rounded font-semibold">
-                                  Pending
-                                </span>
-                              )}
-                            </p>
-                          )}
-                          {s.parent_phone && (
-                            <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                              <Phone className="size-3" /> {s.parent_phone}
-                            </p>
-                          )}
-                          {!s.parent_email && !s.parent_phone && (
-                            <span className="text-xs text-muted-foreground">—</span>
+          <div className="space-y-4">
+            {/* MOBILE CARD VIEW (< md) */}
+            <div className="block md:hidden space-y-3.5">
+              {students.map((s) => {
+                const wa = whatsappLink(
+                  s.parent_phone,
+                  `Hello ${s.parent_name ?? ""}, this is regarding ${s.full_name}.`,
+                );
+                return (
+                  <div
+                    key={s.id}
+                    className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="size-12 rounded-xl border border-border bg-secondary overflow-hidden flex items-center justify-center shrink-0">
+                          {s.photo_url ? (
+                            <img
+                              src={s.photo_url}
+                              alt=""
+                              className="size-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <User className="size-5 text-slate-400" />
                           )}
                         </div>
-                      </td>
-                      <td className="px-6 py-3 text-right">
-                        <div className="flex justify-end gap-3 items-center">
-                          {wa && (
-                            <a
-                              href={wa}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-xs font-medium text-[#25D366] inline-flex items-center gap-1 hover:underline"
-                              title="WhatsApp parent"
-                            >
-                              WhatsApp
-                            </a>
-                          )}
-                          <button
-                            onClick={() => setEditingStudent(s as any)}
-                            className="text-xs font-semibold text-primary hover:text-primary/80 inline-flex items-center gap-1 cursor-pointer bg-primary/10 hover:bg-primary/20 px-2 py-1 rounded-md transition-colors"
-                            title="Edit Student Profile"
-                          >
-                            <Pencil className="size-3" /> Edit
-                          </button>
+                        <div>
                           <Link
                             to="/students/$studentId"
                             params={{ studentId: s.id }}
-                            className="text-xs font-medium text-brand inline-flex items-center gap-1 hover:underline"
+                            className="font-bold text-sm text-foreground hover:text-primary transition line-clamp-1"
                           >
-                            Profile <ExternalLink className="size-3" />
+                            {s.full_name}
                           </Link>
-                          {isAdmin && (
-                            <button
-                              onClick={() => handleSoftDelete(s.id, s.full_name)}
-                              className="text-xs font-medium text-danger hover:text-red-700 inline-flex items-center gap-1 cursor-pointer p-1 rounded hover:bg-danger-soft transition-colors"
-                              title="Delete Student"
-                            >
-                              <Trash className="size-3.5" />
-                            </button>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="font-mono text-xs text-muted-foreground font-semibold">
+                              Adm: {s.admission_number ?? "—"}
+                            </span>
+                            {s.roll_number && (
+                              <span className="text-xs text-muted-foreground">
+                                Roll: {s.roll_number}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <span className="inline-flex items-center text-[11px] font-bold px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-700 dark:text-blue-300 shrink-0">
+                        {s.classes?.name ?? "—"}
+                      </span>
+                    </div>
+
+                    {/* Parent Info */}
+                    {(s.parent_name || s.parent_phone || s.parent_email) && (
+                      <div className="p-2.5 rounded-xl bg-secondary/50 space-y-1 text-xs">
+                        {s.parent_name && (
+                          <p className="font-semibold text-foreground">Parent: {s.parent_name}</p>
+                        )}
+                        <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
+                          {s.parent_phone && (
+                            <span className="inline-flex items-center gap-1">
+                              <Phone className="size-3" /> {s.parent_phone}
+                            </span>
+                          )}
+                          {s.parent_email && (
+                            <span className="inline-flex items-center gap-1">
+                              <Mail className="size-3" /> {s.parent_email}
+                            </span>
                           )}
                         </div>
-                      </td>
+                      </div>
+                    )}
+
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-border/60">
+                      {wa && (
+                        <a
+                          href={wa}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="h-10 min-h-[40px] px-3 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 rounded-xl text-xs font-bold inline-flex items-center gap-1 transition"
+                          title="WhatsApp parent"
+                        >
+                          WhatsApp
+                        </a>
+                      )}
+                      <button
+                        onClick={() => setEditingStudent(s as any)}
+                        className="h-10 min-h-[40px] px-3.5 bg-secondary hover:bg-secondary/80 text-foreground rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        <Pencil className="size-3.5" /> Edit
+                      </button>
+                      <Link
+                        to="/students/$studentId"
+                        params={{ studentId: s.id }}
+                        className="h-10 min-h-[40px] px-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 ml-auto shadow-xs"
+                      >
+                        Profile <ExternalLink className="size-3.5" />
+                      </Link>
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleSoftDelete(s.id, s.full_name)}
+                          className="size-10 min-h-[40px] min-w-[40px] flex items-center justify-center text-rose-600 hover:bg-rose-500/10 rounded-xl transition cursor-pointer"
+                          title="Delete Student"
+                        >
+                          <Trash className="size-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* DESKTOP TABLE VIEW (>= md) */}
+            <div className="hidden md:block bg-card border border-border/80 rounded-2xl overflow-hidden shadow-xs text-card-foreground">
+              <div className="overflow-x-auto w-full">
+                <table className="w-full min-w-[640px] text-left text-sm">
+                  <thead className="bg-secondary/50 text-xs text-muted-foreground">
+                    <tr>
+                      <th className="px-6 py-3.5 font-semibold">Admission #</th>
+                      <th className="px-6 py-3.5 font-semibold">Student</th>
+                      <th className="px-6 py-3.5 font-semibold">Class</th>
+                      <th className="px-6 py-3.5 font-semibold">Roll</th>
+                      <th className="px-6 py-3.5 font-semibold">Parent</th>
+                      <th className="px-6 py-3.5 font-semibold text-right">Actions</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                  {students.map((s) => {
+                    const wa = whatsappLink(
+                      s.parent_phone,
+                      `Hello ${s.parent_name ?? ""}, this is regarding ${s.full_name}.`,
+                    );
+                    return (
+                      <tr key={s.id} className="hover:bg-secondary/40 transition-colors">
+                        <td className="px-6 py-3.5 font-mono text-xs font-bold text-foreground">
+                          {s.admission_number ?? "—"}
+                        </td>
+                        <td className="px-6 py-3.5 font-semibold text-foreground">
+                          <Link
+                            to="/students/$studentId"
+                            params={{ studentId: s.id }}
+                            className="hover:text-primary flex items-center gap-3"
+                          >
+                            <div className="size-8 rounded-full border border-border bg-slate-100 dark:bg-slate-800 overflow-hidden flex items-center justify-center shrink-0">
+                              {s.photo_url ? (
+                                <img
+                                  src={s.photo_url}
+                                  alt=""
+                                  className="size-full object-cover"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <User className="size-4 text-slate-400" />
+                              )}
+                            </div>
+                            <span>{s.full_name}</span>
+                          </Link>
+                        </td>
+                        <td className="px-6 py-3.5 text-muted-foreground font-medium">{s.classes?.name ?? "—"}</td>
+                        <td className="px-6 py-3.5 text-muted-foreground">{s.roll_number ?? "—"}</td>
+                        <td className="px-6 py-3.5">
+                          <div className="space-y-0.5">
+                            {s.parent_name && (
+                              <p className="text-xs font-semibold text-foreground">{s.parent_name}</p>
+                            )}
+                            {s.parent_email && (
+                              <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                <Mail className="size-3" /> {s.parent_email}
+                                {s.parent_user_id ? (
+                                  <span className="ml-1 text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold">
+                                    Linked
+                                  </span>
+                                ) : (
+                                  <span className="ml-1 text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold">
+                                    Pending
+                                  </span>
+                                )}
+                              </p>
+                            )}
+                            {s.parent_phone && (
+                              <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                <Phone className="size-3" /> {s.parent_phone}
+                              </p>
+                            )}
+                            {!s.parent_email && !s.parent_phone && (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-3.5 text-right">
+                          <div className="flex justify-end gap-2 items-center">
+                            {wa && (
+                              <a
+                                href={wa}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-xs font-bold text-[#25D366] inline-flex items-center gap-1 hover:underline"
+                                title="WhatsApp parent"
+                              >
+                                WhatsApp
+                              </a>
+                            )}
+                            <button
+                              onClick={() => setEditingStudent(s as any)}
+                              className="text-xs font-bold text-primary hover:text-primary/80 inline-flex items-center gap-1 cursor-pointer bg-primary/10 hover:bg-primary/20 px-2.5 py-1 rounded-lg transition-colors"
+                              title="Edit Student Profile"
+                            >
+                              <Pencil className="size-3" /> Edit
+                            </button>
+                            <Link
+                              to="/students/$studentId"
+                              params={{ studentId: s.id }}
+                              className="text-xs font-bold text-primary inline-flex items-center gap-1 hover:underline px-2 py-1"
+                            >
+                              Profile <ExternalLink className="size-3" />
+                            </Link>
+                            {isAdmin && (
+                              <button
+                                onClick={() => handleSoftDelete(s.id, s.full_name)}
+                                className="text-xs font-medium text-rose-600 hover:text-rose-700 inline-flex items-center gap-1 cursor-pointer p-1.5 rounded-lg hover:bg-rose-500/10 transition-colors"
+                                title="Delete Student"
+                              >
+                                <Trash className="size-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              </div>
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex items-center justify-between p-4 bg-secondary/10 border-t border-border">
-              <p className="text-xs text-muted-foreground">
+            <div className="flex items-center justify-between p-4 bg-card border border-border/80 rounded-2xl">
+              <p className="text-xs font-medium text-muted-foreground">
                 Showing {totalCount > 0 ? page * pageSize + 1 : 0} to{" "}
                 {Math.min((page + 1) * pageSize, totalCount)} of {totalCount} records
               </p>
@@ -844,14 +961,14 @@ function StudentsPage() {
                 <button
                   disabled={page === 0}
                   onClick={() => setPage((p) => p - 1)}
-                  className="px-3 py-1 text-xs font-semibold border border-border bg-card text-card-foreground rounded-md disabled:opacity-50 cursor-pointer hover:bg-secondary"
+                  className="h-9 px-3.5 text-xs font-bold border border-border bg-card text-card-foreground rounded-xl disabled:opacity-50 cursor-pointer hover:bg-secondary transition"
                 >
                   Previous
                 </button>
                 <button
                   disabled={(page + 1) * pageSize >= totalCount}
                   onClick={() => setPage((p) => p + 1)}
-                  className="px-3 py-1 text-xs font-semibold border border-border bg-card text-card-foreground rounded-md disabled:opacity-50 cursor-pointer hover:bg-secondary"
+                  className="h-9 px-3.5 text-xs font-bold border border-border bg-card text-card-foreground rounded-xl disabled:opacity-50 cursor-pointer hover:bg-secondary transition"
                 >
                   Next
                 </button>

@@ -649,23 +649,23 @@ function AttendancePage() {
         title="Attendance Center"
         breadcrumb="Operations & Ledgers"
         actions={
-          <div className="flex bg-secondary rounded-md p-0.5 border border-border">
+          <div className="flex bg-secondary/80 rounded-xl p-1.5 overflow-x-auto max-w-full gap-1 min-h-[44px]">
             <button
               onClick={() => setActiveTab("daily")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded capitalize transition cursor-pointer ${
+              className={`px-4 py-2 min-h-[38px] text-xs sm:text-sm font-bold rounded-lg capitalize transition-all shrink-0 cursor-pointer ${
                 activeTab === "daily"
-                  ? "bg-card shadow-sm text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs"
+                  : "text-muted-foreground hover:text-foreground hover:bg-card/60"
               }`}
             >
               Daily Student
             </button>
             <button
               onClick={() => setActiveTab("student-matrix")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded capitalize transition cursor-pointer ${
+              className={`px-4 py-2 min-h-[38px] text-xs sm:text-sm font-bold rounded-lg capitalize transition-all shrink-0 cursor-pointer ${
                 activeTab === "student-matrix"
-                  ? "bg-card shadow-sm text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs"
+                  : "text-muted-foreground hover:text-foreground hover:bg-card/60"
               }`}
             >
               Student Matrix
@@ -674,20 +674,20 @@ function AttendancePage() {
               <>
                 <button
                   onClick={() => setActiveTab("teacher-daily")}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded capitalize transition cursor-pointer ${
+                  className={`px-4 py-2 min-h-[38px] text-xs sm:text-sm font-bold rounded-lg capitalize transition-all shrink-0 cursor-pointer ${
                     activeTab === "teacher-daily"
-                      ? "bg-card shadow-sm text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-card/60"
                   }`}
                 >
                   Daily Staff
                 </button>
                 <button
                   onClick={() => setActiveTab("teacher-matrix")}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded capitalize transition cursor-pointer ${
+                  className={`px-4 py-2 min-h-[38px] text-xs sm:text-sm font-bold rounded-lg capitalize transition-all shrink-0 cursor-pointer ${
                     activeTab === "teacher-matrix"
-                      ? "bg-card shadow-sm text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-card/60"
                   }`}
                 >
                   Staff Matrix
@@ -698,9 +698,9 @@ function AttendancePage() {
         }
       />
 
-      <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-background text-foreground">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 bg-background text-foreground">
         {/* Filters Panel */}
-        <div className="bg-card border border-border rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-card border border-border/80 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
             {activeTab === "daily" && (
               <>
@@ -708,12 +708,12 @@ function AttendancePage() {
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="px-3 py-1.5 text-xs border border-border rounded-md bg-background focus:outline-none text-foreground"
+                  className="h-11 min-h-[46px] px-3.5 py-2 text-xs sm:text-sm border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 text-foreground"
                 />
                 <select
                   value={classId}
                   onChange={(e) => setClassId(e.target.value)}
-                  className="px-3 py-1.5 text-xs border border-border rounded-md bg-background focus:outline-none text-foreground"
+                  className="h-11 min-h-[46px] px-3.5 py-2 text-xs sm:text-sm font-medium border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 text-foreground cursor-pointer"
                 >
                   {classes.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -894,10 +894,10 @@ function AttendancePage() {
                                   <button
                                     key={st.value}
                                     onClick={() => mark(s.id, st.value)}
-                                    className={`px-2.5 py-1 text-[11px] font-bold rounded transition-all cursor-pointer ${
+                                    className={`px-3 py-2 min-h-[38px] text-xs font-bold rounded-xl transition-all cursor-pointer active:scale-95 ${
                                       current === st.value
                                         ? st.color
-                                        : "bg-secondary text-muted-foreground hover:bg-accent text-foreground"
+                                        : "bg-secondary text-muted-foreground hover:bg-secondary/80 text-foreground"
                                     }`}
                                   >
                                     {st.label}
