@@ -189,7 +189,14 @@ function LoginPage() {
       </div>
 
       <div className="flex items-center justify-center p-6 sm:p-10 bg-card text-foreground">
-        <form onSubmit={handleSubmit(onSubmitForm)} className="w-full max-w-sm space-y-6">
+        <form
+          method="POST"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit(onSubmitForm)(e);
+          }}
+          className="w-full max-w-sm space-y-6"
+        >
           {/* Mobile-only Branding Header */}
           <div className="flex lg:hidden items-center gap-3 mb-2">
             {cachedSchoolLogo ? (
