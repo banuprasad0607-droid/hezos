@@ -48,6 +48,13 @@ function LoginPage() {
     const logo = localStorage.getItem("hezo_last_school_logo");
     if (name) setCachedSchoolName(name);
     if (logo) setCachedSchoolLogo(logo);
+
+    // Auto-redirect if already authenticated
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        window.location.href = "/dashboard";
+      }
+    });
   }, []);
 
   const onSubmitForm = async (fields: LoginFields) => {
@@ -56,8 +63,6 @@ function LoginPage() {
     const cleanPassword = fields.password;
 
     try {
-      let authUser: any = null;
-
       // 1. Direct client-side authentication with Supabase
       const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
@@ -65,104 +70,90 @@ function LoginPage() {
       });
 
       if (authErr) {
-        // Fallback to server function if available
-        try {
-          const res = await loginAttemptFn({
-            data: { email: cleanEmail, password: cleanPassword },
-          });
-          if (res?.session) {
-            await supabase.auth.setSession(res.session);
-            authUser = res.user;
-          } else {
-            throw authErr;
-          }
-        } catch {
-          throw authErr;
-        }
-      } else {
-        authUser = authData?.user;
+        throw authErr;
       }
 
+      const authUser = authData?.user;
       if (!authUser) throw new Error("Authentication failed: No user returned.");
 
       // Cache school details for dynamic whitelabel on return
-      if (authUser) {
-        try {
+      try {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("school_id")
+          .eq("user_id", authUser.id)
+          .maybeSingle();
+
+        if (prof?.school_id) {
+          const { data: sch } = await supabase
+            .from("schools")
+            .select("name, logo_url")
+            .eq("id", prof.school_id)
+            .maybeSingle();
+
+          if (sch) {
+            localStorage.setItem("hezo_last_school_name", sch.name);
+            if (sch.logo_url) {
+              localStorage.setItem("hezo_last_school_logo", sch.logo_url);
+            } else {
+              localStorage.removeItem("hezo_last_school_logo");
+            }
+          }
+        }
+      } catch (brandingErr) {
+        console.error("Error caching school branding context:", brandingErr);
+      }
+
+      // Fetch roles to decide optimal redirect destination
+      let dest = "/dashboard";
+      try {
+        const { data: roleRows } = await supabase
+          .from("user_roles")
+          .select("role, school_id")
+          .eq("user_id", authUser.id);
+        const roles = (roleRows || []).map((r) => r.role);
+        if (roles.includes("super_admin")) {
+          dest = "/platform";
+        } else if (
+          roles.includes("parent") &&
+          !roles.includes("admin") &&
+          !roles.includes("teacher")
+        ) {
+          dest = "/parent";
+        } else if (!roleRows || roleRows.length === 0 || !roleRows.some((r) => r.school_id)) {
           const { data: prof } = await supabase
             .from("profiles")
             .select("school_id")
             .eq("user_id", authUser.id)
             .maybeSingle();
-
           if (prof?.school_id) {
-            const { data: sch } = await supabase
-              .from("schools")
-              .select("name, logo_url")
-              .eq("id", prof.school_id)
+            dest = "/dashboard";
+          } else {
+            const { data: std } = await supabase
+              .from("students")
+              .select("id")
+              .eq("parent_user_id", authUser.id)
               .maybeSingle();
-
-            if (sch) {
-              localStorage.setItem("hezo_last_school_name", sch.name);
-              if (sch.logo_url) {
-                localStorage.setItem("hezo_last_school_logo", sch.logo_url);
-              } else {
-                localStorage.removeItem("hezo_last_school_logo");
-              }
-            }
+            if (std) dest = "/parent";
+            else dest = "/onboarding";
           }
-        } catch (brandingErr) {
-          console.error("Error caching school branding context:", brandingErr);
         }
+      } catch (rErr) {
+        console.error("Role lookup error on login:", rErr);
       }
 
-      // Fetch roles to decide optimal redirect destination
-      let dest = "/dashboard";
-      if (authUser) {
-        try {
-          const { data: roleRows } = await supabase
-            .from("user_roles")
-            .select("role, school_id")
-            .eq("user_id", authUser.id);
-          const roles = (roleRows || []).map((r) => r.role);
-          if (roles.includes("super_admin")) {
-            dest = "/platform";
-          } else if (
-            roles.includes("parent") &&
-            !roles.includes("admin") &&
-            !roles.includes("teacher")
-          ) {
-            dest = "/parent";
-          } else if (!roleRows || roleRows.length === 0 || !roleRows.some((r) => r.school_id)) {
-            const { data: prof } = await supabase
-              .from("profiles")
-              .select("school_id")
-              .eq("user_id", authUser.id)
-              .maybeSingle();
-            if (prof?.school_id) {
-              dest = "/dashboard";
-            } else {
-              const { data: std } = await supabase
-                .from("students")
-                .select("id")
-                .eq("parent_user_id", authUser.id)
-                .maybeSingle();
-              if (std) dest = "/parent";
-              else dest = "/onboarding";
-            }
-          }
-        } catch (rErr) {
-          console.error("Role lookup error on login:", rErr);
-        }
-      }
-
-      setLoading(false);
       toast.success("Welcome back");
-      navigate({ to: dest });
+      // Use clean full page redirect so all auth/tenant providers mount with the fresh session
+      window.location.href = dest;
     } catch (err: any) {
       setLoading(false);
       let msg = err.message || "Could not sign in";
       if ((msg ?? "").includes("429") || (msg ?? "").toLowerCase().includes("too many requests")) {
         msg = "Too many login attempts. Please slow down and try again later.";
+      } else if ((msg ?? "").toLowerCase().includes("invalid login credentials")) {
+        msg = "Invalid email or password. Please check your credentials.";
+      } else if ((msg ?? "").toLowerCase().includes("email not confirmed")) {
+        msg = "Email address not confirmed. Please check your inbox.";
       }
       toast.error(msg);
     }
