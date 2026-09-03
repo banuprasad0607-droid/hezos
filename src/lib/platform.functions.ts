@@ -1026,7 +1026,6 @@ export const updateSchoolLogoServer = createServerFn({ method: "POST" })
       .from("schools")
       .update({
         logo_url: finalUrl,
-        school_logo: finalUrl,
       })
       .eq("id", data.school_id);
 
