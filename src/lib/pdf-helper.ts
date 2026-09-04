@@ -414,6 +414,15 @@ export async function safeHtml2Canvas(
     // Diagnostics check 2
     console.log("POSTER EXPORT DIAGNOSTICS: CSS parsed successfully.");
 
+    // Ensure all font faces are fully loaded to prevent font baseline shifts or missing glyphs
+    if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
+      try {
+        await document.fonts.ready;
+      } catch (e) {
+        // Continue if fonts.ready rejects
+      }
+    }
+
     // 7) Execute html2canvas
     const canvas = await html2canvas(element, {
       scale: 4,
