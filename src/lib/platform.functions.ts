@@ -304,6 +304,18 @@ export const provisionTeacher = createServerFn({ method: "POST" })
     const seq = (teacherCount || 0) + 1;
     const formattedSeq = String(seq).padStart(4, "0");
 
+    // Look up profile by user_id in case it was created automatically by an auth trigger
+    if (!existingProfile && teacherUserId) {
+      const { data: profByUid } = await (supabaseAdmin as any)
+        .from("profiles")
+        .select("id, user_id, full_name, email, school_id, employee_id")
+        .eq("user_id", teacherUserId)
+        .maybeSingle();
+      if (profByUid) {
+        existingProfile = profByUid;
+      }
+    }
+
     let profileId: string;
     let teacherCustomId: string;
 
@@ -316,6 +328,7 @@ export const provisionTeacher = createServerFn({ method: "POST" })
         .update({
           school_id: schoolId,
           full_name: data.full_name.trim() || existingProfile.full_name,
+          email: normalizedEmail,
           employee_id: teacherCustomId,
           designation: "Teacher",
           department: "Academic Faculty",
@@ -325,15 +338,18 @@ export const provisionTeacher = createServerFn({ method: "POST" })
       teacherCustomId = `HEZO-TCH-${currentYear}-${formattedSeq}`;
       const { data: newProf, error: profileErr } = await (supabaseAdmin as any)
         .from("profiles")
-        .insert({
-          user_id: teacherUserId,
-          full_name: data.full_name.trim(),
-          email: normalizedEmail,
-          school_id: schoolId,
-          employee_id: teacherCustomId,
-          designation: "Teacher",
-          department: "Academic Faculty",
-        })
+        .upsert(
+          {
+            user_id: teacherUserId,
+            full_name: data.full_name.trim(),
+            email: normalizedEmail,
+            school_id: schoolId,
+            employee_id: teacherCustomId,
+            designation: "Teacher",
+            department: "Academic Faculty",
+          },
+          { onConflict: "user_id" },
+        )
         .select("id, user_id, full_name, employee_id")
         .single();
 
@@ -352,11 +368,14 @@ export const provisionTeacher = createServerFn({ method: "POST" })
       .eq("role", "teacher" as never);
 
     if (!existingRoles || existingRoles.length === 0) {
-      await (supabaseAdmin as any).from("user_roles").insert({
-        user_id: teacherUserId,
-        school_id: schoolId,
-        role: "teacher" as never,
-      });
+      await (supabaseAdmin as any).from("user_roles").upsert(
+        {
+          user_id: teacherUserId,
+          school_id: schoolId,
+          role: "teacher" as never,
+        },
+        { onConflict: "user_id,school_id,role" },
+      );
     }
 
     // 7. Handle Subject & Class Allocation
