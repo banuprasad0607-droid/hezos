@@ -3103,37 +3103,39 @@ export function IDCardComponent({
     </div>
   );
 
-  const schoolNameFontSize = (school?.name?.length || 0) > 24 ? "text-[9.5px]" : "text-[11px]";
+  const schoolNameFontSize =
+    (school?.name?.length || 0) > 30
+      ? "text-[9px]"
+      : (school?.name?.length || 0) > 18
+        ? "text-[10.5px]"
+        : "text-[12px]";
 
-  // Portrait Layout
   if (orientation === "portrait") {
     if (side === "front") {
       return (
         <div
           className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden relative select-none box-border ${themeCls}`}
         >
-          {/* Top banner / Header */}
           <div className="relative shrink-0">
             <div
-              className={`px-2 py-1.5 flex items-center gap-1.5 relative min-h-[46px] ${headerCls}`}
+              className={`px-2.5 py-2 flex items-center gap-2 relative min-h-[48px] ${headerCls}`}
             >
               {schoolLogoNode}
-              <div className="text-left min-w-0 flex-1 leading-tight">
-                <h2 className={`${schoolNameFontSize} font-black uppercase tracking-wider leading-[1.15] line-clamp-2 text-white`}>
+              <div className="text-left min-w-0 flex-1 py-0.5">
+                <h2 className={`${schoolNameFontSize} font-black uppercase tracking-wider leading-snug text-white drop-shadow-xs`}>
                   {school?.name || "School Campus"}
                 </h2>
-                <p className="text-[6.5px] opacity-80 line-clamp-1 leading-tight mt-0.5 text-slate-200">
+                <p className="text-[7px] text-slate-200/90 font-medium leading-tight mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
                   {school?.address || "School Campus"}
                 </p>
               </div>
               <div className="text-right leading-none flex-shrink-0">
-                <span className="inline-block bg-white/15 backdrop-blur-md px-1.5 py-0.5 rounded text-[6px] font-mono font-bold text-white border border-white/20">
+                <span className="inline-block bg-white/15 backdrop-blur-md px-1.5 py-0.5 rounded text-[6.5px] font-mono font-bold text-white border border-white/20">
                   {rec.academic_year || currentAcademicYear}
                 </span>
               </div>
             </div>
 
-            {/* Sub-banner ribbon */}
             <div
               className={`font-black text-[6.5px] text-center uppercase tracking-widest py-0.5 shadow-2xs flex items-center justify-center gap-1 ${subBannerCls}`}
             >
@@ -3143,9 +3145,7 @@ export function IDCardComponent({
             </div>
           </div>
 
-          {/* Body Section */}
-          <div className="flex-1 px-2 py-1 flex flex-col items-center justify-between min-h-0 relative">
-            {/* Academic Topper Badge Overlay */}
+          <div className="flex-1 px-2 py-1.5 flex flex-col items-center justify-between min-h-0 relative">
             {topperRank && (
               <div className="absolute top-1 right-2 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-[6px] font-black px-1.5 py-0.2 rounded-full flex items-center gap-1 border border-amber-300 shadow-xs z-10">
                 <Trophy className="size-2 text-slate-950" />
@@ -3153,7 +3153,6 @@ export function IDCardComponent({
               </div>
             )}
 
-            {/* Student Photo with premium frame & drop shadow */}
             <div
               className={`w-[84px] h-[104px] rounded-lg border-2 border-white overflow-hidden shadow-xs flex items-center justify-center flex-shrink-0 relative bg-slate-100 mt-0.5 ${accentBorder}`}
             >
@@ -3174,40 +3173,38 @@ export function IDCardComponent({
               )}
             </div>
 
-            {/* Name & Class Pill */}
-            <div className="text-center w-full min-w-0 mt-0.5">
+            <div className="text-center w-full min-w-0 mt-1">
               <h4
-                className={`font-black uppercase tracking-tight text-slate-900 leading-tight ${nameFontSize}`}
+                className={`font-black uppercase tracking-tight text-slate-900 leading-snug ${nameFontSize}`}
                 title={displayName}
               >
                 {displayName}
               </h4>
               <div className="mt-0.5">
-                <span className="inline-block bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.2 rounded-full font-bold text-[7px] uppercase tracking-wide shadow-2xs">
+                <span className="inline-block bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.5 rounded-full font-bold text-[7px] uppercase tracking-wide shadow-2xs">
                   {displayClassOrDesignation}
                 </span>
               </div>
             </div>
 
-            {/* Structured Info Card */}
-            <div className="w-full bg-slate-50/90 border border-slate-200/80 rounded-md p-1 text-[6.5px] space-y-0.5 mt-0.5 shadow-2xs">
+            <div className="w-full bg-slate-50/90 border border-slate-200/80 rounded-md p-1.5 text-[6.8px] space-y-0.5 mt-0.5 shadow-2xs">
               {isStudent ? (
                 <>
-                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Admission No:</span>
                     <span className="font-black font-mono text-slate-900">{identifier}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Roll Number:</span>
                     <span className="font-bold text-slate-900">{rec.roll_number || "—"}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Date of Birth:</span>
                     <span className="font-bold text-slate-900">{rec.date_of_birth || "—"}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Blood Group:</span>
-                    <span className="font-black text-red-600 bg-red-50 border border-red-200/80 px-1 py-0.1 rounded">
+                    <span className="font-black text-red-600 bg-red-50 border border-red-200/80 px-1 py-0.2 rounded">
                       {rec.blood_group || "—"}
                     </span>
                   </div>
@@ -3218,32 +3215,32 @@ export function IDCardComponent({
                 </>
               ) : isVisitor ? (
                 <>
-                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Pass Number:</span>
                     <span className="font-black font-mono text-slate-900">{identifier}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Visitor Phone:</span>
                     <span className="font-black font-mono text-slate-900">{rec.contact_number}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 font-semibold">Host:</span>
-                    <span className="font-bold truncate max-w-[100px] text-slate-900">{rec.host_name || "—"}</span>
+                    <span className="font-bold whitespace-nowrap overflow-hidden text-ellipsis max-w-[100px] text-slate-900">{rec.host_name || "—"}</span>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Employee ID:</span>
                     <span className="font-black font-mono text-slate-900">{identifier}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Department:</span>
                     <span className="font-bold text-slate-900">{rec.department || "—"}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Blood Group:</span>
-                    <span className="font-black text-red-600 bg-red-50 border border-red-200/80 px-1 py-0.1 rounded">
+                    <span className="font-black text-red-600 bg-red-50 border border-red-200/80 px-1 py-0.2 rounded">
                       {rec.blood_group || "—"}
                     </span>
                   </div>
@@ -3256,7 +3253,6 @@ export function IDCardComponent({
             </div>
           </div>
 
-          {/* Footer Section */}
           <div className="p-1.5 border-t border-slate-200 bg-white flex items-center justify-between gap-1 shrink-0">
             <div className="flex-1 flex flex-col justify-center min-w-0 pr-1">
               <div className="bg-slate-50 p-0.5 rounded border border-slate-200/80 flex items-center justify-center">
@@ -3289,22 +3285,20 @@ export function IDCardComponent({
         </div>
       );
     } else {
-      // Portrait Back side
       return (
         <div
           className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden relative select-none ${themeCls}`}
         >
-          {/* Back Header */}
           <div className="relative">
             <div
-              className={`px-2.5 py-2 flex items-center gap-2 relative min-h-[58px] ${headerCls}`}
+              className={`px-2.5 py-2 flex items-center gap-2 relative min-h-[52px] ${headerCls}`}
             >
               {schoolLogoNode}
               <div className="text-left min-w-0 flex-1 leading-tight">
-                <h2 className="text-[12px] font-black uppercase tracking-wider leading-tight line-clamp-2 text-white">
+                <h2 className="text-[12px] font-black uppercase tracking-wider leading-snug text-white">
                   {school?.name || "School Campus"}
                 </h2>
-                <p className="text-[7px] opacity-80 line-clamp-1 leading-tight mt-0.5 text-slate-200">
+                <p className="text-[7px] text-slate-200/90 font-medium leading-tight mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
                   {school?.address || "School Campus"}
                 </p>
               </div>
@@ -3315,11 +3309,9 @@ export function IDCardComponent({
             </div>
           </div>
 
-          {/* Back Body */}
           <div className="flex-1 p-2.5 flex flex-col justify-between space-y-2 text-[7px]">
             {isStudent ? (
               <div className="space-y-2">
-                {/* Emergency Block */}
                 <div className="bg-amber-50/80 border border-amber-200/80 rounded-lg p-2">
                   <span className="text-[6.5px] font-black text-amber-900 uppercase tracking-wide block mb-1 flex items-center gap-1">
                     <span className="size-1.5 rounded-full bg-amber-500 animate-pulse"></span>
@@ -3337,7 +3329,6 @@ export function IDCardComponent({
                   </div>
                 </div>
 
-                {/* School Contact Block */}
                 <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-2 space-y-1">
                   <span className="text-[6.5px] font-black text-slate-700 uppercase tracking-wide block">
                     SCHOOL ADMINISTRATION
@@ -3348,7 +3339,7 @@ export function IDCardComponent({
                   </div>
                   <div className="flex justify-between text-[7px]">
                     <span className="text-slate-500 font-semibold">Email:</span>
-                    <span className="font-bold truncate max-w-[120px] text-slate-800">
+                    <span className="font-bold whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px] text-slate-800">
                       {school?.email || "info@school.com"}
                     </span>
                   </div>
@@ -3375,13 +3366,12 @@ export function IDCardComponent({
                   </div>
                   <div className="flex justify-between text-[7px]">
                     <span className="text-slate-500 font-semibold">Address:</span>
-                    <span className="font-medium truncate max-w-[130px] text-slate-800">{rec.address || "—"}</span>
+                    <span className="font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[130px] text-slate-800">{rec.address || "—"}</span>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Return statement & Signature Box */}
             <div className="space-y-1.5">
               <div className="border border-slate-200 rounded-lg p-2 bg-white flex justify-between items-end">
                 <div>
@@ -3400,7 +3390,6 @@ export function IDCardComponent({
             </div>
           </div>
 
-          {/* Back Footer */}
           <div className="p-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
             <span className="text-[5.5px] font-mono text-slate-500 font-bold">
               ID: HZ-{rec.id?.slice(0, 8) || rec.user_id?.slice(0, 8) || "000000"}
@@ -3419,34 +3408,31 @@ export function IDCardComponent({
       );
     }
   } else {
-    // Landscape Layout (Standard CR80 85.60 x 53.98 mm)
     if (side === "front") {
       return (
         <div
           className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden relative select-none box-border ${themeCls}`}
         >
-          {/* Header */}
           <div className="relative shrink-0">
             <div
-              className={`px-2.5 py-1.5 flex items-center gap-2 relative min-h-[46px] ${headerCls}`}
+              className={`px-3 py-2 flex items-center gap-2 relative min-h-[46px] ${headerCls}`}
             >
               {schoolLogoNode}
-              <div className="text-left min-w-0 flex-1 leading-tight">
-                <h2 className={`${schoolNameFontSize} font-black uppercase tracking-wider leading-[1.15] line-clamp-2 text-white`}>
+              <div className="text-left min-w-0 flex-1 py-0.5">
+                <h2 className={`${schoolNameFontSize} font-black uppercase tracking-wider leading-snug text-white drop-shadow-xs`}>
                   {school?.name || "School Campus"}
                 </h2>
-                <p className="text-[6.5px] opacity-80 line-clamp-1 leading-tight mt-0.5 text-slate-200">
+                <p className="text-[7px] text-slate-200/90 font-medium leading-tight mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
                   {school?.address || "School Campus"}
                 </p>
               </div>
               <div className="text-right leading-none flex-shrink-0">
-                <span className="inline-block bg-white/15 backdrop-blur-md px-1.5 py-0.5 rounded text-[6px] font-mono font-bold text-white border border-white/20">
+                <span className="inline-block bg-white/15 backdrop-blur-md px-1.5 py-0.5 rounded text-[6.5px] font-mono font-bold text-white border border-white/20">
                   {rec.academic_year || currentAcademicYear}
                 </span>
               </div>
             </div>
 
-            {/* Sub-banner ribbon */}
             <div
               className={`font-black text-[6.5px] text-center uppercase tracking-widest py-0.5 shadow-2xs flex items-center justify-center gap-1 ${subBannerCls}`}
             >
@@ -3456,11 +3442,9 @@ export function IDCardComponent({
             </div>
           </div>
 
-          {/* Body - 3 Column Landscape Layout: LEFT: Photo | CENTER: Details | RIGHT: QR & Verification */}
-          <div className="flex-1 px-2.5 py-1.5 flex items-center justify-between gap-2.5 min-h-0 relative bg-white">
-            {/* LEFT: Student Photograph */}
+          <div className="flex-1 px-3 py-2 flex items-stretch justify-between gap-2.5 min-h-0 relative bg-white">
             <div
-              className={`w-[76px] h-[95px] rounded-lg border-2 border-white overflow-hidden shadow-xs flex items-center justify-center flex-shrink-0 bg-slate-100 ${accentBorder} relative`}
+              className={`w-[80px] h-[108px] rounded-lg border-2 border-white overflow-hidden shadow-xs flex items-center justify-center flex-shrink-0 bg-slate-100 ${accentBorder} relative self-center`}
             >
               {topperRank && (
                 <div className="absolute top-0.5 right-0.5 bg-amber-400 text-slate-950 text-[5px] font-black px-1 rounded shadow-xs z-10">
@@ -3484,40 +3468,39 @@ export function IDCardComponent({
               )}
             </div>
 
-            {/* CENTER: Student Name & Information */}
-            <div className="flex-1 min-w-0 flex flex-col justify-between h-[95px] py-0.5">
-              <div>
+            <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+              <div className="mb-1">
                 <h4
-                  className="font-black uppercase tracking-tight text-slate-900 text-[10.5px] leading-tight truncate"
+                  className="font-black uppercase tracking-tight text-slate-900 text-[11.5px] leading-snug whitespace-nowrap overflow-hidden text-ellipsis"
                   title={displayName}
                 >
                   {displayName}
                 </h4>
                 <div className="mt-0.5">
-                  <span className="inline-block bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.1 rounded-full font-bold text-[6.5px] uppercase tracking-wide">
+                  <span className="inline-block bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.5 rounded-full font-bold text-[7px] uppercase tracking-wide">
                     {displayClassOrDesignation}
                   </span>
                 </div>
               </div>
 
-              <div className="bg-slate-50/90 border border-slate-200/80 rounded-md p-1 text-[6.2px] space-y-0.4 shadow-2xs">
+              <div className="bg-slate-50/90 border border-slate-200/80 rounded-md p-1.5 text-[6.8px] space-y-0.5 shadow-2xs">
                 {isStudent ? (
                   <>
-                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                       <span className="text-slate-500 font-semibold">Admission No:</span>
                       <span className="font-black font-mono text-slate-900">{identifier}</span>
                     </div>
-                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                       <span className="text-slate-500 font-semibold">Roll Number:</span>
                       <span className="font-bold text-slate-900">{rec.roll_number || "—"}</span>
                     </div>
-                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                       <span className="text-slate-500 font-semibold">Date of Birth:</span>
                       <span className="font-bold text-slate-900">{rec.date_of_birth || "—"}</span>
                     </div>
-                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                       <span className="text-slate-500 font-semibold">Blood Group:</span>
-                      <span className="font-black text-red-600 bg-red-50 border border-red-200/80 px-1 py-0.1 rounded">
+                      <span className="font-black text-red-600 bg-red-50 border border-red-200/80 px-1 py-0.2 rounded">
                         {rec.blood_group || "—"}
                       </span>
                     </div>
@@ -3528,32 +3511,32 @@ export function IDCardComponent({
                   </>
                 ) : isVisitor ? (
                   <>
-                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                       <span className="text-slate-500 font-semibold">Pass Number:</span>
                       <span className="font-black font-mono text-slate-900">{identifier}</span>
                     </div>
-                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                       <span className="text-slate-500 font-semibold">Visitor Phone:</span>
                       <span className="font-black font-mono text-slate-900">{rec.contact_number}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-500 font-semibold">Host:</span>
-                      <span className="font-bold truncate max-w-[90px] text-slate-900">{rec.host_name || "—"}</span>
+                      <span className="font-bold whitespace-nowrap overflow-hidden text-ellipsis max-w-[90px] text-slate-900">{rec.host_name || "—"}</span>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                       <span className="text-slate-500 font-semibold">Employee ID:</span>
                       <span className="font-black font-mono text-slate-900">{identifier}</span>
                     </div>
-                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                       <span className="text-slate-500 font-semibold">Department:</span>
                       <span className="font-bold text-slate-900">{rec.department || "—"}</span>
                     </div>
-                    <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                       <span className="text-slate-500 font-semibold">Blood Group:</span>
-                      <span className="font-black text-red-600 bg-red-50 border border-red-200/80 px-1 py-0.1 rounded">
+                      <span className="font-black text-red-600 bg-red-50 border border-red-200/80 px-1 py-0.2 rounded">
                         {rec.blood_group || "—"}
                       </span>
                     </div>
@@ -3566,8 +3549,7 @@ export function IDCardComponent({
               </div>
             </div>
 
-            {/* RIGHT: QR Code & Verification */}
-            <div className="w-[68px] flex-shrink-0 flex flex-col items-center justify-between h-[95px] bg-slate-50/90 border border-slate-200/80 rounded-md p-1 shadow-2xs">
+            <div className="w-[72px] flex-shrink-0 flex flex-col items-center justify-between py-1 bg-slate-50/90 border border-slate-200/80 rounded-md p-1 shadow-2xs">
               <div className="w-full bg-white p-0.5 rounded border border-slate-200/80 flex items-center justify-center">
                 <Barcode value={identifier} />
               </div>
@@ -3575,80 +3557,75 @@ export function IDCardComponent({
                 <div className="p-0.5 bg-white rounded-md border border-slate-200 shadow-2xs">
                   <QRCodeImage
                     value={verificationLink}
-                    className="size-7"
+                    className="size-8"
                   />
                 </div>
-                <span className="text-[4px] font-black text-slate-500 mt-0.5 uppercase tracking-widest">
+                <span className="text-[4.5px] font-black text-slate-500 mt-0.5 uppercase tracking-widest">
                   VERIFIED ID
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Bottom branding ribbon */}
-          <div className="h-3.5 px-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[5px] font-mono text-slate-500 font-bold shrink-0">
+          <div className="h-4 px-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[5.5px] font-mono text-slate-500 font-bold shrink-0">
             <span>SMART INSTITUTION ID</span>
             <span>HZ-{rec.id?.slice(0, 8) || rec.user_id?.slice(0, 8) || "000000"}</span>
           </div>
         </div>
       );
     } else {
-      // Landscape Back Side (Standard CR80 85.60 x 53.98 mm)
       return (
         <div
-          className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden p-2.5 relative select-none box-border ${themeCls}`}
+          className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden p-3 relative select-none box-border ${themeCls}`}
         >
-          {/* Header */}
-          <div className="text-center pb-1 border-b border-slate-200 flex justify-between items-center shrink-0">
-            <span className="text-[7.5px] font-black uppercase tracking-wider text-slate-900">TERMS & INSTRUCTIONS</span>
-            <span className="text-[6.5px] font-bold text-slate-600 truncate max-w-[180px]">
+          <div className="text-center pb-1.5 border-b border-slate-200 flex justify-between items-center shrink-0">
+            <span className="text-[8.5px] font-black uppercase tracking-wider text-slate-900">TERMS & INSTRUCTIONS</span>
+            <span className="text-[8px] font-bold text-slate-700 whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]">
               {school?.name || "School Campus"}
             </span>
           </div>
 
-          {/* Details & Signature */}
           <div className="flex-1 flex items-center justify-between gap-2.5 py-1 min-h-0">
-            <div className="flex-1 text-[6.5px] space-y-0.8">
+            <div className="flex-1 text-[7px] space-y-1">
               {isStudent ? (
                 <>
-                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Emergency Contact:</span>
                     <span className="font-black font-mono text-slate-900">
                       {rec.emergency_contact || rec.parent_phone || "—"}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Parent / Guardian:</span>
                     <span className="font-bold text-slate-900">{rec.parent_name || "—"}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">School Phone:</span>
                     <span className="font-bold font-mono text-slate-900">{school?.phone_number || "—"}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 font-semibold">School Email:</span>
-                    <span className="font-medium truncate max-w-[110px] text-slate-800">{school?.email || "info@school.com"}</span>
+                    <span className="font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px] text-slate-800">{school?.email || "info@school.com"}</span>
                   </div>
                 </>
               ) : (
-                <div className="text-[6.5px] space-y-0.8">
-                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                <div className="text-[7px] space-y-1">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">Emergency Phone:</span>
                     <span className="font-black font-mono text-slate-900">{rec.emergency_contact || "—"}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.2 border-b border-slate-200/60">
+                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
                     <span className="text-slate-500 font-semibold">School Contact:</span>
                     <span className="font-bold font-mono text-slate-900">{school?.phone_number || "—"}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 font-semibold">Address:</span>
-                    <span className="font-medium truncate max-w-[110px] text-slate-800">{school?.address || "—"}</span>
+                    <span className="font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px] text-slate-800">{school?.address || "—"}</span>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Principal Signature Box */}
             <div className="w-[95px] border border-slate-200 rounded-lg p-1.5 bg-slate-50 flex flex-col items-center justify-between text-center h-[80px]">
               <span className="text-[4.8px] uppercase font-bold text-slate-400 block">AUTHORIZED ISSUER</span>
               {signature ? (
