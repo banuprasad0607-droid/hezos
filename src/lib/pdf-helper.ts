@@ -416,10 +416,13 @@ export async function safeHtml2Canvas(
 
     // 7) Execute html2canvas
     const canvas = await html2canvas(element, {
-      scale: 3,
+      scale: 4,
       useCORS: true,
+      allowTaint: true,
       backgroundColor: "#ffffff",
       logging: false,
+      scrollX: 0,
+      scrollY: 0,
       ...options,
     });
 

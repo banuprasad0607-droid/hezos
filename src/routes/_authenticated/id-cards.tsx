@@ -2329,8 +2329,16 @@ function IdCardManagementPage() {
         </div>
       )}
 
-      {/* Absolute container off-screen for html2canvas rendering */}
-      <div className="absolute left-[-9999px] top-[-9999px]" style={{ zIndex: -100 }}>
+      {/* Off-screen container for html2canvas rendering with stable top:0 coordinates */}
+      <div
+        style={{
+          position: "fixed",
+          left: "-9999px",
+          top: "0px",
+          zIndex: -9999,
+          pointerEvents: "none",
+        }}
+      >
         {exporting && (
           <div className="space-y-4">
             {/* Hidden Single Export Components to avoid 3D Flip mirroring */}
@@ -3086,31 +3094,30 @@ export function IDCardComponent({
   // Topper Rank logic
   const topperRank = rec.rankings?.find((r: any) => r.rank_position <= 3);
 
-  // Logo rendering with circular container & soft elevation
-  // Logo rendering with circular container & soft elevation
+  // Logo rendering with clean container & soft elevation
   const schoolLogoNode = school?.logo_url ? (
     <img
       src={school.logo_url}
       alt=""
-      className="size-9 object-contain bg-white rounded-lg p-0.5 shadow-xs border border-white/20 flex-shrink-0"
+      className="size-8 object-contain bg-white rounded-md p-0.5 shadow-xs border border-white/20 shrink-0"
       crossOrigin="anonymous"
     />
   ) : (
-    <div className="size-9 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center p-0.5 border border-white/20 flex-shrink-0 shadow-inner">
+    <div className="size-8 bg-white/10 backdrop-blur-md rounded-md flex items-center justify-center p-0.5 border border-white/20 shrink-0 shadow-inner">
       <SchoolCrestPlaceholder
-        className={`size-7 ${theme === "premium-corporate" ? "text-teal-400" : theme === "gold-premium" ? "text-amber-400" : "text-amber-300"}`}
+        className={`size-6 ${theme === "premium-corporate" ? "text-teal-400" : theme === "gold-premium" ? "text-amber-400" : "text-amber-300"}`}
       />
     </div>
   );
 
   const schoolNameFontSize =
     (school?.name?.length || 0) > 30
-      ? "text-[10px]"
+      ? "text-[9.5px]"
       : (school?.name?.length || 0) > 18
-        ? "text-[11.5px]"
-        : "text-[13px]";
+        ? "text-[11px]"
+        : "text-[12px]";
 
-  // Portrait Layout
+  // Portrait Layout (250px x 396px)
   if (orientation === "portrait") {
     if (side === "front") {
       return (
@@ -3120,19 +3127,19 @@ export function IDCardComponent({
           {/* Top banner / Header */}
           <div className="relative shrink-0">
             <div
-              className={`px-3 py-2 flex items-center gap-2 relative min-h-[50px] ${headerCls}`}
+              className={`px-3 py-1.5 flex items-center gap-2 relative h-[44px] ${headerCls}`}
             >
               {schoolLogoNode}
-              <div className="text-left min-w-0 flex-1 py-0.5">
-                <h2 className={`${schoolNameFontSize} font-black uppercase tracking-wider leading-snug text-white drop-shadow-xs`}>
+              <div className="text-left min-w-0 flex-1">
+                <h2 className={`${schoolNameFontSize} font-black uppercase tracking-wide leading-tight text-white truncate block`}>
                   {school?.name || "School Campus"}
                 </h2>
-                <p className="text-[7.5px] text-blue-100/90 font-medium leading-tight mt-0.5 truncate">
+                <p className="text-[7px] text-blue-100/90 font-medium leading-tight mt-0.5 truncate block">
                   {school?.address || "School Campus"}
                 </p>
               </div>
-              <div className="text-right leading-none flex-shrink-0">
-                <span className="inline-block bg-amber-400/20 text-amber-300 border border-amber-300/40 px-2 py-0.5 rounded-full text-[6.5px] font-mono font-black">
+              <div className="text-right leading-none shrink-0">
+                <span className="inline-block bg-amber-400/20 text-amber-300 border border-amber-300/40 px-2 py-0.5 rounded-full text-[6.5px] font-mono font-bold leading-none">
                   {rec.academic_year || currentAcademicYear}
                 </span>
               </div>
@@ -3140,7 +3147,7 @@ export function IDCardComponent({
 
             {/* Sub-banner ribbon */}
             <div
-              className={`font-black text-[7px] text-center uppercase tracking-widest py-0.5 shadow-2xs flex items-center justify-center gap-1.5 ${subBannerCls}`}
+              className={`h-[14px] font-black text-[6.8px] text-center uppercase tracking-widest flex items-center justify-center gap-1.5 leading-none ${subBannerCls}`}
             >
               <span className="size-1 rounded-full bg-white/80"></span>
               {isStudent ? "STUDENT IDENTITY CARD" : isVisitor ? "VISITOR PASS" : "STAFF IDENTITY CARD"}
@@ -3149,10 +3156,10 @@ export function IDCardComponent({
           </div>
 
           {/* Body Section */}
-          <div className="flex-1 px-2.5 py-1.5 flex flex-col items-center justify-between min-h-0 relative bg-white">
+          <div className="flex-1 px-3 py-1.5 flex flex-col items-center justify-between min-h-0 relative bg-white overflow-hidden">
             {/* Academic Topper Badge Overlay */}
             {topperRank && (
-              <div className="absolute top-1 right-2 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-[6.5px] font-black px-1.5 py-0.5 rounded-full flex items-center gap-1 border border-amber-300 shadow-xs z-10">
+              <div className="absolute top-1 right-2 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-[6.5px] font-black px-1.5 py-0.5 rounded-full flex items-center gap-1 border border-amber-300 shadow-xs z-10 leading-none">
                 <Trophy className="size-2 text-slate-950" />
                 RANK {topperRank.rank_position}
               </div>
@@ -3160,7 +3167,7 @@ export function IDCardComponent({
 
             {/* Student Photo */}
             <div
-              className={`w-[88px] h-[110px] rounded-lg border-2 border-slate-200 overflow-hidden shadow-xs flex items-center justify-center flex-shrink-0 relative bg-slate-100 mt-0.5 ${accentBorder}`}
+              className={`w-[80px] h-[100px] rounded-lg border-2 border-slate-200 overflow-hidden shadow-xs flex items-center justify-center shrink-0 relative bg-slate-100 ${accentBorder}`}
             >
               {rec.photo_url ? (
                 <img
@@ -3173,88 +3180,88 @@ export function IDCardComponent({
                 <img
                   src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTRhM2I4IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48cGF0aCBkPSJNMjAgMjF2LTJhNCA0IDAgMCAwLTQtNEg4YTQgNCAwIDAgMC00IDR2MiI+PC9wYXRoPjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCI+PC9jaXJjbGU+PC9zdmc+"
                   alt=""
-                  style={{ width: "48px", height: "48px" }}
-                  className="w-12 h-12 object-contain opacity-50"
+                  style={{ width: "44px", height: "44px" }}
+                  className="w-11 h-11 object-contain opacity-50"
                 />
               )}
             </div>
 
             {/* Name & Class Pill */}
-            <div className="text-center w-full min-w-0 pt-1 pb-0.5">
+            <div className="text-center w-full min-w-0 pt-0.5 pb-0.5">
               <h4
-                className={`font-black uppercase tracking-tight text-slate-900 leading-normal ${nameFontSize}`}
+                className={`font-black uppercase tracking-tight text-slate-900 leading-[1.25] text-center block ${nameFontSize}`}
                 title={displayName}
               >
                 {displayName}
               </h4>
               <div className="mt-0.5">
-                <span className="inline-block bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-0.5 rounded-full font-extrabold text-[7.5px] uppercase tracking-wide shadow-2xs">
+                <span className="inline-block bg-blue-50 text-blue-800 border border-blue-200 px-2 py-[1.5px] rounded-full font-bold text-[7px] uppercase tracking-wide leading-none shadow-2xs">
                   {displayClassOrDesignation}
                 </span>
               </div>
             </div>
 
             {/* Structured Info Card */}
-            <div className="w-full bg-slate-50 border border-slate-200/90 rounded-lg p-1.5 text-[7px] space-y-0.5 shadow-2xs">
+            <div className="w-full bg-slate-50 border border-slate-200/90 rounded-lg p-1.5 text-[7px] space-y-[2px] shadow-2xs">
               {isStudent ? (
                 <>
-                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                    <span className="text-slate-500 font-semibold">Admission No:</span>
-                    <span className="font-black font-mono text-slate-900">{identifier}</span>
+                  <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                    <span className="text-slate-500 font-semibold text-[6.8px]">Admission No:</span>
+                    <span className="font-black font-mono text-slate-900 text-[7px]">{identifier}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                    <span className="text-slate-500 font-semibold">Roll Number:</span>
-                    <span className="font-bold text-slate-900">{rec.roll_number || "—"}</span>
+                  <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                    <span className="text-slate-500 font-semibold text-[6.8px]">Roll Number:</span>
+                    <span className="font-bold text-slate-900 text-[7px]">{rec.roll_number || "—"}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                    <span className="text-slate-500 font-semibold">Date of Birth:</span>
-                    <span className="font-bold text-slate-900">{rec.date_of_birth || "—"}</span>
+                  <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                    <span className="text-slate-500 font-semibold text-[6.8px]">Date of Birth:</span>
+                    <span className="font-bold text-slate-900 text-[7px]">{rec.date_of_birth || "—"}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                    <span className="text-slate-500 font-semibold">Blood Group:</span>
-                    <span className="font-black text-red-600 bg-red-50 border border-red-200 px-1 py-0.2 rounded">
-                      {rec.blood_group || "—"}
+                  <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                    <span className="text-slate-500 font-semibold text-[6.8px]">Blood Group:</span>
+                    <span className="font-black text-red-600 bg-red-50 border border-red-200 px-1 py-[0.5px] rounded text-[6.5px] leading-none">
+                      {rec.blood_group || "N/A"}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-500 font-semibold">Parent Contact:</span>
-                    <span className="font-black font-mono text-slate-900">{rec.parent_phone || "—"}</span>
+                  <div className="flex justify-between items-center leading-tight">
+                    <span className="text-slate-500 font-semibold text-[6.8px]">Parent Contact:</span>
+                    <span className="font-black font-mono text-slate-900 text-[7px]">{rec.parent_phone || "—"}</span>
                   </div>
                 </>
               ) : isVisitor ? (
                 <>
-                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                    <span className="text-slate-500 font-semibold">Pass Number:</span>
-                    <span className="font-black font-mono text-slate-900">{identifier}</span>
+                  <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                    <span className="text-slate-500 font-semibold text-[6.8px]">Pass Number:</span>
+                    <span className="font-black font-mono text-slate-900 text-[7px]">{identifier}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                    <span className="text-slate-500 font-semibold">Visitor Phone:</span>
-                    <span className="font-black font-mono text-slate-900">{rec.contact_number}</span>
+                  <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                    <span className="text-slate-500 font-semibold text-[6.8px]">Visitor Phone:</span>
+                    <span className="font-black font-mono text-slate-900 text-[7px]">{rec.contact_number || "—"}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-500 font-semibold">Host:</span>
-                    <span className="font-bold truncate max-w-[100px] text-slate-900">{rec.host_name || "—"}</span>
+                  <div className="flex justify-between items-center leading-tight">
+                    <span className="text-slate-500 font-semibold text-[6.8px]">Host:</span>
+                    <span className="font-bold truncate max-w-[100px] text-slate-900 text-[7px]">{rec.host_name || "—"}</span>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                    <span className="text-slate-500 font-semibold">Employee ID:</span>
-                    <span className="font-black font-mono text-slate-900">{identifier}</span>
+                  <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                    <span className="text-slate-500 font-semibold text-[6.8px]">Employee ID:</span>
+                    <span className="font-black font-mono text-slate-900 text-[7px]">{identifier}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                    <span className="text-slate-500 font-semibold">Department:</span>
-                    <span className="font-bold text-slate-900">{rec.department || "—"}</span>
+                  <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                    <span className="text-slate-500 font-semibold text-[6.8px]">Department:</span>
+                    <span className="font-bold text-slate-900 text-[7px]">{rec.department || "—"}</span>
                   </div>
-                  <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                    <span className="text-slate-500 font-semibold">Blood Group:</span>
-                    <span className="font-black text-red-600 bg-red-50 border border-red-200 px-1 py-0.2 rounded">
-                      {rec.blood_group || "—"}
+                  <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                    <span className="text-slate-500 font-semibold text-[6.8px]">Blood Group:</span>
+                    <span className="font-black text-red-600 bg-red-50 border border-red-200 px-1 py-[0.5px] rounded text-[6.5px] leading-none">
+                      {rec.blood_group || "N/A"}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-500 font-semibold">Mobile Number:</span>
-                    <span className="font-black font-mono text-slate-900">{rec.mobile_number || "—"}</span>
+                  <div className="flex justify-between items-center leading-tight">
+                    <span className="text-slate-500 font-semibold text-[6.8px]">Mobile Number:</span>
+                    <span className="font-black font-mono text-slate-900 text-[7px]">{rec.mobile_number || "—"}</span>
                   </div>
                 </>
               )}
@@ -3262,13 +3269,13 @@ export function IDCardComponent({
           </div>
 
           {/* Footer Section */}
-          <div className="p-2 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-1 shrink-0">
+          <div className="p-1.5 h-[42px] border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-1 shrink-0">
             <div className="flex-1 flex flex-col justify-center min-w-0 pr-1">
               <div className="bg-white p-0.5 rounded border border-slate-200 flex items-center justify-center">
                 <Barcode value={identifier} />
               </div>
               {signature && !isVisitor && (
-                <div className="h-3 mt-0.5 flex items-center justify-start gap-1">
+                <div className="h-2.5 mt-0.5 flex items-center justify-start gap-1">
                   <span className="text-[5px] uppercase font-bold text-slate-400">Sign:</span>
                   <img
                     src={signature}
@@ -3279,14 +3286,14 @@ export function IDCardComponent({
                 </div>
               )}
             </div>
-            <div className="flex flex-col items-center flex-shrink-0">
+            <div className="flex flex-col items-center shrink-0">
               <div className="p-0.5 bg-white rounded-md border border-slate-200 shadow-2xs">
                 <QRCodeImage
                   value={verificationLink}
-                  className="size-7.5"
+                  className="size-7"
                 />
               </div>
-              <span className="text-[4.5px] font-black text-slate-500 mt-0.5 uppercase tracking-widest">
+              <span className="text-[4.5px] font-black text-slate-500 mt-0.5 uppercase tracking-widest leading-none">
                 VERIFIED ID
               </span>
             </div>
@@ -3294,103 +3301,103 @@ export function IDCardComponent({
         </div>
       );
     } else {
-      // Portrait Back side
+      // Portrait Back side (250px x 396px)
       return (
         <div
           className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden relative select-none bg-white ${themeCls}`}
         >
           {/* Back Header */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <div
-              className={`px-3 py-2 flex items-center gap-2 relative min-h-[50px] ${headerCls}`}
+              className={`px-3 py-1.5 flex items-center gap-2 relative h-[44px] ${headerCls}`}
             >
               {schoolLogoNode}
-              <div className="text-left min-w-0 flex-1 leading-tight">
-                <h2 className="text-[12px] font-black uppercase tracking-wider leading-snug text-white">
+              <div className="text-left min-w-0 flex-1">
+                <h2 className="text-[11px] font-black uppercase tracking-wide leading-tight text-white truncate block">
                   {school?.name || "School Campus"}
                 </h2>
-                <p className="text-[7.5px] text-blue-100 font-medium leading-tight mt-0.5 truncate">
+                <p className="text-[7px] text-blue-100 font-medium leading-tight mt-0.5 truncate block">
                   {school?.address || "School Campus"}
                 </p>
               </div>
             </div>
 
-            <div className="bg-slate-900 text-amber-300 font-black text-[7px] text-center uppercase tracking-widest py-1 shadow-xs">
+            <div className="bg-slate-900 text-amber-300 font-black text-[6.8px] text-center uppercase tracking-widest py-0.5 shadow-xs leading-tight">
               TERMS & INSTRUCTIONS
             </div>
           </div>
 
           {/* Back Body */}
-          <div className="flex-1 p-2.5 flex flex-col justify-between space-y-2 text-[7px]">
+          <div className="flex-1 p-2 flex flex-col justify-between space-y-1.5 text-[7px] overflow-hidden">
             {/* Rules Box */}
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 space-y-1">
-              <p className="text-[6.5px] text-slate-700 font-medium leading-relaxed">
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 space-y-0.5">
+              <p className="text-[6.5px] text-slate-700 font-medium leading-tight">
                 • This identity card is valid only for the academic session indicated.
               </p>
-              <p className="text-[6.5px] text-slate-700 font-medium leading-relaxed">
+              <p className="text-[6.5px] text-slate-700 font-medium leading-tight">
                 • Cardholder must wear / present this ID badge at all times on campus.
               </p>
-              <p className="text-[6.5px] text-slate-700 font-medium leading-relaxed">
-                • Non-transferable. Loss must be reported immediately to school authorities.
+              <p className="text-[6.5px] text-slate-700 font-medium leading-tight">
+                • Non-transferable. Loss must be reported immediately to school office.
               </p>
             </div>
 
             {/* Emergency / Contact Block */}
-            <div className="bg-amber-50/80 border border-amber-200 rounded-lg p-2 space-y-0.8">
+            <div className="bg-amber-50/80 border border-amber-200 rounded-lg p-1.5 space-y-[2px]">
               <span className="text-[6.5px] font-black text-amber-900 uppercase tracking-wide block mb-0.5 flex items-center gap-1">
-                <span className="size-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                <span className="size-1.5 rounded-full bg-amber-500"></span>
                 EMERGENCY & SCHOOL CONTACT
               </span>
-              <div className="flex justify-between items-center text-[7px]">
+              <div className="flex justify-between items-center text-[6.8px] leading-tight">
                 <span className="text-slate-600 font-semibold">Guardian / Phone:</span>
                 <span className="font-black font-mono text-slate-900">
                   {rec.emergency_contact || rec.parent_phone || "—"}
                 </span>
               </div>
-              <div className="flex justify-between items-center text-[7px]">
+              <div className="flex justify-between items-center text-[6.8px] leading-tight">
                 <span className="text-slate-600 font-semibold">School Office:</span>
                 <span className="font-bold font-mono text-slate-800">{school?.phone_number || "—"}</span>
               </div>
-              <div className="flex justify-between items-center text-[7px]">
+              <div className="flex justify-between items-center text-[6.8px] leading-tight">
                 <span className="text-slate-600 font-semibold">Official Email:</span>
                 <span className="font-bold truncate max-w-[120px] text-slate-800">{school?.email || "info@school.com"}</span>
               </div>
             </div>
 
             {/* Return statement & Signature Box */}
-            <div className="space-y-1.5">
-              <div className="border border-slate-200 rounded-lg p-2 bg-slate-50 flex justify-between items-end">
+            <div className="space-y-1">
+              <div className="border border-slate-200 rounded-lg p-1.5 bg-slate-50 flex justify-between items-end">
                 <div>
                   <span className="text-[5.5px] uppercase font-bold text-slate-400 block">CARD VALIDITY</span>
                   <span className="text-[7.5px] font-bold text-slate-800">{rec.academic_year || currentAcademicYear}</span>
                 </div>
                 <div className="text-right">
                   {signature ? (
-                    <img src={signature} alt="Sig" className="h-4 object-contain mx-auto grayscale" crossOrigin="anonymous" />
+                    <img src={signature} alt="Sig" className="h-3.5 object-contain mx-auto grayscale" crossOrigin="anonymous" />
                   ) : (
-                    <div className="w-16 border-b border-dashed border-slate-300 pb-1 mb-0.5"></div>
+                    <div className="w-14 border-b border-dashed border-slate-300 pb-0.5 mb-0.5"></div>
                   )}
                   <span className="text-[5.5px] uppercase font-bold text-slate-600 block">PRINCIPAL / ADMIN</span>
                 </div>
               </div>
 
-              <div className="text-center font-bold text-[6.5px] text-red-700 bg-red-50 py-1 rounded-md border border-red-200 uppercase tracking-tight">
+              <div className="text-center font-bold text-[6.5px] text-red-700 bg-red-50 py-0.5 rounded-md border border-red-200 uppercase tracking-tight leading-tight">
                 "If found, please return to School Office"
               </div>
             </div>
           </div>
 
           {/* Back Footer */}
-          <div className="p-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+          <div className="p-1.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between h-[36px] shrink-0">
             <span className="text-[6px] font-mono text-slate-600 font-bold">
               ID: HZ-{rec.id?.slice(0, 8) || rec.user_id?.slice(0, 8) || "000000"}
             </span>
             <div className="flex items-center gap-1.5">
               <QRCodeImage
                 value={verificationLink}
-                className="size-7 bg-white p-0.5 rounded border border-slate-200"
+                className="size-6 bg-white p-0.5 rounded border border-slate-200"
               />
-              <span className="text-[5px] font-black text-slate-600 uppercase tracking-widest">
+              <span className="text-[5px] font-black text-slate-600 uppercase tracking-widest leading-none">
                 VERIFY
               </span>
             </div>
@@ -3399,7 +3406,7 @@ export function IDCardComponent({
       );
     }
   } else {
-    // Landscape Layout (Standard CR80 85.60 x 53.98 mm)
+    // Landscape Layout (Standard CR80 396px x 250px)
     if (side === "front") {
       return (
         <div
@@ -3408,19 +3415,19 @@ export function IDCardComponent({
           {/* Header */}
           <div className="relative shrink-0">
             <div
-              className={`px-3.5 py-2 flex items-center gap-2.5 relative min-h-[48px] ${headerCls}`}
+              className={`px-3 py-1.5 flex items-center gap-2.5 relative h-[44px] ${headerCls}`}
             >
               {schoolLogoNode}
-              <div className="text-left min-w-0 flex-1 py-0.5">
-                <h2 className={`${schoolNameFontSize} font-black uppercase tracking-wider leading-snug text-white drop-shadow-xs`}>
+              <div className="text-left min-w-0 flex-1">
+                <h2 className={`${schoolNameFontSize} font-black uppercase tracking-wide leading-tight text-white truncate block`}>
                   {school?.name || "School Campus"}
                 </h2>
-                <p className="text-[7.5px] text-blue-100/90 font-medium leading-tight mt-0.5 truncate">
+                <p className="text-[7.5px] text-blue-100/90 font-medium leading-tight mt-0.5 truncate block">
                   {school?.address || "School Campus"}
                 </p>
               </div>
-              <div className="text-right leading-none flex-shrink-0">
-                <span className="inline-block bg-amber-400/20 text-amber-300 border border-amber-300/40 px-2 py-0.5 rounded-full text-[6.5px] font-mono font-black">
+              <div className="text-right leading-none shrink-0">
+                <span className="inline-block bg-amber-400/20 text-amber-300 border border-amber-300/40 px-2 py-0.5 rounded-full text-[6.5px] font-mono font-bold leading-none">
                   {rec.academic_year || currentAcademicYear}
                 </span>
               </div>
@@ -3428,7 +3435,7 @@ export function IDCardComponent({
 
             {/* Sub-banner ribbon */}
             <div
-              className={`font-black text-[7px] text-center uppercase tracking-widest py-0.5 shadow-2xs flex items-center justify-center gap-1.5 ${subBannerCls}`}
+              className={`h-[14px] font-black text-[6.8px] text-center uppercase tracking-widest flex items-center justify-center gap-1.5 leading-none ${subBannerCls}`}
             >
               <span className="size-1 rounded-full bg-white/80"></span>
               {isStudent ? "STUDENT IDENTITY CARD" : isVisitor ? "VISITOR PASS" : "STAFF IDENTITY CARD"}
@@ -3437,13 +3444,13 @@ export function IDCardComponent({
           </div>
 
           {/* Body - 3 Column Landscape Layout */}
-          <div className="flex-1 px-3.5 py-2.5 flex items-stretch justify-between gap-3 min-h-0 relative bg-white">
+          <div className="flex-1 px-3 py-1.5 flex items-center justify-between gap-2.5 min-h-0 bg-white overflow-hidden">
             {/* LEFT: Student Photograph */}
             <div
-              className={`w-[84px] h-[112px] rounded-lg border-2 border-slate-200 overflow-hidden shadow-xs flex items-center justify-center flex-shrink-0 bg-slate-100 ${accentBorder} relative self-center`}
+              className={`w-[82px] h-[106px] rounded-lg border-2 border-slate-200 overflow-hidden shadow-xs flex items-center justify-center shrink-0 bg-slate-100 ${accentBorder} relative`}
             >
               {topperRank && (
-                <div className="absolute top-0.5 right-0.5 bg-amber-400 text-slate-950 text-[5.5px] font-black px-1.5 py-0.2 rounded shadow-xs z-10">
+                <div className="absolute top-0.5 right-0.5 bg-amber-400 text-slate-950 text-[5.5px] font-black px-1 py-0.5 rounded shadow-xs z-10 leading-none">
                   R{topperRank.rank_position}
                 </div>
               )}
@@ -3458,88 +3465,88 @@ export function IDCardComponent({
                 <img
                   src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTRhM2I4IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48cGF0aCBkPSJNMjAgMjF2LTJhNCA0IDAgMCAwLTQtNEg4YTQgNCAwIDAgMC00IDR2MiI+PC9wYXRoPjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCI+PC9jaXJjbGU+PC9zdmc+"
                   alt=""
-                  style={{ width: "48px", height: "48px" }}
-                  className="w-12 h-12 object-contain opacity-50"
+                  style={{ width: "44px", height: "44px" }}
+                  className="w-11 h-11 object-contain opacity-50"
                 />
               )}
             </div>
 
             {/* CENTER: Student Name & Information */}
-            <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-              <div className="pt-0.5 pb-1">
+            <div className="flex-1 min-w-0 flex flex-col justify-between h-[106px] py-0">
+              <div className="pt-0 pb-0.5">
                 <h3
-                  className="font-black uppercase tracking-tight text-slate-900 text-[13px] leading-normal truncate"
+                  className="font-black uppercase tracking-tight text-slate-900 text-[12px] leading-[1.25] block truncate"
                   title={displayName}
                 >
                   {displayName}
                 </h3>
                 <div className="mt-0.5">
-                  <span className="inline-block bg-blue-100 text-blue-900 border border-blue-300/70 px-2.5 py-0.5 rounded-md font-extrabold text-[7.5px] uppercase tracking-wider shadow-2xs">
+                  <span className="inline-block bg-blue-100 text-blue-900 border border-blue-200 px-2 py-[1px] rounded font-bold text-[7px] uppercase tracking-wider leading-none">
                     {displayClassOrDesignation}
                   </span>
                 </div>
               </div>
 
-              <div className="bg-slate-50 border border-slate-200/90 rounded-lg p-2 text-[7.2px] space-y-0.8 shadow-2xs">
+              <div className="w-full bg-slate-50 border border-slate-200/90 rounded-md px-2 py-1 text-[7px] space-y-[2px] shadow-2xs">
                 {isStudent ? (
                   <>
-                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                      <span className="text-slate-500 font-semibold">Admission No:</span>
-                      <span className="font-black font-mono text-slate-900">{identifier}</span>
+                    <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                      <span className="text-slate-500 font-semibold text-[6.8px]">Admission No:</span>
+                      <span className="font-black font-mono text-slate-900 text-[7px]">{identifier}</span>
                     </div>
-                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                      <span className="text-slate-500 font-semibold">Roll Number:</span>
-                      <span className="font-bold text-slate-900">{rec.roll_number || "—"}</span>
+                    <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                      <span className="text-slate-500 font-semibold text-[6.8px]">Roll Number:</span>
+                      <span className="font-bold text-slate-900 text-[7px]">{rec.roll_number || "—"}</span>
                     </div>
-                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                      <span className="text-slate-500 font-semibold">Date of Birth:</span>
-                      <span className="font-bold text-slate-900">{rec.date_of_birth || "—"}</span>
+                    <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                      <span className="text-slate-500 font-semibold text-[6.8px]">Date of Birth:</span>
+                      <span className="font-bold text-slate-900 text-[7px]">{rec.date_of_birth || "—"}</span>
                     </div>
-                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                      <span className="text-slate-500 font-semibold">Blood Group:</span>
-                      <span className="font-black text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.2 rounded">
-                        {rec.blood_group || "—"}
+                    <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                      <span className="text-slate-500 font-semibold text-[6.8px]">Blood Group:</span>
+                      <span className="font-black text-red-600 bg-red-50 border border-red-200 px-1 py-[0.5px] rounded text-[6.5px] leading-none">
+                        {rec.blood_group || "N/A"}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-semibold">Parent Contact:</span>
-                      <span className="font-black font-mono text-slate-900">{rec.parent_phone || "—"}</span>
+                    <div className="flex justify-between items-center leading-tight">
+                      <span className="text-slate-500 font-semibold text-[6.8px]">Parent Contact:</span>
+                      <span className="font-black font-mono text-slate-900 text-[7px]">{rec.parent_phone || "—"}</span>
                     </div>
                   </>
                 ) : isVisitor ? (
                   <>
-                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                      <span className="text-slate-500 font-semibold">Pass Number:</span>
-                      <span className="font-black font-mono text-slate-900">{identifier}</span>
+                    <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                      <span className="text-slate-500 font-semibold text-[6.8px]">Pass Number:</span>
+                      <span className="font-black font-mono text-slate-900 text-[7px]">{identifier}</span>
                     </div>
-                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                      <span className="text-slate-500 font-semibold">Visitor Phone:</span>
-                      <span className="font-black font-mono text-slate-900">{rec.contact_number}</span>
+                    <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                      <span className="text-slate-500 font-semibold text-[6.8px]">Visitor Phone:</span>
+                      <span className="font-black font-mono text-slate-900 text-[7px]">{rec.contact_number || "—"}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-semibold">Host:</span>
-                      <span className="font-bold truncate max-w-[100px] text-slate-900">{rec.host_name || "—"}</span>
+                    <div className="flex justify-between items-center leading-tight">
+                      <span className="text-slate-500 font-semibold text-[6.8px]">Host:</span>
+                      <span className="font-bold truncate max-w-[100px] text-slate-900 text-[7px]">{rec.host_name || "—"}</span>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                      <span className="text-slate-500 font-semibold">Employee ID:</span>
-                      <span className="font-black font-mono text-slate-900">{identifier}</span>
+                    <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                      <span className="text-slate-500 font-semibold text-[6.8px]">Employee ID:</span>
+                      <span className="font-black font-mono text-slate-900 text-[7px]">{identifier}</span>
                     </div>
-                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                      <span className="text-slate-500 font-semibold">Department:</span>
-                      <span className="font-bold text-slate-900">{rec.department || "—"}</span>
+                    <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                      <span className="text-slate-500 font-semibold text-[6.8px]">Department:</span>
+                      <span className="font-bold text-slate-900 text-[7px]">{rec.department || "—"}</span>
                     </div>
-                    <div className="flex justify-between items-center pb-0.5 border-b border-slate-200/60">
-                      <span className="text-slate-500 font-semibold">Blood Group:</span>
-                      <span className="font-black text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.2 rounded">
-                        {rec.blood_group || "—"}
+                    <div className="flex justify-between items-center pb-[1px] border-b border-slate-200/60 leading-tight">
+                      <span className="text-slate-500 font-semibold text-[6.8px]">Blood Group:</span>
+                      <span className="font-black text-red-600 bg-red-50 border border-red-200 px-1 py-[0.5px] rounded text-[6.5px] leading-none">
+                        {rec.blood_group || "N/A"}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-semibold">Mobile:</span>
-                      <span className="font-black font-mono text-slate-900">{rec.mobile_number || "—"}</span>
+                    <div className="flex justify-between items-center leading-tight">
+                      <span className="text-slate-500 font-semibold text-[6.8px]">Mobile:</span>
+                      <span className="font-black font-mono text-slate-900 text-[7px]">{rec.mobile_number || "—"}</span>
                     </div>
                   </>
                 )}
@@ -3547,18 +3554,18 @@ export function IDCardComponent({
             </div>
 
             {/* RIGHT: QR Code & Verification */}
-            <div className="w-[78px] flex-shrink-0 flex flex-col items-center justify-between py-2 px-1 bg-slate-50 border border-slate-200/90 rounded-lg shadow-2xs">
-              <div className="w-full bg-white p-0.5 rounded border border-slate-200 flex items-center justify-center">
+            <div className="w-[72px] h-[106px] shrink-0 flex flex-col items-center justify-between p-1 bg-slate-50 border border-slate-200/90 rounded-lg shadow-2xs">
+              <div className="w-full bg-white p-0.5 rounded border border-slate-200 flex items-center justify-center h-[26px]">
                 <Barcode value={identifier} />
               </div>
               <div className="flex flex-col items-center">
                 <div className="p-0.5 bg-white rounded-md border border-slate-200 shadow-2xs">
                   <QRCodeImage
                     value={verificationLink}
-                    className="size-9"
+                    className="size-8"
                   />
                 </div>
-                <span className="text-[5px] font-black text-slate-600 mt-1 uppercase tracking-widest">
+                <span className="text-[4.5px] font-black text-slate-600 mt-0.5 uppercase tracking-widest leading-none">
                   VERIFIED ID
                 </span>
               </div>
@@ -3566,52 +3573,52 @@ export function IDCardComponent({
           </div>
 
           {/* Bottom branding ribbon */}
-          <div className="h-4.5 px-3.5 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-[6px] font-mono text-slate-600 font-bold shrink-0">
+          <div className="h-4 px-3 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-[6px] font-mono text-slate-600 font-bold shrink-0 leading-none">
             <span>SMART INSTITUTION ID</span>
             <span>HZ-{rec.id?.slice(0, 8) || rec.user_id?.slice(0, 8) || "000000"}</span>
           </div>
         </div>
       );
     } else {
-      // Landscape Back Side (Standard CR80 85.60 x 53.98 mm)
+      // Landscape Back Side (Standard CR80 396px x 250px)
       return (
         <div
-          className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden p-3.5 relative select-none box-border bg-white ${themeCls}`}
+          className={`w-full h-full border rounded-2xl flex flex-col justify-between overflow-hidden p-3 relative select-none box-border bg-white ${themeCls}`}
         >
           {/* Header */}
-          <div className="bg-slate-900 text-white px-3 py-1.5 rounded-lg flex justify-between items-center shrink-0 shadow-xs">
-            <span className="text-[8px] font-black uppercase tracking-widest text-amber-300">TERMS & INSTRUCTIONS</span>
-            <span className="text-[8.5px] font-extrabold uppercase text-white truncate max-w-[200px]">
+          <div className="bg-slate-900 text-white px-3 py-1 rounded-lg flex justify-between items-center shrink-0 shadow-xs h-[24px]">
+            <span className="text-[7.5px] font-black uppercase tracking-widest text-amber-300">TERMS & INSTRUCTIONS</span>
+            <span className="text-[8px] font-extrabold uppercase text-white truncate max-w-[200px]">
               {school?.name || "School Campus"}
             </span>
           </div>
 
           {/* Details & Signature */}
-          <div className="flex-1 flex items-stretch justify-between gap-3 py-2 min-h-0">
+          <div className="flex-1 flex items-stretch justify-between gap-2.5 py-1.5 min-h-0">
             {/* Left instructions & contacts */}
-            <div className="flex-1 flex flex-col justify-between space-y-1.5">
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-[6.5px] text-slate-700 font-medium space-y-0.8">
+            <div className="flex-1 flex flex-col justify-between space-y-1">
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[6.5px] text-slate-700 font-medium space-y-[2px]">
                 <p>• This card is valid only for the academic session indicated.</p>
                 <p>• Must be worn/presented on request within school premises.</p>
                 <p>• Non-transferable. Loss must be reported immediately.</p>
               </div>
 
-              <div className="bg-amber-50/80 border border-amber-200 rounded-lg p-2 text-[7px] space-y-0.8">
-                <div className="flex justify-between items-center">
+              <div className="bg-amber-50/80 border border-amber-200 rounded-lg p-1.5 text-[6.8px] space-y-[2px]">
+                <div className="flex justify-between items-center leading-tight">
                   <span className="text-slate-600 font-semibold">Emergency Phone:</span>
                   <span className="font-black font-mono text-slate-900">
                     {rec.emergency_contact || rec.parent_phone || "—"}
                   </span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center leading-tight">
                   <span className="text-slate-600 font-semibold">Guardian:</span>
                   <span className="font-bold text-slate-900">{rec.parent_name || "—"}</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center leading-tight">
                   <span className="text-slate-600 font-semibold">School Phone:</span>
                   <span className="font-bold font-mono text-slate-900">{school?.phone_number || "—"}</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center leading-tight">
                   <span className="text-slate-600 font-semibold">School Email:</span>
                   <span className="font-medium truncate max-w-[130px] text-slate-800">{school?.email || "info@school.com"}</span>
                 </div>
@@ -3619,10 +3626,10 @@ export function IDCardComponent({
             </div>
 
             {/* Right Issuer Box */}
-            <div className="w-[105px] border-2 border-dashed border-slate-300 rounded-xl p-2 bg-slate-50 flex flex-col items-center justify-between text-center shrink-0">
+            <div className="w-[100px] border-2 border-dashed border-slate-300 rounded-xl p-1.5 bg-slate-50 flex flex-col items-center justify-between text-center shrink-0">
               <span className="text-[5px] uppercase font-black text-slate-500 block">AUTHORIZED SIGNATORY</span>
               {signature ? (
-                <div className="h-7 w-full flex items-center justify-center my-0.5">
+                <div className="h-6 w-full flex items-center justify-center my-0.5">
                   <img
                     src={signature}
                     alt="Sig"
@@ -3631,23 +3638,23 @@ export function IDCardComponent({
                   />
                 </div>
               ) : (
-                <div className="w-16 border-b border-dashed border-slate-300 my-2"></div>
+                <div className="w-14 border-b border-dashed border-slate-300 my-1"></div>
               )}
               <span className="text-[6px] font-bold text-slate-700 uppercase">PRINCIPAL</span>
             </div>
           </div>
 
           {/* Footer with return notice & QR */}
-          <div className="border-t border-slate-200 pt-1.5 flex justify-between items-center shrink-0">
-            <span className="text-[6px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200 uppercase">
+          <div className="border-t border-slate-200 pt-1 flex justify-between items-center shrink-0 h-[24px]">
+            <span className="text-[6px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200 uppercase leading-none">
               "If found, please return to School Office"
             </span>
             <div className="flex items-center gap-1.5">
               <QRCodeImage
                 value={verificationLink}
-                className="size-6 bg-white p-0.5 rounded border border-slate-200 shadow-2xs"
+                className="size-5.5 bg-white p-0.5 rounded border border-slate-200 shadow-2xs"
               />
-              <span className="text-[5px] font-black text-slate-600 uppercase tracking-wider">VERIFIED</span>
+              <span className="text-[5px] font-black text-slate-600 uppercase tracking-wider leading-none">VERIFIED</span>
             </div>
           </div>
         </div>
