@@ -682,13 +682,36 @@ function IdCardManagementPage() {
     }
 
     try {
-      const frontCanvas = await safeHtml2Canvas(frontEl, { scale: 4 });
-      const frontImg = frontCanvas.toDataURL("image/jpeg", 0.95);
+      const cardPxW = orientation === "portrait" ? 250 : 396;
+      const cardPxH = orientation === "portrait" ? 396 : 250;
+
+      const frontCanvas = await safeHtml2Canvas(frontEl, {
+        scale: 4,
+        width: cardPxW,
+        height: cardPxH,
+        windowWidth: cardPxW,
+        windowHeight: cardPxH,
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0,
+      });
+      const frontImg = frontCanvas.toDataURL("image/png");
 
       let backImg = null;
       if (mode !== "front-only" && backEl) {
-        const backCanvas = await safeHtml2Canvas(backEl, { scale: 4 });
-        backImg = backCanvas.toDataURL("image/jpeg", 0.95);
+        const backCanvas = await safeHtml2Canvas(backEl, {
+          scale: 4,
+          width: cardPxW,
+          height: cardPxH,
+          windowWidth: cardPxW,
+          windowHeight: cardPxH,
+          x: 0,
+          y: 0,
+          scrollX: 0,
+          scrollY: 0,
+        });
+        backImg = backCanvas.toDataURL("image/png");
       }
 
       const cardW = orientation === "portrait" ? 53.98 : 85.60;
@@ -699,22 +722,24 @@ function IdCardManagementPage() {
           orientation: "landscape",
           unit: "mm",
           format: [cardW * 2, cardH],
+          compress: true,
         });
-        pdf.addImage(frontImg, "JPEG", 0, 0, cardW, cardH);
-        if (backImg) pdf.addImage(backImg, "JPEG", cardW, 0, cardW, cardH);
+        pdf.addImage(frontImg, "PNG", 0, 0, cardW, cardH);
+        if (backImg) pdf.addImage(backImg, "PNG", cardW, 0, cardW, cardH);
         pdf.save(`${record.full_name || record.visitor_name || "id"}_card.pdf`);
       } else if (mode === "a4-sheet") {
         const pdf = new jsPDF({
           orientation: "portrait",
           unit: "mm",
           format: "a4",
+          compress: true,
         });
         // Center on standard A4 (210 x 297 mm) with cut guide borders
         const startX = (210 - cardW) / 2;
         const startY = backImg ? 70 : (297 - cardH) / 2;
-        pdf.addImage(frontImg, "JPEG", startX, startY, cardW, cardH);
+        pdf.addImage(frontImg, "PNG", startX, startY, cardW, cardH);
         if (backImg) {
-          pdf.addImage(backImg, "JPEG", startX, startY + cardH + 12, cardW, cardH);
+          pdf.addImage(backImg, "PNG", startX, startY + cardH + 12, cardW, cardH);
         }
         pdf.save(`${record.full_name || record.visitor_name || "id"}_card_a4.pdf`);
       } else {
@@ -722,11 +747,12 @@ function IdCardManagementPage() {
           orientation: orientation,
           unit: "mm",
           format: [cardW, cardH],
+          compress: true,
         });
-        pdf.addImage(frontImg, "JPEG", 0, 0, cardW, cardH);
+        pdf.addImage(frontImg, "PNG", 0, 0, cardW, cardH);
         if (mode === "front-back" && backImg) {
           pdf.addPage([cardW, cardH], orientation);
-          pdf.addImage(backImg, "JPEG", 0, 0, cardW, cardH);
+          pdf.addImage(backImg, "PNG", 0, 0, cardW, cardH);
         }
         pdf.save(`${record.full_name || record.visitor_name || "id"}_card.pdf`);
       }
@@ -801,11 +827,38 @@ function IdCardManagementPage() {
               `bulk-card-back-${(rec as any).id || (rec as any).user_id}`,
             );
 
-            const frontCanvas = frontEl ? await safeHtml2Canvas(frontEl, { scale: 4 }) : null;
-            const backCanvas = backEl ? await safeHtml2Canvas(backEl, { scale: 4 }) : null;
+            const cardPxW = orientation === "portrait" ? 250 : 396;
+            const cardPxH = orientation === "portrait" ? 396 : 250;
 
-            frontImages.push(frontCanvas ? frontCanvas.toDataURL("image/jpeg", 0.88) : null);
-            backImages.push(backCanvas ? backCanvas.toDataURL("image/jpeg", 0.88) : null);
+            const frontCanvas = frontEl
+              ? await safeHtml2Canvas(frontEl, {
+                  scale: 4,
+                  width: cardPxW,
+                  height: cardPxH,
+                  windowWidth: cardPxW,
+                  windowHeight: cardPxH,
+                  x: 0,
+                  y: 0,
+                  scrollX: 0,
+                  scrollY: 0,
+                })
+              : null;
+            const backCanvas = backEl
+              ? await safeHtml2Canvas(backEl, {
+                  scale: 4,
+                  width: cardPxW,
+                  height: cardPxH,
+                  windowWidth: cardPxW,
+                  windowHeight: cardPxH,
+                  x: 0,
+                  y: 0,
+                  scrollX: 0,
+                  scrollY: 0,
+                })
+              : null;
+
+            frontImages.push(frontCanvas ? frontCanvas.toDataURL("image/png") : null);
+            backImages.push(backCanvas ? backCanvas.toDataURL("image/png") : null);
 
             // Draw front card on A4 sheet
             const col = i % cols;
@@ -814,7 +867,7 @@ function IdCardManagementPage() {
             const y = startY + row * (cardH + gapY);
 
             if (frontImages[i]) {
-              pdf.addImage(frontImages[i]!, "JPEG", x, y, cardW, cardH);
+              pdf.addImage(frontImages[i]!, "PNG", x, y, cardW, cardH);
             }
           }
 
@@ -829,7 +882,7 @@ function IdCardManagementPage() {
                 const row = Math.floor(i / cols);
                 const x = startX + mirroredCol * (cardW + gapX);
                 const y = startY + row * (cardH + gapY);
-                pdf.addImage(backImages[i]!, "JPEG", x, y, cardW, cardH);
+                pdf.addImage(backImages[i]!, "PNG", x, y, cardW, cardH);
               }
             }
           }
@@ -847,12 +900,14 @@ function IdCardManagementPage() {
             orientation: "landscape",
             unit: "mm",
             format: [cardW * 2, cardH],
+            compress: true,
           });
         } else {
           pdf = new jsPDF({
             orientation: orientation,
             unit: "mm",
             format: [cardW, cardH],
+            compress: true,
           });
         }
 
@@ -878,26 +933,49 @@ function IdCardManagementPage() {
 
           if (!frontEl) continue;
 
-          const frontCanvas = await safeHtml2Canvas(frontEl, { scale: 4 });
-          const frontImg = frontCanvas.toDataURL("image/jpeg", 0.88);
+          const cardPxW = orientation === "portrait" ? 250 : 396;
+          const cardPxH = orientation === "portrait" ? 396 : 250;
+
+          const frontCanvas = await safeHtml2Canvas(frontEl, {
+            scale: 4,
+            width: cardPxW,
+            height: cardPxH,
+            windowWidth: cardPxW,
+            windowHeight: cardPxH,
+            x: 0,
+            y: 0,
+            scrollX: 0,
+            scrollY: 0,
+          });
+          const frontImg = frontCanvas.toDataURL("image/png");
 
           let backImg = null;
           if (mode !== "front-only" && backEl) {
-            const backCanvas = await safeHtml2Canvas(backEl, { scale: 4 });
-            backImg = backCanvas.toDataURL("image/jpeg", 0.88);
+            const backCanvas = await safeHtml2Canvas(backEl, {
+              scale: 4,
+              width: cardPxW,
+              height: cardPxH,
+              windowWidth: cardPxW,
+              windowHeight: cardPxH,
+              x: 0,
+              y: 0,
+              scrollX: 0,
+              scrollY: 0,
+            });
+            backImg = backCanvas.toDataURL("image/png");
           }
 
           if (mode === "side-by-side") {
             if (!isFirstPage)
               pdf.addPage([cardW * 2, cardH], "landscape");
-            pdf.addImage(frontImg, "JPEG", 0, 0, cardW, cardH);
-            if (backImg) pdf.addImage(backImg, "JPEG", cardW, 0, cardW, cardH);
+            pdf.addImage(frontImg, "PNG", 0, 0, cardW, cardH);
+            if (backImg) pdf.addImage(backImg, "PNG", cardW, 0, cardW, cardH);
           } else {
             if (!isFirstPage) pdf.addPage([cardW, cardH], orientation);
-            pdf.addImage(frontImg, "JPEG", 0, 0, cardW, cardH);
+            pdf.addImage(frontImg, "PNG", 0, 0, cardW, cardH);
             if (mode === "front-back" && backImg) {
               pdf.addPage([cardW, cardH], orientation);
-              pdf.addImage(backImg, "JPEG", 0, 0, cardW, cardH);
+              pdf.addImage(backImg, "PNG", 0, 0, cardW, cardH);
             }
           }
           isFirstPage = false;
@@ -2329,13 +2407,14 @@ function IdCardManagementPage() {
         </div>
       )}
 
-      {/* Off-screen container for html2canvas rendering with stable top:0 coordinates */}
+      {/* Off-screen container for html2canvas rendering with exact 0-offset coordinates */}
       <div
         style={{
           position: "fixed",
-          left: "-9999px",
+          left: "0px",
           top: "0px",
           zIndex: -9999,
+          opacity: 0,
           pointerEvents: "none",
         }}
       >
