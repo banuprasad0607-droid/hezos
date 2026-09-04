@@ -687,14 +687,6 @@ function IdCardManagementPage() {
 
       const frontCanvas = await safeHtml2Canvas(frontEl, {
         scale: 4,
-        width: cardPxW,
-        height: cardPxH,
-        windowWidth: cardPxW,
-        windowHeight: cardPxH,
-        x: 0,
-        y: 0,
-        scrollX: 0,
-        scrollY: 0,
       });
       const frontImg = frontCanvas.toDataURL("image/png");
 
@@ -702,14 +694,6 @@ function IdCardManagementPage() {
       if (mode !== "front-only" && backEl) {
         const backCanvas = await safeHtml2Canvas(backEl, {
           scale: 4,
-          width: cardPxW,
-          height: cardPxH,
-          windowWidth: cardPxW,
-          windowHeight: cardPxH,
-          x: 0,
-          y: 0,
-          scrollX: 0,
-          scrollY: 0,
         });
         backImg = backCanvas.toDataURL("image/png");
       }
@@ -833,27 +817,11 @@ function IdCardManagementPage() {
             const frontCanvas = frontEl
               ? await safeHtml2Canvas(frontEl, {
                   scale: 4,
-                  width: cardPxW,
-                  height: cardPxH,
-                  windowWidth: cardPxW,
-                  windowHeight: cardPxH,
-                  x: 0,
-                  y: 0,
-                  scrollX: 0,
-                  scrollY: 0,
                 })
               : null;
             const backCanvas = backEl
               ? await safeHtml2Canvas(backEl, {
                   scale: 4,
-                  width: cardPxW,
-                  height: cardPxH,
-                  windowWidth: cardPxW,
-                  windowHeight: cardPxH,
-                  x: 0,
-                  y: 0,
-                  scrollX: 0,
-                  scrollY: 0,
                 })
               : null;
 
@@ -933,19 +901,8 @@ function IdCardManagementPage() {
 
           if (!frontEl) continue;
 
-          const cardPxW = orientation === "portrait" ? 250 : 396;
-          const cardPxH = orientation === "portrait" ? 396 : 250;
-
           const frontCanvas = await safeHtml2Canvas(frontEl, {
             scale: 4,
-            width: cardPxW,
-            height: cardPxH,
-            windowWidth: cardPxW,
-            windowHeight: cardPxH,
-            x: 0,
-            y: 0,
-            scrollX: 0,
-            scrollY: 0,
           });
           const frontImg = frontCanvas.toDataURL("image/png");
 
@@ -953,14 +910,6 @@ function IdCardManagementPage() {
           if (mode !== "front-only" && backEl) {
             const backCanvas = await safeHtml2Canvas(backEl, {
               scale: 4,
-              width: cardPxW,
-              height: cardPxH,
-              windowWidth: cardPxW,
-              windowHeight: cardPxH,
-              x: 0,
-              y: 0,
-              scrollX: 0,
-              scrollY: 0,
             });
             backImg = backCanvas.toDataURL("image/png");
           }
@@ -3114,6 +3063,31 @@ export function IDCardComponent({
     displayClassOrDesignation = rec.designation || "Staff";
   }
 
+  const topperRank = isStudent && rec.rankings ? rec.rankings.find((r: any) => r.rank_position <= 3) : null;
+
+  let themeCls = "bg-white border-slate-200 text-slate-800";
+  let headerCls = "bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 text-white";
+  let subBannerCls = "bg-blue-600 text-white";
+  let accentBorder = "border-blue-500";
+
+  if (theme === "premium-corporate") {
+    headerCls = "bg-gradient-to-r from-slate-900 via-slate-800 to-slate-950 text-white";
+    subBannerCls = "bg-teal-600 text-white";
+    accentBorder = "border-teal-500";
+  } else if (theme === "gold-premium") {
+    headerCls = "bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 text-amber-200";
+    subBannerCls = "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950";
+    accentBorder = "border-amber-500";
+  } else if (theme === "school-classic") {
+    headerCls = "bg-gradient-to-r from-red-900 via-red-800 to-red-950 text-white";
+    subBannerCls = "bg-red-600 text-white";
+    accentBorder = "border-red-500";
+  } else if (theme === "minimal") {
+    headerCls = "bg-slate-900 text-white";
+    subBannerCls = "bg-slate-700 text-white";
+    accentBorder = "border-slate-400";
+  }
+
   // Adaptive Typography Calculators to guarantee zero clipping, merging, or overflow
   const nameLen = (displayName || "").length;
   const nameStyle = {
@@ -3132,14 +3106,14 @@ export function IDCardComponent({
             ? "10px"
             : nameLen > 15
               ? "11.5px"
-              : "13px",
-    lineHeight: nameLen > 24 ? "1.15" : "1.25",
+              : "12.5px",
+    lineHeight: "1.25",
   };
 
   const schoolLen = (school?.name || "").length;
   const schoolStyle = {
     fontSize: schoolLen > 35 ? "8.5px" : schoolLen > 20 ? "10px" : "11.5px",
-    lineHeight: schoolLen > 20 ? "1.15" : "1.25",
+    lineHeight: "1.25",
   };
 
   // Logo rendering with clean container & soft elevation
