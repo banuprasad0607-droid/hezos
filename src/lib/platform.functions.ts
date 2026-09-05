@@ -891,11 +891,120 @@ export const provisionStudent = createServerFn({ method: "POST" })
   });
 
 // Self-service onboarding: create a school and assign the caller as its admin.
-// Uses supabaseAdmin because the user_roles INSERT policy now restricts
+// Uses supabaseAdmin because the user_roles INSERT policy restricts
 // self-assignment to the 'parent' role only.
 const BootstrapSchoolInput = z.object({
   name: z.string().min(2).max(120),
+  board: z.string().optional().default("CBSE"),
+  phone: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  seedDemoData: z.boolean().optional().default(false),
 });
+
+// Helper function to populate sample data for instant SaaS trial exploration
+async function seedSchoolDemoDataHelper(schoolId: string, adminUserId: string) {
+  try {
+    // 1. Create realistic classes
+    const classesToCreate = [
+      { name: "Grade 1 - Sec A" },
+      { name: "Grade 5 - Sec A" },
+      { name: "Grade 8 - Sec A" },
+      { name: "Grade 10 - Sec A" },
+      { name: "Grade 10 - Sec B" },
+    ];
+
+    const insertedClasses: any[] = [];
+    for (const c of classesToCreate) {
+      const classId = crypto.randomUUID();
+      const { data } = await supabaseAdmin
+        .from("classes")
+        .insert({
+          id: classId,
+          school_id: schoolId,
+          name: c.name,
+        })
+        .select()
+        .single();
+      if (data) insertedClasses.push(data);
+    }
+
+    if (insertedClasses.length === 0) return;
+
+    // 2. Create realistic students across classes
+    const demoStudents = [
+      { name: "Aarav Sharma", roll: "101", adm: "DPS-2024-001", classIdx: 3, gender: "Male", parent: "Rajesh Sharma", phone: "+91 98765 43210" },
+      { name: "Ananya Iyer", roll: "102", adm: "DPS-2024-002", classIdx: 3, gender: "Female", parent: "Venkatesh Iyer", phone: "+91 98765 43211" },
+      { name: "Devansh Patel", roll: "103", adm: "DPS-2024-003", classIdx: 3, gender: "Male", parent: "Kirit Patel", phone: "+91 98765 43212" },
+      { name: "Ishaan Verma", roll: "104", adm: "DPS-2024-004", classIdx: 3, gender: "Male", parent: "Sanjay Verma", phone: "+91 98765 43213" },
+      { name: "Meera Reddy", roll: "105", adm: "DPS-2024-005", classIdx: 3, gender: "Female", parent: "Prasad Reddy", phone: "+91 98765 43214" },
+      { name: "Rohan Gupta", roll: "106", adm: "DPS-2024-006", classIdx: 3, gender: "Male", parent: "Amit Gupta", phone: "+91 98765 43215" },
+      { name: "Priya Nair", roll: "107", adm: "DPS-2024-007", classIdx: 3, gender: "Female", parent: "Mohan Nair", phone: "+91 98765 43216" },
+      { name: "Kabir Khan", roll: "108", adm: "DPS-2024-008", classIdx: 4, gender: "Male", parent: "Farhan Khan", phone: "+91 98765 43217" },
+      { name: "Diya Mukherjee", roll: "109", adm: "DPS-2024-009", classIdx: 4, gender: "Female", parent: "Sourav Mukherjee", phone: "+91 98765 43218" },
+      { name: "Aditya Joshi", roll: "110", adm: "DPS-2024-010", classIdx: 1, gender: "Male", parent: "Manoj Joshi", phone: "+91 98765 43219" },
+      { name: "Kavya Singhania", roll: "111", adm: "DPS-2024-011", classIdx: 0, gender: "Female", parent: "Vikram Singhania", phone: "+91 98765 43220" },
+      { name: "Arjun Pillai", roll: "112", adm: "DPS-2024-012", classIdx: 2, gender: "Male", parent: "Gopal Pillai", phone: "+91 98765 43221" },
+    ];
+
+    const insertedStudents: any[] = [];
+    for (const st of demoStudents) {
+      const targetClass = insertedClasses[st.classIdx] || insertedClasses[0];
+      const studentId = crypto.randomUUID();
+      const { data: sRow } = await supabaseAdmin
+        .from("students")
+        .insert({
+          id: studentId,
+          school_id: schoolId,
+          class_id: targetClass.id,
+          full_name: st.name,
+          roll_number: st.roll,
+          admission_number: st.adm,
+          gender: st.gender,
+          parent_name: st.parent,
+          parent_phone: st.phone,
+        })
+        .select()
+        .single();
+      if (sRow) insertedStudents.push(sRow);
+    }
+
+    // 3. Populate sample attendance for today
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const attendanceStatuses = ["present", "present", "present", "present", "late", "absent", "present", "present"];
+    for (let i = 0; i < insertedStudents.length; i++) {
+      const student = insertedStudents[i];
+      const status = attendanceStatuses[i % attendanceStatuses.length];
+      await supabaseAdmin.from("attendance").insert({
+        id: crypto.randomUUID(),
+        school_id: schoolId,
+        student_id: student.id,
+        class_id: student.class_id,
+        date: todayStr,
+        status: status as any,
+        recorded_by: adminUserId,
+      });
+    }
+
+    // 4. Create standard fee structures
+    const feeStructures = [
+      { name: "Term-1 Tuition & Academic Fee", category: "Tuition", amount: 16500, frequency: "term" },
+      { name: "Annual Digital Lab & SmartClass Fee", category: "Lab", amount: 3200, frequency: "annual" },
+      { name: "School Transport Fee (Quarterly)", category: "Transport", amount: 4500, frequency: "quarterly" },
+    ];
+    for (const fee of feeStructures) {
+      await supabaseAdmin.from("fee_structures").insert({
+        id: crypto.randomUUID(),
+        school_id: schoolId,
+        name: fee.name,
+        category: fee.category,
+        amount: fee.amount,
+        frequency: fee.frequency,
+      });
+    }
+  } catch (err) {
+    console.error("Failed to seed sample school data:", err);
+  }
+}
 
 export const bootstrapOwnSchool = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -917,9 +1026,21 @@ export const bootstrapOwnSchool = createServerFn({ method: "POST" })
     }
 
     const schoolId = crypto.randomUUID();
+    const shortCode = data.name
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .slice(0, 4)
+      .toUpperCase() + Math.floor(100 + Math.random() * 900);
+
     const { error: sErr } = await supabaseAdmin.from("schools").insert({
       id: schoolId,
       name: data.name,
+      code: shortCode,
+      phone: data.phone || null,
+      address: data.address || null,
+      plan: "growth", // Full feature access during trial
+      student_limit: 1000,
+      teacher_limit: 50,
+      status: "active",
       owner_id: userId,
     });
     if (sErr) throw new Error(sErr.message);
@@ -935,7 +1056,51 @@ export const bootstrapOwnSchool = createServerFn({ method: "POST" })
       .insert({ user_id: userId, school_id: schoolId, role: "admin" as never });
     if (rErr) throw new Error(rErr.message);
 
+    // Create 14-day automated free trial subscription record
+    const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+    const currentPeriodEnd = new Date(trialEnd.getTime() + 30 * 24 * 60 * 60 * 1000);
+    await supabaseAdmin.from("subscriptions").insert({
+      school_id: schoolId,
+      plan: "growth",
+      status: "trialing",
+      billing_cycle: "monthly",
+      monthly_amount: 2499,
+      trial_end: trialEnd.toISOString(),
+      current_period_end: currentPeriodEnd.toISOString().slice(0, 10),
+    });
+
+    if (data.seedDemoData) {
+      await seedSchoolDemoDataHelper(schoolId, userId);
+    }
+
     return { school_id: schoolId };
+  });
+
+const SeedDemoInput = z.object({
+  school_id: z.string().uuid(),
+});
+
+export const seedDemoSchoolData = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => SeedDemoInput.parse(data))
+  .handler(async ({ data, context }) => {
+    const userId = context.userId;
+    const { data: roles } = await context.supabase
+      .from("user_roles")
+      .select("role, school_id")
+      .eq("user_id", userId);
+
+    const isSuperAdmin = (roles ?? []).some((r: any) => r.role === "super_admin");
+    const isSchoolAdmin = (roles ?? []).some(
+      (r: any) => r.role === "admin" && r.school_id === data.school_id
+    );
+
+    if (!isSuperAdmin && !isSchoolAdmin) {
+      throw new Error("Only school administrators can seed sample demo data.");
+    }
+
+    await seedSchoolDemoDataHelper(data.school_id, userId);
+    return { success: true };
   });
 
 const LoginInput = z.object({

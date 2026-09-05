@@ -6,6 +6,7 @@ import { useSchoolContext } from "@/lib/school-context";
 import { useTenant } from "@/lib/tenant-context";
 import { usePageTitle } from "@/hooks/use-school-name";
 import { Users, Clock, Building2, FileText, ArrowRight, Check, X } from "lucide-react";
+import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
@@ -14,6 +15,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 interface Stats {
   students: number;
   teachers: number;
+  classes: number;
+  fees: number;
   attendanceToday: { present: number; total: number };
   homeworkToday: number;
   pendingHomework: number;
@@ -58,7 +61,7 @@ function DashboardPage() {
 
     const load = async () => {
       const today = new Date().toISOString().slice(0, 10);
-      const [students, teacherRoles, attRows, hwToday, hwPending, recentRemarks] =
+      const [students, teacherRoles, attRows, hwToday, hwPending, recentRemarks, classesRes, feesRes] =
         await Promise.all([
           supabase
             .from("students")
@@ -90,6 +93,14 @@ function DashboardPage() {
             .eq("school_id", effectiveSchoolId)
             .order("created_at", { ascending: false })
             .limit(5),
+          supabase
+            .from("classes")
+            .select("id", { count: "exact", head: true })
+            .eq("school_id", effectiveSchoolId),
+          supabase
+            .from("fee_structures")
+            .select("id", { count: "exact", head: true })
+            .eq("school_id", effectiveSchoolId),
         ]);
 
       if (!mounted) return;
@@ -99,6 +110,8 @@ function DashboardPage() {
       setStats({
         students: students.count ?? 0,
         teachers: teacherRoles.count ?? 0,
+        classes: classesRes.count ?? 0,
+        fees: feesRes.count ?? 0,
         attendanceToday: { present, total: attRows.data?.length ?? 0 },
         homeworkToday: hwToday.count ?? 0,
         pendingHomework: hwPending.count ?? 0,
@@ -227,6 +240,18 @@ function DashboardPage() {
           <Users className="size-4" /> Manage Students
         </Link>
       </div>
+
+      {/* Onboarding Quick Setup Checklist for Admins */}
+      {effectiveSchoolId && (roles ?? []).includes("admin") && (
+        <OnboardingChecklist
+          schoolId={effectiveSchoolId}
+          hasClasses={(stats?.classes ?? 0) > 0}
+          hasStudents={(stats?.students ?? 0) > 0}
+          hasAttendance={(stats?.attendanceToday.total ?? 0) > 0}
+          hasFees={(stats?.fees ?? 0) > 0}
+          onRefresh={() => window.location.reload()}
+        />
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
